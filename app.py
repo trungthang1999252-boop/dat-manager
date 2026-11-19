@@ -29,52 +29,8 @@ if init_token:
     ds.set_token(init_token)
 db = database.StudentDatabase()
 
-# Luồng tự động đồng bộ ngầm định kỳ với Discord
-auto_sync_enabled = True
-
-def start_auto_sync_worker():
-    def _worker():
-        time.sleep(2)  # Khởi động nhanh
-        while True:
-            try:
-                if auto_sync_enabled and ds.is_connected():
-                    # Lấy 15 tin nhắn mới nhất trên kênh Discord
-                    recent = ds.fetch_recent_messages(limit=15)
-                    updated = False
-                    for s in recent:
-                        cccd = s.get('cccd')
-                        mahv = s.get('mahv')
-                        hoten = s.get('hoten')
-                        i_uid = s.get('interaction_user_id', '')
-
-                        # Nhận diện:
-                        # 1. Học viên đã có trong CSDL hoặc Roster
-                        # 2. Hoặc học viên do chính giáo viên trên máy này (tranthang252) tra cứu trên Discord
-                        # 3. Hoặc học viên được tra cứu từ tài khoản liên kết (trongnhan0000)
-                        is_my_student = (
-                            bool(db.find_student(cccd)) or 
-                            bool(db.find_student(mahv)) or 
-                            bool(db.find_student(hoten)) or
-                            bool(db.roster.get(hoten)) or
-                            i_uid in ('1380376964304474173', '1380096710386384937')
-                        )
-
-                        if is_my_student and (hoten or mahv or cccd):
-                            st_saved = db.upsert_student(s, auto_save=False)
-                            if st_saved and not st_saved.get('dieukien_totnghiep'):
-                                ensure_lythuyet_evaluated(st_saved)
-                            updated = True
-
-                    if updated:
-                        db._save()
-            except Exception:
-                pass
-            time.sleep(4)  # Quét nhanh định kỳ mỗi 4 giây để phản hồi tức thì
-
-    t = threading.Thread(target=_worker, daemon=True)
-    t.start()
-
-start_auto_sync_worker()
+# Tắt chức năng tự động đồng bộ liên tục để tránh quét lẫn học viên của giáo viên khác trên kênh Discord
+auto_sync_enabled = False
 
 def start_self_ping_worker():
     """Tự động đánh thức máy chủ ngầm để không bao giờ bị rơi vào chế độ ngủ đông (Keep-Alive)."""
@@ -347,7 +303,12 @@ def query_student():
 
         raw_dat = res_dat.get('data')
         st_dat = raw_dat[0] if isinstance(raw_dat, list) and raw_dat else (raw_dat or {})
+        st_dat['is_my_query'] = True
+        st_dat['interaction_username'] = 'tranthang252'
+        st_dat['interaction_user_id'] = '1380376964304474173'
         saved_st = db.upsert_student(st_dat, auto_save=True)
+        if saved_st and saved_st.get('hoten') and saved_st.get('hoten') not in db.roster:
+            db.add_to_roster(saved_st, auto_save=True)
 
         mahv = (saved_st or {}).get('mahv') or st_dat.get('mahv')
         lt_target = mahv if mahv else ((saved_st or {}).get('cccd') or (saved_st or {}).get('hoten') or target_query)
@@ -360,7 +321,12 @@ def query_student():
                 if res_lt.get('success'):
                     raw_lt = res_lt.get('data')
                     st_lt = raw_lt[0] if isinstance(raw_lt, list) and raw_lt else (raw_lt or {})
+                    st_lt['is_my_query'] = True
+                    st_lt['interaction_username'] = 'tranthang252'
+                    st_lt['interaction_user_id'] = '1380376964304474173'
                     saved_st = db.upsert_student(st_lt, auto_save=True)
+                    if saved_st and saved_st.get('hoten') and saved_st.get('hoten') not in db.roster:
+                        db.add_to_roster(saved_st, auto_save=True)
             except Exception as e_lt:
                 print("Lỗi tự động tra cứu lý thuyết sau /dat:", e_lt)
 
@@ -390,8 +356,13 @@ def query_student():
         saved_list = []
         raw_items = raw_lt if isinstance(raw_lt, list) else [raw_lt]
         for it in raw_items:
+            it['is_my_query'] = True
+            it['interaction_username'] = 'tranthang252'
+            it['interaction_user_id'] = '1380376964304474173'
             saved = db.upsert_student(it, auto_save=True)
             if saved:
+                if saved.get('hoten') and saved.get('hoten') not in db.roster:
+                    db.add_to_roster(saved, auto_save=True)
                 saved = ensure_lythuyet_evaluated(saved)
                 saved_list.append(saved)
 
@@ -415,14 +386,25 @@ def query_student():
         saved_list = []
         if isinstance(raw_data, list):
             for st in raw_data:
+                st['is_my_query'] = True
+                st['interaction_username'] = 'tranthang252'
+                st['interaction_user_id'] = '1380376964304474173'
                 saved = db.upsert_student(st)
                 if saved:
+                    if saved.get('hoten') and saved.get('hoten') not in db.roster:
+                        db.add_to_roster(saved, auto_save=True)
                     if cmd_type == 'lythuyet' or saved.get('lythuyet_pdf_url'):
                         saved = ensure_lythuyet_evaluated(saved)
                     saved_list.append(saved)
         else:
+            if isinstance(raw_data, dict):
+                raw_data['is_my_query'] = True
+                raw_data['interaction_username'] = 'tranthang252'
+                raw_data['interaction_user_id'] = '1380376964304474173'
             saved = db.upsert_student(raw_data)
             if saved:
+                if saved.get('hoten') and saved.get('hoten') not in db.roster:
+                    db.add_to_roster(saved, auto_save=True)
                 if cmd_type == 'lythuyet' or saved.get('lythuyet_pdf_url'):
                     saved = ensure_lythuyet_evaluated(saved)
                 saved_list.append(saved)
@@ -713,7 +695,7 @@ def sync_from_discord():
             return jsonify({'success': False, 'error': 'Chưa kết nối được với Discord trên máy tính.'})
 
     recent_students = ds.fetch_recent_messages(limit=limit)
-    # Tự động đồng bộ và nạp tất cả học viên của giáo viên hoặc học viên vừa được tra cứu thành công từ Discord Bot về App
+    # Tự động đồng bộ và CHỈ nạp học viên của giáo viên (trong hồ sơ ban đầu hoặc do giáo viên tra cứu)
     synced_count = 0
     for s in recent_students:
         hoten = s.get('hoten')
@@ -721,14 +703,17 @@ def sync_from_discord():
         cccd = s.get('cccd')
         i_uid = s.get('interaction_user_id', '')
 
-        is_my_student = (
-            bool(db.find_student(cccd)) or 
-            bool(db.find_student(mahv)) or 
-            bool(db.find_student(hoten)) or
-            bool(db.roster.get(hoten)) or
-            i_uid in ('1380376964304474173', '1380096710386384937')
+        is_in_roster = bool(
+            (hoten and db.roster.get(hoten)) or
+            (cccd and any(r.get('cccd') == cccd for r in db.roster.values())) or
+            (mahv and any(r.get('mahv') == mahv for r in db.roster.values()))
         )
+        is_queried_by_me = (i_uid in ('1380376964304474173', '1380096710386384937'))
+
+        is_my_student = is_in_roster or is_queried_by_me
+
         if is_my_student and hoten and (mahv or cccd):
+            s['is_my_query'] = True
             st_saved = db.upsert_student(s, auto_save=False)
             if st_saved:
                 # Tự động tải PDF lý thuyết và cập nhật điều kiện tốt nghiệp ngay
@@ -737,7 +722,7 @@ def sync_from_discord():
             synced_count += 1
 
     if synced_count > 0:
-        db._save()
+        db.purge_foreign_students()
 
     return jsonify({
         'success': True,
@@ -747,17 +732,15 @@ def sync_from_discord():
 
 @app.route('/api/auto_sync_toggle', methods=['GET', 'POST'])
 def auto_sync_toggle():
-    global auto_sync_enabled
-    if request.method == 'POST':
-        data = request.get_json() or {}
-        if 'enabled' in data:
-            auto_sync_enabled = bool(data['enabled'])
-        else:
-            auto_sync_enabled = not auto_sync_enabled
     return jsonify({
         'success': True,
-        'auto_sync_enabled': auto_sync_enabled
+        'auto_sync_enabled': False
     })
+
+@app.route('/api/filter_my_students', methods=['POST'])
+def filter_my_students():
+    count = db.purge_foreign_students()
+    return jsonify({'success': True, 'count': count})
 
 @app.route('/api/sync_course', methods=['POST'])
 def sync_course():
