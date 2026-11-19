@@ -2698,13 +2698,13 @@
     "pdf_url": null,
     "pdf_filename": null,
     "note": "",
-    "avatar_url": "https://cdn.discordapp.com/attachments/1100763300180017185/1572920131363934218/avatar.jpg?ex=6b001f86&is=6afece06&hm=9dd56a0784c4a899711a33fa46b8bac13a36c3557b56b825aae611764033c499&",
-    "msg_id": "1572924262086352957",
-    "msg_time": "2026-11-19T10:39:27.601000+00:00",
+    "avatar_url": "https://cdn.discordapp.com/attachments/1100763300180017185/1572941759959277669/avatar.jpg?ex=6b0033ab&is=6afee22b&hm=4117bdf4ab0a7cb926f5392a417f6f8becd4fbb34e33755cf31ddb880d5cdf65&",
+    "msg_id": "1572941738916708363",
+    "msg_time": "2026-11-19T11:48:54.402000+00:00",
     "interaction_user_id": "1380376964304474173",
     "interaction_username": "tranthang252",
     "created_at": "19/11/2026 17:23:05",
-    "updated_at": "19/11/2026 18:17:30",
+    "updated_at": "19/11/2026 18:55:17",
     "target_km": 710.0,
     "target_gio": 12.0,
     "thoigian_tudong_toithieu": 0.0,
@@ -3077,7 +3077,7 @@
     "interaction_user_id": "1380376964304474173",
     "interaction_username": "tranthang252",
     "created_at": "19/11/2026 18:14:38",
-    "updated_at": "19/11/2026 18:44:47",
+    "updated_at": "19/11/2026 18:48:53",
     "note": "",
     "target_km": 710.0,
     "target_gio": 12.0,
@@ -3473,5 +3473,211 @@
     "totnghiep_has_pdf": false,
     "dieukien_totnghiep": "Không",
     "totnghiep_reason": "Chưa đạt: Số Km DAT (597.0/810 km), Thời gian DAT (thiếu 6.6h, thiếu TĐ (0.0/2.0h)), Số ngày đường (3/5 ngày), Chưa tra cứu lý thuyết (/lythuyet)"
+  },
+  "52001-20260920-000034": {
+    "mahv": "52001-20260920-000034",
+    "hoten": "LƯƠNG VĂN QUÝ",
+    "lythuyet_pdf_filename": "52001-20260920-000034_lythuyet.pdf",
+    "lythuyet_pdf_url": "https://cdn.discordapp.com/attachments/1100763300180017185/1572941785481875508/52001-20260920-000034_lythuyet.pdf?ex=6b0033b1&is=6afee231&hm=6d1b640405728f9fd5afa4f757ebab701e0cf74f3c348b655e95793bb4e5a917&",
+    "has_lythuyet": true,
+    "msg_id": "1572940388166275213",
+    "msg_time": "2026-11-19T11:43:32.358000+00:00",
+    "interaction_user_id": "1478236372103073927",
+    "interaction_username": "nguyenduchoang_2001_42923",
+    "created_at": "19/11/2026 18:49:09",
+    "updated_at": "19/11/2026 18:55:17",
+    "note": "",
+    "target_km": 810.0,
+    "target_gio": 20.0,
+    "thoigian_dem_toithieu": 3.0,
+    "thoigian_tudong_toithieu": 2.0,
+    "pct_km": 57.7,
+    "pct_gio": 62.0,
+    "overall_pct": 59.4,
+    "quangduong_dat": false,
+    "thoigian_dat": false,
+    "thoigian_dem_dat": false,
+    "thoigian_tudong_dat": true,
+    "songay_dat": false,
+    "quangduong_thieu": 342.5,
+    "thoigian_thieu": 7.6,
+    "thoigian_dem_thieu": 3.0,
+    "thoigian_tudong_thieu": 0.0,
+    "has_phien_pdf": true,
+    "ketqua": "Chưa Đạt",
+    "lythuyet_dat": false,
+    "lythuyet_status": "Đang tải",
+    "lythuyet_reason": "Đang chờ tải báo cáo lý thuyết",
+    "totnghiep_details": {
+      "dat_quangduong": {
+        "name": "Số Km thực hành DAT",
+        "group": "DAT",
+        "status": "FAIL",
+        "value": "467.5 / 810 km",
+        "detail": "Thiếu 342.5 km",
+        "rule": "Định mức tối thiểu 810 km",
+        "exempt": false
+      },
+      "dat_thoigian": {
+        "name": "Thời gian thực hành DAT",
+        "group": "DAT",
+        "status": "FAIL",
+        "value": "12.4 / 20h (Đêm: 0.0h, TĐ: 3.3h)",
+        "detail": "Chưa đạt thời gian (thiếu 7.6h, thiếu đêm (0.0/3.0h))",
+        "rule": "Tối thiểu 20h (gồm đêm; tự động 2.0h)",
+        "exempt": false
+      },
+      "dat_songay": {
+        "name": "Số ngày chạy đường DAT",
+        "group": "DAT",
+        "status": "FAIL",
+        "value": "2/5 ngày",
+        "detail": "Chưa đủ số ngày đường (2/5 ngày)",
+        "rule": "Tối thiểu 4 hoặc 5 ngày đường",
+        "exempt": false
+      },
+      "phap_luat": {
+        "name": "Pháp luật TT14",
+        "group": "LY_THUYET",
+        "status": "NONE",
+        "exempt": false,
+        "rule": "Bắt buộc đạt",
+        "detail": "Chưa tải báo cáo lý thuyết"
+      },
+      "ktlx": {
+        "name": "Kỹ thuật lái xe TT14",
+        "group": "LY_THUYET",
+        "status": "NONE",
+        "exempt": false,
+        "rule": "Bắt buộc đạt",
+        "detail": "Chưa tải báo cáo lý thuyết"
+      },
+      "cau_tao": {
+        "name": "Cấu tạo TT14",
+        "group": "LY_THUYET",
+        "status": "NONE",
+        "exempt": false,
+        "rule": "Bắt buộc đạt",
+        "detail": "Chưa tải báo cáo lý thuyết"
+      },
+      "dao_duc": {
+        "name": "Đạo đức + PCCC TT14",
+        "group": "LY_THUYET",
+        "status": "NONE",
+        "exempt": false,
+        "rule": "Bắt buộc đạt",
+        "detail": "Chưa tải báo cáo lý thuyết"
+      },
+      "mo_phong": {
+        "name": "Mô phỏng (LT)",
+        "group": "LY_THUYET",
+        "status": "NONE",
+        "exempt": false,
+        "rule": "Bắt buộc đạt",
+        "detail": "Chưa tải báo cáo lý thuyết"
+      },
+      "note_cabin": {
+        "name": "Note Cabin (Bài cabin)",
+        "group": "LY_THUYET",
+        "status": "NONE",
+        "exempt": false,
+        "rule": "Bắt buộc đạt",
+        "detail": "Chưa tải báo cáo lý thuyết"
+      },
+      "gio_cabin": {
+        "name": "Giờ Cabin",
+        "group": "LY_THUYET",
+        "status": "NONE",
+        "exempt": false,
+        "rule": "Bắt buộc đạt",
+        "detail": "Chưa tải báo cáo lý thuyết"
+      },
+      "da_nop_sk": {
+        "name": "Đã nộp SK",
+        "group": "LY_THUYET",
+        "status": "NONE",
+        "exempt": false,
+        "rule": "Bắt buộc đạt",
+        "detail": "Chưa tải báo cáo lý thuyết"
+      },
+      "da_nop_hd": {
+        "name": "Đã nộp HĐ",
+        "group": "LY_THUYET",
+        "status": "NONE",
+        "exempt": false,
+        "rule": "Bắt buộc đạt",
+        "detail": "Chưa tải báo cáo lý thuyết"
+      },
+      "gio_cao_toc": {
+        "name": "Giờ Cao Tốc",
+        "group": "LY_THUYET",
+        "status": "NONE",
+        "exempt": false,
+        "rule": "Bắt buộc đạt",
+        "detail": "Chưa tải báo cáo lý thuyết"
+      },
+      "km_cao_toc": {
+        "name": "Km Cao Tốc",
+        "group": "LY_THUYET",
+        "status": "NONE",
+        "exempt": false,
+        "rule": "Bắt buộc đạt",
+        "detail": "Chưa tải báo cáo lý thuyết"
+      },
+      "van_toc_tb": {
+        "name": "Vận tốc TB",
+        "group": "LY_THUYET",
+        "status": "NONE",
+        "exempt": false,
+        "rule": "Bắt buộc đạt",
+        "detail": "Chưa tải báo cáo lý thuyết"
+      },
+      "hinh_cabin": {
+        "name": "Nhận diện Cabin (Hình cabin)",
+        "group": "LY_THUYET",
+        "status": "NONE",
+        "exempt": true,
+        "rule": "Miễn trừ (Bỏ qua)",
+        "detail": "Chưa tải báo cáo lý thuyết"
+      }
+    },
+    "totnghiep_failing": [
+      "Số Km DAT (467.5/810 km)",
+      "Thời gian DAT (thiếu 7.6h, thiếu đêm (0.0/3.0h))",
+      "Số ngày đường (2/5 ngày)",
+      "Đang chờ tải báo cáo lý thuyết"
+    ],
+    "totnghiep_has_pdf": false,
+    "dieukien_totnghiep": "Không",
+    "totnghiep_reason": "Chưa đạt: Số Km DAT (467.5/810 km), Thời gian DAT (thiếu 7.6h, thiếu đêm (0.0/3.0h)), Số ngày đường (2/5 ngày), Đang chờ tải báo cáo lý thuyết",
+    "ngaysinh": "17/09/2002",
+    "cccd": "064202000416",
+    "hang": "B",
+    "khoa": "CD_238B",
+    "quangduong": 467.52,
+    "thoigian": 12.4,
+    "thoigian_dem": 0.0,
+    "thoigian_tudong": 3.27,
+    "suckhoe": "Chưa có dữ liệu",
+    "so_phien_hople": 0,
+    "so_phien_loi": 0,
+    "pdf_url": "https://cdn.discordapp.com/attachments/1100763300180017185/1572940752533594182/LUONG_VAN_QUY_CD_238B_phienhoc.pdf?ex=6b0032bb&is=6afee13b&hm=3252e7be60c9718ffe2333b50a79cbab621ac0f1da83b068e67c961c9f21faae&",
+    "pdf_filename": "LUONG_VAN_QUY_CD_238B_phienhoc.pdf",
+    "avatar_url": "https://cdn.discordapp.com/attachments/1100763300180017185/1572940407644491908/avatar.jpg?ex=6b003269&is=6afee0e9&hm=66e76523dda3bd2c2140d0bbedeefc56b5ac7960fd140f0ed68fcf716e268d6c&",
+    "songay_str": "2/5 ngày",
+    "lich_trinh_ngay": [
+      {
+        "ngay": "14/11/2026",
+        "km": 148.9,
+        "gio": 3.27,
+        "phien": 1
+      },
+      {
+        "ngay": "19/11/2026",
+        "km": 318.6,
+        "gio": 9.13,
+        "phien": 5
+      }
+    ]
   }
 }
