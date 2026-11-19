@@ -250,18 +250,24 @@ def ensure_lythuyet_evaluated(student_obj, exempt_all_cabin=False):
     pdf_url = student_obj.get('lythuyet_pdf_url')
     fname = student_obj.get('lythuyet_pdf_filename') or f"{student_obj.get('mahv', 'HV')}_lythuyet.pdf"
 
-    if pdf_url:
-        st_key = student_obj.get('mahv') or student_obj.get('cccd')
-        dest_path, err = fetch_pdf_file(pdf_url, fname, student_key=st_key, url_field='lythuyet_pdf_url')
-        if dest_path and os.path.exists(dest_path):
-            import totnghiep_service
-            student_obj = totnghiep_service.evaluate_student(student_obj, DOWNLOADS_DIR, exempt_all_cabin=exempt_all_cabin)
-            db.upsert_student(student_obj, auto_save=True)
-    else:
+    try:
+        if pdf_url:
+            st_key = student_obj.get('mahv') or student_obj.get('cccd')
+            dest_path, err = fetch_pdf_file(pdf_url, fname, student_key=st_key, url_field='lythuyet_pdf_url')
+            if dest_path and os.path.exists(dest_path):
+                student_obj['lythuyet_pdf_filename'] = os.path.basename(dest_path)
+                student_obj['has_lythuyet'] = True
+                import totnghiep_service
+                student_obj = totnghiep_service.evaluate_student(student_obj, DOWNLOADS_DIR, exempt_all_cabin=exempt_all_cabin)
+                db.upsert_student(student_obj, auto_save=True)
+                return student_obj
+
         # Nếu đã có file sẵn trên ổ đĩa
         import totnghiep_service
         student_obj = totnghiep_service.evaluate_student(student_obj, DOWNLOADS_DIR, exempt_all_cabin=exempt_all_cabin)
         db.upsert_student(student_obj, auto_save=True)
+    except Exception as e:
+        print(f"Lỗi evaluate totnghiep: {e}")
 
     return student_obj
 
@@ -278,11 +284,11 @@ def get_students():
 
     # Đảm bảo học viên được chấm điều kiện tốt nghiệp toàn diện (cả DAT và Lý thuyết)
     for s in list(db.students.values()):
-        if not s.get('dieukien_totnghiep') or s.get('dieukien_totnghiep') in ('Chưa tra LT', 'Đang tải LT') or 'dat_quangduong' not in s.get('totnghiep_details', {}):
-            if s.get('lythuyet_pdf_filename'):
-                p = os.path.join(DOWNLOADS_DIR, s.get('lythuyet_pdf_filename'))
-                if os.path.exists(p):
-                    ensure_lythuyet_evaluated(s)
+        if not s.get('totnghiep_has_pdf') or 'dat_quangduong' not in s.get('totnghiep_details', {}):
+            fname = s.get('lythuyet_pdf_filename') or (f"{s.get('mahv')}_lythuyet.pdf" if s.get('mahv') else '')
+            p = os.path.join(DOWNLOADS_DIR, fname) if fname else ''
+            if p and os.path.exists(p):
+                ensure_lythuyet_evaluated(s)
             else:
                 db.calculate_progress(s)
                 db.upsert_student(s, auto_save=False)
@@ -333,8 +339,8 @@ def query_student():
         else:
             return jsonify({'success': False, 'error': 'Chưa kết nối được với Discord. Hãy kiểm tra phần mềm Discord.'})
 
-    # 1. KHI BẤM /DAT: Tra cứu trực tiếp với Bot Discord, cập nhật nhanh tức thì về App
-    if cmd_type == 'dat':
+    # 1. KHI BẤM /DAT HOẶC COMBO: Tra cứu DAT ➔ Tự động lấy Mã HV ➔ Tra cứu Lý thuyết (/lythuyet) ➔ Tự động tải PDF & Chấm điểm
+    if cmd_type in ('dat', 'combo'):
         res_dat = ds.query_student(target_query, command='dat', timeout_sec=15)
         if not res_dat.get('success'):
             return jsonify({'success': False, 'error': res_dat.get('error', 'Lỗi tra cứu DAT.')})
@@ -344,23 +350,23 @@ def query_student():
         saved_st = db.upsert_student(st_dat, auto_save=True)
 
         mahv = (saved_st or {}).get('mahv') or st_dat.get('mahv')
-        final_st = db.find_student(mahv or target_query) or saved_st or st_dat
-        final_st = ensure_lythuyet_evaluated(final_st)
+        lt_target = mahv if mahv else ((saved_st or {}).get('cccd') or (saved_st or {}).get('hoten') or target_query)
 
-        # Chạy ngầm cập nhật lý thuyết nếu học viên chưa có lý thuyết (không làm chậm tốc độ hiển thị DAT)
-        if mahv and not (final_st or {}).get('lythuyet_pdf_url'):
-            def _bg_fetch_lythuyet(m_code):
-                try:
-                    time.sleep(0.8)
-                    r_lt = ds.query_student(m_code, command='lythuyet', timeout_sec=16)
-                    if r_lt.get('success'):
-                        r_data = r_lt.get('data')
-                        st_lt = r_data[0] if isinstance(r_data, list) and r_data else (r_data or {})
-                        db.upsert_student(st_lt, auto_save=True)
-                        ensure_lythuyet_evaluated(db.find_student(m_code))
-                except Exception:
-                    pass
-            threading.Thread(target=_bg_fetch_lythuyet, args=(mahv,), daemon=True).start()
+        # TỰ ĐỘNG TRA CỨU TIẾP LÝ THUYẾT (/lythuyet) BẰNG MÃ HỌC VIÊN
+        if lt_target:
+            try:
+                time.sleep(0.4)  # Giãn cách nhẹ tránh rate limit
+                res_lt = ds.query_student(lt_target, command='lythuyet', timeout_sec=16)
+                if res_lt.get('success'):
+                    raw_lt = res_lt.get('data')
+                    st_lt = raw_lt[0] if isinstance(raw_lt, list) and raw_lt else (raw_lt or {})
+                    saved_st = db.upsert_student(st_lt, auto_save=True)
+            except Exception as e_lt:
+                print("Lỗi tự động tra cứu lý thuyết sau /dat:", e_lt)
+
+        final_st = db.find_student(mahv or target_query) or saved_st or st_dat
+        # TỰ ĐỘNG TẢI FILE PDF LÝ THUYẾT VỀ MÁY VÀ ĐÁNH GIÁ ĐIỀU KIỆN TỐT NGHIỆP
+        final_st = ensure_lythuyet_evaluated(final_st)
 
         return jsonify({
             'success': True,
@@ -368,44 +374,37 @@ def query_student():
             'count': 1,
             'mahv': mahv,
             'hoten': (final_st or {}).get('hoten'),
-            'has_lythuyet': bool((final_st or {}).get('lythuyet_pdf_url')),
+            'has_lythuyet': bool((final_st or {}).get('has_lythuyet') or (final_st or {}).get('lythuyet_pdf_url')),
+            'lythuyet_dat': (final_st or {}).get('lythuyet_dat', False),
             'dieukien_totnghiep': (final_st or {}).get('dieukien_totnghiep', 'Chưa tra LT'),
             'resolved': resolved_info
         })
 
-    # 2. LỆNH TRA CỨU LIÊN HOÀN (CHẠY /DAT -> LẤY MÃ HỌC VIÊN -> CHẠY TIẾP /LYTHUYET)
-    if cmd_type == 'combo':
-        # Bước 1: Tra cứu /dat lấy thông tin và Mã học viên
-        res_dat = ds.query_student(target_query, command='dat', timeout_sec=15)
-        if not res_dat.get('success'):
-            return jsonify({'success': False, 'error': res_dat.get('error', 'Lỗi tra cứu DAT.')})
+    # 2. KHI BẤM /LYTHUYET: Tra cứu lý thuyết ➔ Tự động tải PDF & Đánh giá ngay
+    if cmd_type == 'lythuyet':
+        res_lt = ds.query_student(target_query, command='lythuyet', timeout_sec=16)
+        if not res_lt.get('success'):
+            return jsonify({'success': False, 'error': res_lt.get('error', 'Lỗi tra cứu lý thuyết.')})
 
-        raw_dat = res_dat.get('data')
-        st_dat = raw_dat[0] if isinstance(raw_dat, list) and raw_dat else (raw_dat or {})
-        saved_st = db.upsert_student(st_dat, auto_save=True)
+        raw_lt = res_lt.get('data')
+        saved_list = []
+        raw_items = raw_lt if isinstance(raw_lt, list) else [raw_lt]
+        for it in raw_items:
+            saved = db.upsert_student(it, auto_save=True)
+            if saved:
+                saved = ensure_lythuyet_evaluated(saved)
+                saved_list.append(saved)
 
-        # Bước 2: Tự động trích xuất Mã học viên để gửi lệnh /lythuyet
-        mahv = (saved_st or {}).get('mahv') or st_dat.get('mahv')
-        lt_target = mahv if mahv else ((saved_st or {}).get('cccd') or (saved_st or {}).get('hoten') or target_query)
-
-        if lt_target:
-            time.sleep(0.5)  # Giãn cách tránh rate limit Discord
-            res_lt = ds.query_student(lt_target, command='lythuyet', timeout_sec=18)
-            if res_lt.get('success'):
-                raw_lt = res_lt.get('data')
-                st_lt = raw_lt[0] if isinstance(raw_lt, list) and raw_lt else (raw_lt or {})
-                saved_st = db.upsert_student(st_lt, auto_save=True)
-
-        final_st = db.find_student(mahv or target_query) or saved_st or st_dat
-        final_st = ensure_lythuyet_evaluated(final_st)
-
+        final_st = saved_list[0] if saved_list else db.find_student(target_query)
+        mahv = (final_st or {}).get('mahv')
         return jsonify({
             'success': True,
-            'students': [final_st],
-            'count': 1,
+            'students': saved_list,
+            'count': len(saved_list),
             'mahv': mahv,
             'hoten': (final_st or {}).get('hoten'),
-            'has_lythuyet': bool((final_st or {}).get('lythuyet_pdf_url')),
+            'has_lythuyet': bool((final_st or {}).get('has_lythuyet') or (final_st or {}).get('lythuyet_pdf_url')),
+            'lythuyet_dat': (final_st or {}).get('lythuyet_dat', False),
             'dieukien_totnghiep': (final_st or {}).get('dieukien_totnghiep', 'Chưa tra LT'),
             'resolved': resolved_info
         })
@@ -417,10 +416,16 @@ def query_student():
         if isinstance(raw_data, list):
             for st in raw_data:
                 saved = db.upsert_student(st)
-                if saved: saved_list.append(saved)
+                if saved:
+                    if cmd_type == 'lythuyet' or saved.get('lythuyet_pdf_url'):
+                        saved = ensure_lythuyet_evaluated(saved)
+                    saved_list.append(saved)
         else:
             saved = db.upsert_student(raw_data)
-            if saved: saved_list.append(saved)
+            if saved:
+                if cmd_type == 'lythuyet' or saved.get('lythuyet_pdf_url'):
+                    saved = ensure_lythuyet_evaluated(saved)
+                saved_list.append(saved)
 
         return jsonify({'success': True, 'students': saved_list, 'count': len(saved_list), 'resolved': resolved_info})
     else:
@@ -531,10 +536,16 @@ def query_batch():
                 if isinstance(raw_data, list):
                     for st in raw_data:
                         saved = db.upsert_student(st)
-                        results.append({'query': item_str, 'resolved_to': hoten_match, 'success': True, 'student': saved, 'source': 'bot'})
+                        if saved:
+                            if cmd_type == 'lythuyet' or saved.get('lythuyet_pdf_url'):
+                                saved = ensure_lythuyet_evaluated(saved)
+                            results.append({'query': item_str, 'resolved_to': hoten_match, 'success': True, 'student': saved, 'source': 'bot'})
                 else:
                     saved = db.upsert_student(raw_data)
-                    results.append({'query': item_str, 'resolved_to': hoten_match, 'success': True, 'student': saved, 'source': 'bot'})
+                    if saved:
+                        if cmd_type == 'lythuyet' or saved.get('lythuyet_pdf_url'):
+                            saved = ensure_lythuyet_evaluated(saved)
+                        results.append({'query': item_str, 'resolved_to': hoten_match, 'success': True, 'student': saved, 'source': 'bot'})
             else:
                 results.append({'query': item_str, 'resolved_to': hoten_match, 'success': False, 'error': res.get('error'), 'source': 'bot'})
 
@@ -719,8 +730,10 @@ def sync_from_discord():
         )
         if is_my_student and hoten and (mahv or cccd):
             st_saved = db.upsert_student(s, auto_save=False)
-            if st_saved and not st_saved.get('dieukien_totnghiep'):
-                ensure_lythuyet_evaluated(st_saved)
+            if st_saved:
+                # Tự động tải PDF lý thuyết và cập nhật điều kiện tốt nghiệp ngay
+                if st_saved.get('lythuyet_pdf_url') or not st_saved.get('totnghiep_has_pdf'):
+                    ensure_lythuyet_evaluated(st_saved)
             synced_count += 1
 
     if synced_count > 0:
