@@ -84,6 +84,16 @@
                                 <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1.5 animate-pulse"></span>
                                 <span>Trực Tuyến</span>
                             </span>
+                            <!-- Discord Bot Status Pill -->
+                            <button onclick="openDiscordModal()" id="discord-status-pill" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/20 text-rose-200 border border-rose-400/30 hover:bg-rose-500/30 cursor-pointer transition" title="Nhấp để cấu hình và kiểm tra kết nối Bot Discord">
+                                <span id="discord-status-dot" class="w-1.5 h-1.5 rounded-full bg-rose-400 mr-1.5 animate-pulse"></span>
+                                <span id="discord-status-text">Bot: Chưa kết nối</span>
+                            </button>
+                            <!-- Nút Cài App PWA -->
+                            <button id="btn-install-pwa" onclick="installPWA()" class="hidden bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-bold px-2.5 py-0.5 rounded-full transition flex items-center space-x-1 shadow-xs border border-emerald-400/40">
+                                <i class="fa-solid fa-mobile-screen"></i>
+                                <span>Cài App</span>
+                            </button>
                         </div>
                         <p class="text-xs text-sky-100/90 mt-0.5">Hệ thống quản lý & kiểm tra dữ liệu DAT học viên — Trường CĐ Cơ điện - XD & NL Trung Bộ</p>
                     </div>
@@ -128,6 +138,12 @@
                     <button onclick="exportToExcel()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold px-2.5 py-2 rounded-xl transition flex items-center space-x-1.5 shadow-sm" title="Xuất toàn bộ bảng danh sách ra Excel">
                         <i class="fa-solid fa-file-excel"></i>
                         <span>Excel</span>
+                    </button>
+
+                    <!-- Nút Sao Lưu Dữ Liệu -->
+                    <button onclick="openBackupModal()" class="bg-white/10 hover:bg-white/20 text-white text-xs font-semibold px-2.5 py-2 rounded-xl transition flex items-center space-x-1.5 border border-white/20" title="Sao lưu hoặc Khôi phục dữ liệu học viên">
+                        <i class="fa-solid fa-cloud-arrow-down"></i>
+                        <span>Sao Lưu</span>
                     </button>
 
                     <!-- Nút In Báo Cáo -->
@@ -1277,6 +1293,124 @@
         </div>
     </div>
 
+    <!-- Modal Cấu Hình Kết Nối Bot Discord -->
+    <div id="discord-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-lg w-full p-6 space-y-4 shadow-2xl border border-slate-100">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                <div class="flex items-center space-x-2.5">
+                    <div class="w-9 h-9 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-md">
+                        <i class="fa-brands fa-discord text-xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-bold text-slate-800">Cấu Hình Kết Nối Bot Discord</h3>
+                        <p class="text-[11px] text-slate-500">Kênh tra cứu DAT & Bot KhaVy (NLTB)</p>
+                    </div>
+                </div>
+                <button onclick="closeModal('discord-modal')" class="text-slate-400 hover:text-slate-600 p-1">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <!-- Trạng thái hiện tại -->
+            <div id="discord-current-status-box" class="p-3.5 rounded-2xl border flex items-center justify-between bg-slate-50 border-slate-200">
+                <div class="flex items-center space-x-2.5">
+                    <span id="discord-modal-dot" class="w-3 h-3 rounded-full bg-rose-500"></span>
+                    <div>
+                        <span id="discord-modal-status-text" class="text-xs font-bold text-slate-700">Đang kiểm tra...</span>
+                        <p id="discord-modal-user" class="text-[10px] text-slate-500"></p>
+                    </div>
+                </div>
+                <button type="button" onclick="checkDiscordStatus(true)" class="text-xs text-indigo-600 hover:text-indigo-800 font-semibold px-2 py-1 rounded-lg hover:bg-indigo-50 transition">
+                    <i class="fa-solid fa-arrows-rotate"></i> Kiểm tra lại
+                </button>
+            </div>
+
+            <!-- Ô nhập Token -->
+            <div class="space-y-1.5">
+                <label class="block text-xs font-bold text-slate-700">Mã Discord Token:</label>
+                <input type="password" id="discord-token-input" placeholder="Dán mã Discord Token vào đây..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono transition">
+                <div class="flex items-center justify-between text-[11px] text-slate-500">
+                    <span>Dùng để gửi lệnh tra cứu tới Bot Discord của trường.</span>
+                    <button type="button" onclick="toggleTokenVisibility()" class="text-indigo-600 hover:underline">Hiện/Ẩn</button>
+                </div>
+            </div>
+
+            <div class="bg-amber-50 border border-amber-200 text-amber-800 p-3 rounded-xl text-[11px] space-y-1">
+                <div class="font-bold flex items-center space-x-1.5">
+                    <i class="fa-solid fa-circle-info text-amber-600"></i>
+                    <span>Cách lấy mã Token Discord:</span>
+                </div>
+                <p>1. Mở Discord trên trình duyệt web máy tính (discord.com/app).</p>
+                <p>2. Bấm phím <b>F12</b> -> chọn tab <b>Network</b> -> lọc chữ <b>api</b> -> copy chuỗi <code>Authorization</code> trong header.</p>
+            </div>
+
+            <div class="flex space-x-2 pt-2 border-t border-slate-100">
+                <button type="button" onclick="closeModal('discord-modal')" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-2.5 rounded-xl text-xs transition">
+                    Đóng
+                </button>
+                <button type="button" id="btn-save-token" onclick="saveDiscordToken()" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 rounded-xl text-xs transition flex items-center justify-center space-x-1.5 shadow-md">
+                    <i class="fa-solid fa-floppy-disk"></i>
+                    <span>Lưu & Kết Nối</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Sao Lưu & Khôi Phục Dữ Liệu -->
+    <div id="backup-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl border border-slate-100">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                <div class="flex items-center space-x-2.5">
+                    <div class="w-9 h-9 rounded-2xl bg-emerald-600 text-white flex items-center justify-center shadow-md">
+                        <i class="fa-solid fa-cloud-arrow-down text-lg"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-bold text-slate-800">Sao Lưu & Khôi Phục Dữ Liệu</h3>
+                        <p class="text-[11px] text-slate-500">Bảo vệ an toàn dữ liệu học viên của bạn</p>
+                    </div>
+                </div>
+                <button onclick="closeModal('backup-modal')" class="text-slate-400 hover:text-slate-600 p-1">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <div class="space-y-3">
+                <!-- Tải bản sao lưu -->
+                <div class="p-3.5 rounded-2xl border border-slate-200 bg-slate-50 space-y-2">
+                    <div class="font-bold text-xs text-slate-800 flex items-center space-x-1.5">
+                        <i class="fa-solid fa-download text-emerald-600"></i>
+                        <span>1. Tải Bản Sao Lưu Về Điện Thoại / Máy Tính</span>
+                    </div>
+                    <p class="text-[11px] text-slate-500">Tải về một file <code>.json</code> chứa toàn bộ danh sách và kết quả chạy DAT của tất cả học viên.</p>
+                    <button type="button" onclick="downloadBackupFile()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 rounded-xl text-xs transition flex items-center justify-center space-x-1.5 shadow-sm">
+                        <i class="fa-solid fa-file-arrow-down"></i>
+                        <span>Tải File Sao Lưu Ngay</span>
+                    </button>
+                </div>
+
+                <!-- Khôi phục dữ liệu -->
+                <div class="p-3.5 rounded-2xl border border-slate-200 bg-slate-50 space-y-2">
+                    <div class="font-bold text-xs text-slate-800 flex items-center space-x-1.5">
+                        <i class="fa-solid fa-upload text-blue-600"></i>
+                        <span>2. Khôi Phục Dữ Liệu Từ File Sao Lưu</span>
+                    </div>
+                    <p class="text-[11px] text-slate-500">Chọn file sao lưu <code>.json</code> đã tải về trước đó để khôi phục toàn bộ danh sách.</p>
+                    <input type="file" id="backup-file-input" accept=".json" class="hidden" onchange="uploadBackupFile(this)">
+                    <button type="button" onclick="document.getElementById('backup-file-input').click()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded-xl text-xs transition flex items-center justify-center space-x-1.5 shadow-sm">
+                        <i class="fa-solid fa-file-import"></i>
+                        <span>Chọn File JSON Để Khôi Phục</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="flex justify-end pt-2 border-t border-slate-100">
+                <button type="button" onclick="closeModal('backup-modal')" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-2.5 rounded-xl text-xs transition">
+                    Đóng
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Thanh Điều Hướng Dưới Cùng Dành Riêng Cho iPhone / Mobile -->
     <nav id="mobile-bottom-bar" class="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200/80 z-40 px-2 py-1.5 shadow-[0_-4px_16px_rgba(0,0,0,0.06)] flex items-center justify-around">
         <button onclick="triggerHaptic(); switchTab('single')" id="mob-tab-query" class="flex flex-col items-center justify-center flex-1 py-1 text-blue-600 font-semibold text-[10px] transition active:scale-95">
@@ -1329,6 +1463,7 @@
             setupDropZone();
             startAutoSyncTimer();
             setTimeout(runSilentAutoSync, 2000); // Tự động quét cập nhật lần đầu sau khi tải trang 2 giây
+            checkDiscordStatus(); // Kiểm tra trạng thái Bot Discord
 
             // Đóng danh sách gợi ý khi bấm ra ngoài
             document.addEventListener('click', (e) => {
@@ -1339,6 +1474,157 @@
                 }
             });
         });
+
+        // ================= PWA Install Support =================
+        let deferredPWAInstallPrompt = null;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPWAInstallPrompt = e;
+            const btn = document.getElementById('btn-install-pwa');
+            if (btn) btn.classList.remove('hidden');
+        });
+
+        function installPWA() {
+            if (deferredPWAInstallPrompt) {
+                deferredPWAInstallPrompt.prompt();
+                deferredPWAInstallPrompt.userChoice.then(() => {
+                    deferredPWAInstallPrompt = null;
+                    const btn = document.getElementById('btn-install-pwa');
+                    if (btn) btn.classList.add('hidden');
+                });
+            }
+        }
+
+        // ================= Discord Bot Status & Token Setup =================
+        async function checkDiscordStatus(showToastFeedback = false) {
+            try {
+                const res = await fetch('/api/status');
+                const data = await res.json();
+                const pill = document.getElementById('discord-status-pill');
+                const dot = document.getElementById('discord-status-dot');
+                const txt = document.getElementById('discord-status-text');
+
+                const mDot = document.getElementById('discord-modal-dot');
+                const mTxt = document.getElementById('discord-modal-status-text');
+                const mUser = document.getElementById('discord-modal-user');
+
+                if (data.connected) {
+                    if (pill) {
+                        pill.className = "inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-200 border border-emerald-400/30 hover:bg-emerald-500/30 cursor-pointer transition";
+                    }
+                    if (dot) dot.className = "w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1.5 animate-pulse";
+                    const uName = data.username ? ` (${data.username})` : '';
+                    if (txt) txt.innerText = `Bot: Sẵn Sàng${uName}`;
+
+                    if (mDot) mDot.className = "w-3 h-3 rounded-full bg-emerald-500";
+                    if (mTxt) mTxt.innerText = "Đã Kết Nối Thành Công";
+                    if (mUser) mUser.innerText = `Tài khoản: ${data.username || 'Discord Bot'} | Kênh: ${data.channel_id}`;
+                    if (showToastFeedback) showToast(`✅ Bot Discord đã kết nối thành công!`);
+                } else {
+                    if (pill) {
+                        pill.className = "inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/20 text-rose-200 border border-rose-400/30 hover:bg-rose-500/30 cursor-pointer transition";
+                    }
+                    if (dot) dot.className = "w-1.5 h-1.5 rounded-full bg-rose-400 mr-1.5 animate-pulse";
+                    if (txt) txt.innerText = data.has_token ? "Bot: Token Hết Hạn" : "Bot: Chưa Có Token";
+
+                    if (mDot) mDot.className = "w-3 h-3 rounded-full bg-rose-500";
+                    if (mTxt) mTxt.innerText = data.has_token ? "Token Không Hợp Lệ Hoặc Đã Hết Hạn" : "Chưa Cấu Hình Token";
+                    if (mUser) mUser.innerText = "Vui lòng nhập Token mới bên dưới để kết nối";
+                    if (showToastFeedback) showToast(`⚠️ Chưa kết nối được với Discord. Hãy kiểm tra Token!`, false);
+                }
+            } catch (e) {
+                console.error("Lỗi kiểm tra status:", e);
+            }
+        }
+
+        function openDiscordModal() {
+            document.getElementById('discord-modal').classList.remove('hidden');
+            checkDiscordStatus(false);
+        }
+
+        function toggleTokenVisibility() {
+            const inp = document.getElementById('discord-token-input');
+            if (inp) {
+                inp.type = inp.type === 'password' ? 'text' : 'password';
+            }
+        }
+
+        async function saveDiscordToken() {
+            const inp = document.getElementById('discord-token-input');
+            const token = inp ? inp.value.trim() : '';
+            if (!token) {
+                showToast('Vui lòng nhập mã Token Discord!', false);
+                return;
+            }
+            const btn = document.getElementById('btn-save-token');
+            const origHtml = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i><span>Đang kiểm tra...</span>';
+            btn.disabled = true;
+
+            try {
+                const res = await fetch('/api/settings/token', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ token: token })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    if (data.connected) {
+                        showToast('✅ Đã lưu và kết nối thành công với Bot Discord!');
+                        inp.value = '';
+                        closeModal('discord-modal');
+                    } else {
+                        showToast('⚠️ Đã lưu token nhưng Discord báo không hợp lệ. Vui lòng kiểm tra lại!', false);
+                    }
+                    checkDiscordStatus(false);
+                } else {
+                    showToast(data.error || 'Lỗi lưu token!', false);
+                }
+            } catch (e) {
+                showToast('Lỗi gửi yêu cầu tới máy chủ', false);
+            } finally {
+                btn.innerHTML = origHtml;
+                btn.disabled = false;
+            }
+        }
+
+        // ================= Backup & Restore Dữ Liệu =================
+        function openBackupModal() {
+            document.getElementById('backup-modal').classList.remove('hidden');
+        }
+
+        function downloadBackupFile() {
+            window.location.href = '/api/backup/download';
+            showToast('Đang tải file sao lưu về máy...');
+        }
+
+        async function uploadBackupFile(input) {
+            if (!input.files || input.files.length === 0) return;
+            const file = input.files[0];
+            const formData = new FormData();
+            formData.append('file', file);
+
+            showToast('Đang khôi phục dữ liệu từ file sao lưu...');
+            try {
+                const res = await fetch('/api/backup/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showToast(`✅ Đã khôi phục thành công ${data.count} học viên!`);
+                    closeModal('backup-modal');
+                    await loadStats();
+                    await loadStudents();
+                } else {
+                    showToast(data.error || 'Lỗi khôi phục dữ liệu!', false);
+                }
+            } catch (e) {
+                showToast('Lỗi máy chủ khi khôi phục dữ liệu', false);
+            } finally {
+                input.value = '';
+            }
+        }
 
         function showToast(msg, isSuccess = true) {
             const t = document.getElementById('toast');
