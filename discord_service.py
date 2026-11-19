@@ -6,9 +6,16 @@ import time
 import uuid
 import base64
 import ctypes
+import unicodedata
 import urllib.request
 import urllib.parse
 import requests
+
+def strip_vietnamese_accents(s):
+    if not s: return ''
+    s = str(s).replace('Đ', 'D').replace('đ', 'd')
+    nfkd = unicodedata.normalize('NFKD', s)
+    return ''.join([c for c in nfkd if not unicodedata.combining(c)]).lower().strip()
 
 # Constants for Discord Server & Bot
 GUILD_ID = "1100763300180017182"       # Trường CĐ Cơ điện - Xây dựng và Nông Lâm Trung Bộ
@@ -85,42 +92,71 @@ def auto_detect_discord_token():
     # 2. Quét LevelDB qua DPAPI (chỉ chạy trên Windows)
     if sys.platform != 'win32':
         return None
-    local_state_path = os.path.expandvars(r'%APPDATA%\discord\Local State')
-    leveldb_dir = os.path.expandvars(r'%APPDATA%\discord\Local Storage\leveldb')
-    
-    if not (os.path.exists(local_state_path) and os.path.exists(leveldb_dir)):
-        return None
-        
-    try:
-        with open(local_state_path, 'r', encoding='utf-8') as f:
-            ls = json.load(f)
-        raw_key = base64.b64decode(ls['os_crypt']['encrypted_key'])[5:]
-        master_key = dpapi_decrypt(raw_key)
-        aesgcm = AESGCM(master_key)
-        
-        for fname in os.listdir(leveldb_dir):
-            if not (fname.endswith('.ldb') or fname.endswith('.log')):
-                continue
-            with open(os.path.join(leveldb_dir, fname), 'rb') as f:
-                data = f.read()
-            for m in re.findall(rb'dQw4w9WgXcQ:[^"\'\r\n\t ]+', data):
+
+    # Danh sách các nguồn quét khả dĩ: Discord App, Edge, Chrome
+    scan_targets = [
+        # (local_state, leveldb_dir, is_discord_app)
+        (os.path.expandvars(r'%APPDATA%\discord\Local State'), os.path.expandvars(r'%APPDATA%\discord\Local Storage\leveldb'), True),
+        (os.path.expandvars(r'%APPDATA%\discordcanary\Local State'), os.path.expandvars(r'%APPDATA%\discordcanary\Local Storage\leveldb'), True),
+        (os.path.expandvars(r'%APPDATA%\discordptb\Local State'), os.path.expandvars(r'%APPDATA%\discordptb\Local Storage\leveldb'), True),
+        (os.path.expandvars(r'%LOCALAPPDATA%\Microsoft\Edge\User Data\Local State'), os.path.expandvars(r'%LOCALAPPDATA%\Microsoft\Edge\User Data\Default\Local Storage\leveldb'), False),
+        (os.path.expandvars(r'%LOCALAPPDATA%\Google\Chrome\User Data\Local State'), os.path.expandvars(r'%LOCALAPPDATA%\Google\Chrome\User Data\Default\Local Storage\leveldb'), False),
+    ]
+
+    for local_state_path, leveldb_dir, is_discord_app in scan_targets:
+        if not (os.path.exists(local_state_path) and os.path.exists(leveldb_dir)):
+            continue
+        try:
+            with open(local_state_path, 'r', encoding='utf-8') as f:
+                ls = json.load(f)
+            raw_key = base64.b64decode(ls['os_crypt']['encrypted_key'])[5:]
+            master_key = dpapi_decrypt(raw_key)
+            aesgcm = AESGCM(master_key)
+
+            for fname in os.listdir(leveldb_dir):
+                if not (fname.endswith('.ldb') or fname.endswith('.log')):
+                    continue
                 try:
-                    payload = base64.b64decode(m.split(b'dQw4w9WgXcQ:')[1])
-                    dec = aesgcm.decrypt(payload[3:15], payload[15:], None).decode('utf-8')
-                    req = urllib.request.Request(
-                        'https://discord.com/api/v9/users/@me',
-                        headers={'Authorization': dec, 'User-Agent': 'Mozilla/5.0'}
-                    )
-                    with urllib.request.urlopen(req, timeout=4) as resp:
-                        if resp.status == 200:
-                            os.makedirs(os.path.join(base_dir, 'data'), exist_ok=True)
-                            with open(config_file, 'w', encoding='utf-8') as cf:
-                                json.dump({'discord_token': dec}, cf)
-                            return dec
+                    with open(os.path.join(leveldb_dir, fname), 'rb') as f:
+                        data = f.read()
                 except Exception:
-                    pass
-    except Exception as e:
-        print("Lỗi auto_detect_discord_token:", e)
+                    continue
+
+                candidates = []
+                # Nếu là Discord App: tìm dQw4w9WgXcQ:
+                for m in re.findall(rb'dQw4w9WgXcQ:[^"\'\r\n\t ]+', data):
+                    try:
+                        payload = base64.b64decode(m.split(b'dQw4w9WgXcQ:')[1])
+                        dec = aesgcm.decrypt(payload[3:15], payload[15:], None).decode('utf-8')
+                        candidates.append(dec)
+                    except Exception:
+                        pass
+
+                # Nếu là trình duyệt: tìm chuỗi token regex
+                if not is_discord_app:
+                    for m in re.findall(rb'[\w-]{24}\.[\w-]{6}\.[\w-]{27,}', data):
+                        try:
+                            candidates.append(m.decode('utf-8'))
+                        except Exception:
+                            pass
+
+                for candidate in candidates:
+                    try:
+                        req = urllib.request.Request(
+                            'https://discord.com/api/v9/users/@me',
+                            headers={'Authorization': candidate, 'User-Agent': 'Mozilla/5.0'}
+                        )
+                        with urllib.request.urlopen(req, timeout=3) as resp:
+                            if resp.status == 200:
+                                os.makedirs(os.path.join(base_dir, 'data'), exist_ok=True)
+                                with open(config_file, 'w', encoding='utf-8') as cf:
+                                    json.dump({'discord_token': candidate}, cf)
+                                return candidate
+                    except Exception:
+                        pass
+        except Exception:
+            pass
+
     return None
 
 class DiscordDATService:
@@ -548,6 +584,7 @@ class DiscordDATService:
                             return {'success': False, 'error': err_msg or 'Không tìm thấy học viên này!'}
 
                         # 3. Bóc tách dữ liệu học viên hợp lệ
+                        i_uid = m.get('interaction', {}).get('user', {}).get('id', '')
                         parsed_list = self.parse_discord_message(m)
                         matches = []
                         for st in parsed_list:
@@ -556,13 +593,16 @@ class DiscordDATService:
                             st_hoten = st.get('hoten', '').lower()
                             st_cccd = st.get('cccd', '').lower()
 
-                            if (q_lower in st_mahv or q_lower in st_hoten or q_lower in st_cccd):
-                                matched = True
-                            elif command == 'lythuyet' and (st.get('has_lythuyet') or st.get('lythuyet_pdf_url')):
-                                matched = True
-                            elif command == 'phien' and st.get('pdf_url'):
-                                matched = True
-                            elif command == 'dat' and (st.get('quangduong', 0) > 0 or st.get('thoigian', 0) > 0 or st.get('songay_str')):
+                            # Chỉ chấp nhận nếu khớp với từ khóa tra cứu hoặc do chính tài khoản này gửi lệnh
+                            is_query_match = (
+                                (q_lower and q_lower in st_mahv) or 
+                                (q_lower and q_lower in st_hoten) or 
+                                (q_lower and q_lower in st_cccd) or
+                                (st_hoten and q_lower and strip_vietnamese_accents(q_lower) in strip_vietnamese_accents(st_hoten))
+                            )
+                            is_my_interaction = (i_uid in ('1380376964304474173', '1380096710386384937'))
+
+                            if is_query_match or is_my_interaction:
                                 matched = True
 
                             if matched:
