@@ -95,6 +95,15 @@ def backup_upload():
     except Exception as e:
         return jsonify({'success': False, 'error': f'Lỗi khôi phục: {str(e)}'})
 
+@app.after_request
+def add_cache_headers(response):
+    """Ngăn chặn trình duyệt điện thoại (Safari/Chrome PWA) lưu cache HTML và service-worker cũ."""
+    if request.path in ('/', '/service-worker.js', '/manifest.json') or request.path.startswith('/api/'):
+        response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate, max-age=0'
+        response.headers['Pragma'] = 'no-cache'
+        response.headers['Expires'] = '0'
+    return response
+
 @app.route('/')
 def index():
     return render_template('index.html')
