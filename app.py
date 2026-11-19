@@ -10,6 +10,8 @@ import discord_service
 import database
 import export_excel
 import image_extractor
+import sync_service
+import phien_service
 
 app = Flask(__name__, template_folder='templates', static_folder='static')
 app.config['JSON_AS_ASCII'] = False
@@ -19,8 +21,10 @@ app.config['MAX_CONTENT_LENGTH'] = 128 * 1024 * 1024 # Cho phép upload tối đ
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DOWNLOADS_DIR = os.path.join(BASE_DIR, 'downloads')
 UPLOADS_DIR = os.path.join(BASE_DIR, 'uploads')
+CABIN_DIR = os.path.join(UPLOADS_DIR, 'cabin')
 os.makedirs(DOWNLOADS_DIR, exist_ok=True)
 os.makedirs(UPLOADS_DIR, exist_ok=True)
+os.makedirs(CABIN_DIR, exist_ok=True)
 
 # Khởi tạo Services
 ds = discord_service.DiscordDATService()
@@ -29,6 +33,28 @@ if init_token:
     ds.set_token(init_token)
 db = database.StudentDatabase()
 _has_initialized_totnghiep = False
+
+def is_my_queried_student(mahv_or_cccd_or_name):
+    """
+    CHỈ CHO PHÉP THỰC HIỆN ĐỒNG BỘ (/dongbo) VÀ CABIN CHO HỌC VIÊN TÔI ĐÃ TRA CỨU:
+    - Có trong danh sách hồ sơ gốc (Master Roster) của tôi.
+    - Hoặc có trong CSDL học viên do chính tôi (tranthang252) tra cứu (is_my_query == True).
+    Tuyệt đối không chạy lệnh cho học viên lạ trên kênh chung!
+    """
+    if not mahv_or_cccd_or_name:
+        return False
+    q_clean = str(mahv_or_cccd_or_name).strip()
+    st = db.find_student(q_clean)
+    if st:
+        if st.get('is_my_query') or st.get('interaction_username') == 'tranthang252' or str(st.get('interaction_user_id')) in ('1380376964304474173', '1380096710386384937'):
+            return True
+    resolved_st, _ = db.resolve_student_identifier(q_clean)
+    if resolved_st:
+        return True
+    return False
+
+# Khởi động Trình quản lý Đồng bộ Tự động (/dongbo) CHỈ DÀNH CHO HỌC VIÊN TÔI ĐÃ TRA CỨU
+auto_sync_mgr = sync_service.get_sync_manager(lambda: ds, my_student_checker=is_my_queried_student)
 
 # Tắt chức năng tự động đồng bộ liên tục để tránh quét lẫn học viên của giáo viên khác trên kênh Discord
 auto_sync_enabled = False
@@ -985,6 +1011,10 @@ def upload_cabin_api():
     if not mhv:
         return jsonify({'success': False, 'error': 'Học viên chưa có Mã Học Viên. Vui lòng tra cứu DAT trước!'})
 
+    # QUY TẮC BẢO MẬT: CHỈ THỰC HIỆN CHO HỌC VIÊN TÔI ĐÃ TRA CỨU
+    if not is_my_queried_student(mhv):
+        return jsonify({'success': False, 'error': f'Học viên {mhv} không thuộc danh sách học viên bạn đã tra cứu hoặc quản lý.'})
+
     file = request.files.get('image') or request.files.get('file')
     if not file or not file.filename:
         return jsonify({'success': False, 'error': 'Chưa chọn file ảnh!'})
@@ -1033,6 +1063,10 @@ def trigger_dongbo_api():
 
     if not mahv or not biensoxe:
         return jsonify({'success': False, 'error': 'Vui lòng cung cấp mã học viên và biển số xe!'})
+
+    # QUY TẮC BẢO MẬT: CHỈ THỰC HIỆN CHO HỌC VIÊN TÔI ĐÃ TRA CỨU
+    if not is_my_queried_student(mahv):
+        return jsonify({'success': False, 'error': f'Học viên {mahv} không thuộc danh sách học viên bạn đã tra cứu hoặc quản lý.'})
 
     # 1. Kiểm tra xe online
     is_online, details = auto_sync_mgr.check_car_online(biensoxe, ds=ds)
