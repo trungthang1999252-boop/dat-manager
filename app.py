@@ -337,7 +337,7 @@ def query_student():
 
     # 1. KHI BẤM /DAT HOẶC COMBO: Tra cứu DAT ➔ Tự động lấy Mã HV ➔ Tra cứu Lý thuyết (/lythuyet) ➔ Tự động tải PDF & Chấm điểm
     if cmd_type in ('dat', 'combo'):
-        res_dat = ds.query_student(target_query, command='dat', timeout_sec=15)
+        res_dat = ds.query_student(target_query, command='dat', timeout_sec=16, force=force)
         if not res_dat.get('success'):
             return jsonify({'success': False, 'error': res_dat.get('error', 'Lỗi tra cứu DAT.')})
 
@@ -355,7 +355,7 @@ def query_student():
         if lt_target:
             try:
                 time.sleep(0.4)  # Giãn cách nhẹ tránh rate limit
-                res_lt = ds.query_student(lt_target, command='lythuyet', timeout_sec=16)
+                res_lt = ds.query_student(lt_target, command='lythuyet', timeout_sec=16, force=force)
                 if res_lt.get('success'):
                     raw_lt = res_lt.get('data')
                     st_lt = raw_lt[0] if isinstance(raw_lt, list) and raw_lt else (raw_lt or {})
@@ -372,13 +372,21 @@ def query_student():
 
         return jsonify({
             'success': True,
+            'student': final_st,
             'students': [final_st],
             'count': 1,
             'mahv': mahv,
             'hoten': (final_st or {}).get('hoten'),
+            'quangduong': (final_st or {}).get('quangduong', 0),
+            'thoigian': (final_st or {}).get('thoigian', 0),
+            'thoigian_dem': (final_st or {}).get('thoigian_dem', 0),
+            'thoigian_tudong': (final_st or {}).get('thoigian_tudong', 0),
+            'songay_str': (final_st or {}).get('songay_str', ''),
+            'songay_dat': (final_st or {}).get('songay_dat', False),
             'has_lythuyet': bool((final_st or {}).get('has_lythuyet') or (final_st or {}).get('lythuyet_pdf_url')),
             'lythuyet_dat': (final_st or {}).get('lythuyet_dat', False),
             'dieukien_totnghiep': (final_st or {}).get('dieukien_totnghiep', 'Chưa tra LT'),
+            'ketqua': (final_st or {}).get('ketqua', 'Chưa Đạt'),
             'resolved': resolved_info
         })
 
