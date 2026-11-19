@@ -167,7 +167,17 @@ class DiscordDATService:
             'Content-Type': 'application/json',
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36'
         }
+        from urllib3.util.retry import Retry
+        from requests.adapters import HTTPAdapter
+
+        adapter = HTTPAdapter(
+            pool_connections=25,
+            pool_maxsize=50,
+            max_retries=Retry(total=2, backoff_factor=0.2, status_forcelist=[500, 502, 503, 504], raise_on_status=False)
+        )
         self.session = requests.Session()
+        self.session.mount('https://', adapter)
+        self.session.mount('http://', adapter)
         self.session.headers.update(self.headers)
         self.latest_msg_id = None
 
@@ -480,37 +490,35 @@ class DiscordDATService:
         q_clean = str(query_text).strip()
         q_lower = q_clean.lower()
 
-        # BƯỚC 1: FAST SCAN - Kiểm tra nhanh nếu bot đã trả lời cho học viên này trong 15 tin nhắn gần nhất
-        try:
-            recent_msgs = self.fetch_recent_messages(limit=15)
-            for st in recent_msgs:
-                st_mahv = st.get('mahv', '').lower()
-                st_cccd = st.get('cccd', '').lower()
-                st_hoten = st.get('hoten', '').lower()
-
-                matched = False
-                if q_lower and (q_lower == st_mahv or q_lower == st_cccd or q_lower == st_hoten):
-                    matched = True
-                elif q_lower and (q_lower in st_mahv or q_lower in st_hoten or (len(q_lower) >= 6 and q_lower in st_cccd)):
-                    matched = True
-
-                if matched:
-                    if command == 'dat' and (st.get('quangduong', 0) > 0 or st.get('thoigian', 0) > 0 or st.get('msg_id')):
-                        return {'success': True, 'data': [st], 'source': 'recent_channel_cache'}
-                    elif command == 'phien' and st.get('pdf_url'):
-                        return {'success': True, 'data': [st], 'source': 'recent_channel_cache'}
-                    elif command == 'lythuyet' and st.get('lythuyet_pdf_url'):
-                        return {'success': True, 'data': [st], 'source': 'recent_channel_cache'}
-        except Exception as ex_scan:
-            pass
-
-        # Lấy mốc ID tin nhắn mới nhất trước khi gửi lệnh
+        # BƯỚC 1: FAST SCAN & Lấy mốc ID tin nhắn mới nhất trong 1 lượt gọi duy nhất (tiết kiệm 300ms)
         latest_id = self.latest_msg_id
         try:
-            r_l = self.session.get(f"https://discord.com/api/v9/channels/{CHANNEL_ID}/messages?limit=1", timeout=4)
-            if r_l.status_code == 200 and r_l.json():
-                latest_id = r_l.json()[0]['id']
-                self.latest_msg_id = latest_id
+            r_l = self.session.get(f"https://discord.com/api/v9/channels/{CHANNEL_ID}/messages?limit=12", timeout=3.5)
+            if r_l.status_code == 200:
+                raw_recent = r_l.json()
+                if raw_recent and isinstance(raw_recent, list) and len(raw_recent) > 0:
+                    latest_id = raw_recent[0].get('id')
+                    self.latest_msg_id = latest_id
+
+                    for m in raw_recent:
+                        for st in self.parse_discord_message(m):
+                            st_mahv = st.get('mahv', '').lower()
+                            st_cccd = st.get('cccd', '').lower()
+                            st_hoten = st.get('hoten', '').lower()
+
+                            matched = False
+                            if q_lower and (q_lower == st_mahv or q_lower == st_cccd or q_lower == st_hoten):
+                                matched = True
+                            elif q_lower and (q_lower in st_mahv or q_lower in st_hoten or (len(q_lower) >= 6 and q_lower in st_cccd)):
+                                matched = True
+
+                            if matched:
+                                if command == 'dat' and (st.get('quangduong', 0) > 0 or st.get('thoigian', 0) > 0 or st.get('msg_id')):
+                                    return {'success': True, 'data': [st], 'source': 'recent_channel_cache'}
+                                elif command == 'phien' and st.get('pdf_url'):
+                                    return {'success': True, 'data': [st], 'source': 'recent_channel_cache'}
+                                elif command == 'lythuyet' and st.get('lythuyet_pdf_url'):
+                                    return {'success': True, 'data': [st], 'source': 'recent_channel_cache'}
         except Exception:
             pass
 
@@ -546,14 +554,14 @@ class DiscordDATService:
         except Exception as e:
             return {'success': False, 'error': f'Không thể gửi lệnh: {str(e)}'}
 
-        # BƯỚC 3: Chờ và bóc tách phản hồi Bot
-        time.sleep(0.4)
-        poll_url = f"https://discord.com/api/v9/channels/{CHANNEL_ID}/messages?limit=8"
+        # BƯỚC 3: Chờ và bóc tách phản hồi Bot siêu tốc
+        time.sleep(0.28)
+        poll_url = f"https://discord.com/api/v9/channels/{CHANNEL_ID}/messages?limit=6"
         multi_courses_detected = None
 
         while time.time() - t_start < timeout_sec:
             try:
-                r_poll = self.session.get(poll_url, timeout=4)
+                r_poll = self.session.get(poll_url, timeout=3.5)
                 raw_msgs = r_poll.json() if r_poll.status_code == 200 else []
             except Exception:
                 raw_msgs = []
@@ -612,7 +620,7 @@ class DiscordDATService:
                             self.latest_msg_id = mid
                             return {'success': True, 'data': matches}
 
-            time.sleep(0.35)
+            time.sleep(0.28)
 
         if multi_courses_detected:
             c_str = ", ".join(multi_courses_detected)
