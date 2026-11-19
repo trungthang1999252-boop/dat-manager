@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: dat-manager-pro
+    runtime: python
+    plan: free
+    region: singapore
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn -w 2 -b 0.0.0.0: app:app --timeout 120
+    envVars:
+      - key: DISCORD_TOKEN
+        value: MTM4MDM3Njk2NDMwNDQ3NDE3Mw.GacXc6.zJJxpXvBDisQikDo5UuDAFiH8ukl2-F5KEBc60
