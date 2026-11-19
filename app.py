@@ -961,6 +961,97 @@ def save_discord_token_api():
         'message': 'Đã lưu và cập nhật Discord Token thành công!'
     })
 
+@app.route('/uploads/cabin/<path:filename>')
+def serve_cabin_image(filename):
+    """Phục vụ ảnh cabin đã tải lên."""
+    return send_from_directory(CABIN_DIR, filename)
+
+@app.route('/api/cabin/upload', methods=['POST'])
+def upload_cabin_api():
+    """
+    Tải ảnh Cabin cho học viên:
+    - Lưu file vào uploads/cabin/<mahv>.jpg
+    - Tự động gọi lệnh /cabin mhv:<mahv> image:<image> sang Discord Bot
+    - Cập nhật trạng thái cabin_uploaded vào CSDL
+    """
+    mhv = request.form.get('mhv', '').strip()
+    student_key = request.form.get('student_key', '').strip() or mhv
+
+    if not mhv:
+        st_find = db.find_student(student_key)
+        if st_find and st_find.get('mahv'):
+            mhv = st_find.get('mahv')
+
+    if not mhv:
+        return jsonify({'success': False, 'error': 'Học viên chưa có Mã Học Viên. Vui lòng tra cứu DAT trước!'})
+
+    file = request.files.get('image') or request.files.get('file')
+    if not file or not file.filename:
+        return jsonify({'success': False, 'error': 'Chưa chọn file ảnh!'})
+
+    clean_mhv = re.sub(r'[^A-Za-z0-9_-]', '_', mhv)
+    ext = os.path.splitext(file.filename)[1].lower() or '.jpg'
+    filename = f"{clean_mhv}{ext}"
+    dest_path = os.path.join(CABIN_DIR, filename)
+
+    try:
+        image_bytes = file.read()
+        with open(dest_path, 'wb') as f:
+            f.write(image_bytes)
+
+        # Gửi Slash Command /cabin sang Bot Discord
+        res_bot = ds.upload_cabin(mhv, image_bytes, filename=filename)
+
+        st = db.find_student(student_key) or db.find_student(mhv)
+        if st:
+            st['cabin_uploaded'] = res_bot.get('success', False)
+            st['cabin_status'] = res_bot.get('message', '')
+            st['cabin_image_url'] = f"/uploads/cabin/{filename}"
+            db.upsert_student(st, auto_save=True)
+
+        return jsonify({
+            'success': res_bot.get('success', True),
+            'message': res_bot.get('message', 'Đã lưu ảnh và gửi lệnh /cabin sang Bot'),
+            'cabin_image_url': f"/uploads/cabin/{filename}",
+            'cabin_uploaded': res_bot.get('success', False)
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': f'Lỗi upload ảnh cabin: {str(e)}'})
+
+@app.route('/api/dongbo/status', methods=['GET'])
+def get_dongbo_status_api():
+    """Lấy danh sách các học viên & xe trong hàng đợi đồng bộ ngầm."""
+    summary = auto_sync_mgr.get_status_summary()
+    return jsonify({'success': True, 'data': summary})
+
+@app.route('/api/dongbo/trigger', methods=['POST'])
+def trigger_dongbo_api():
+    """Kích hoạt đồng bộ ngay lập tức cho 1 học viên & xe cụ thể."""
+    data = request.get_json(silent=True) or {}
+    mahv = data.get('mhv', '').strip()
+    biensoxe = data.get('biensoxe', '').strip()
+
+    if not mahv or not biensoxe:
+        return jsonify({'success': False, 'error': 'Vui lòng cung cấp mã học viên và biển số xe!'})
+
+    # 1. Kiểm tra xe online
+    is_online, details = auto_sync_mgr.check_car_online(biensoxe, ds=ds)
+    if not is_online:
+        return jsonify({
+            'success': False,
+            'error': f'Xe {biensoxe} đang tắt máy hoặc mất kết nối ({details}). Chỉ có thể đồng bộ khi xe đang ONLINE!'
+        })
+
+    # 2. Thực thi đồng bộ qua /dongbo
+    res = auto_sync_mgr.execute_dongbo(mahv, biensoxe, ds=ds)
+    return jsonify(res)
+
+@app.route('/api/xeonline/<biensoxe>', methods=['GET'])
+def check_car_online_api(biensoxe):
+    """Kiểm tra xe có online hay không."""
+    res = ds.check_car_online(biensoxe)
+    return jsonify(res)
+
 def start_keep_warm_worker():
     """
     Giữ máy chủ Render luôn thức (100% Online, không bị ngủ đông sau 15 phút).
