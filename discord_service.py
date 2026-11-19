@@ -192,11 +192,17 @@ class DiscordDATService:
         self.session.mount('http://', adapter)
         self.session.headers.update(self.headers)
         self.latest_msg_id = None
+        self._cached_conn_status = None
+        self._cached_user_info = None
+        self._last_conn_check = 0
 
     def set_token(self, token):
         self.token = token
         self.headers['Authorization'] = token
         self.session.headers['Authorization'] = token
+        self._cached_conn_status = None
+        self._cached_user_info = None
+        self._last_conn_check = 0
         # Cập nhật cache
         base_dir = os.path.dirname(os.path.abspath(__file__))
         config_file = os.path.join(base_dir, 'data', 'config.json')
@@ -207,22 +213,44 @@ class DiscordDATService:
     def is_connected(self):
         if not self.token:
             return False
+        now = time.time()
+        # Cache kết quả kiểm tra kết nối trong 60 giây để tránh rate-limit Discord và phản hồi siêu tốc
+        if self._cached_conn_status is not None and (now - self._last_conn_check < 60):
+            return self._cached_conn_status
         try:
-            resp = self.session.get('https://discord.com/api/v9/users/@me', timeout=4)
-            return resp.status_code == 200
+            resp = self.session.get('https://discord.com/api/v9/users/@me', timeout=5)
+            is_ok = (resp.status_code == 200)
+            self._cached_conn_status = is_ok
+            self._last_conn_check = now
+            if is_ok:
+                try:
+                    self._cached_user_info = resp.json()
+                except Exception:
+                    pass
+            return is_ok
         except Exception:
+            # Nếu gặp timeout mạng đột xuất nhưng trước đó đã kết nối thành công thì vẫn giữ trạng thái
+            if self._cached_conn_status is True and (now - self._last_conn_check < 180):
+                return True
             return False
 
     def get_user_info(self):
         if not self.token:
             return None
+        now = time.time()
+        if self._cached_user_info and (now - self._last_conn_check < 60):
+            return self._cached_user_info
         try:
-            resp = self.session.get('https://discord.com/api/v9/users/@me', timeout=4)
+            resp = self.session.get('https://discord.com/api/v9/users/@me', timeout=5)
             if resp.status_code == 200:
-                return resp.json()
+                data = resp.json()
+                self._cached_user_info = data
+                self._cached_conn_status = True
+                self._last_conn_check = now
+                return data
         except Exception:
             pass
-        return None
+        return self._cached_user_info
 
     def parse_embed_data(self, embed, attachments=None):
         data = {
