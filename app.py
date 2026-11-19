@@ -160,7 +160,13 @@ def api_ping():
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    connected = ds.is_connected()
+    uinfo = ds.get_user_info() if connected else None
+    return render_template(
+        'index.html',
+        bot_connected=connected,
+        bot_username=uinfo.get('username') if uinfo else ''
+    )
 
 @app.route('/favicon.ico')
 @app.route('/app_icon.ico')
