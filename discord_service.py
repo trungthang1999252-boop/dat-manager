@@ -289,15 +289,31 @@ class DiscordDATService:
                 if h_m:
                     data['thoigian_tudong'] = float(h_m.group(1))
                 data['thoigian_tudong_dat'] = '✅' in val or 'Đủ' in val
+                min_td = re.search(r'Tối thiểu:\s*([\d\.]+)', val)
+                if min_td:
+                    data['thoigian_tudong_toithieu'] = float(min_td.group(1))
             elif 'Sức khỏe' in name:
                 data['suckhoe'] = val.strip()
-            elif 'Số ngày thực hành' in name:
-                data['songay_dat'] = '✅' in name or 'Đủ' in name
-                day_m = re.search(r'\*\*(\d+/\d+\s*ngày)\*\*', val)
+            elif 'Số ngày thực hành' in name or 'số ngày' in name.lower():
+                # Tình trạng hoàn thành: ✅ hoặc Đủ (loại trừ 'chưa' / 'không')
+                name_clean = name.lower()
+                is_ok = ('✅' in name) or ('đủ' in name_clean and 'chưa' not in name_clean and 'không' not in name_clean)
+                data['songay_dat'] = is_ok
+
+                # Trích xuất chuỗi số ngày, ví dụ: "3/5 ngày", "5/5 ngày", "1/2 ngày"
+                day_m = re.search(r'(\d+/\d+)\s*ngày', val, re.IGNORECASE)
+                if not day_m:
+                    day_m = re.search(r'\*\*(\d+/\d+)', val)
+                if not day_m:
+                    day_m = re.search(r'(\d+/\d+)', val)
+
                 if day_m:
-                    data['songay_str'] = day_m.group(1)
+                    data['songay_str'] = f"{day_m.group(1)} ngày"
                 else:
-                    data['songay_str'] = val.split('\n')[0].strip()
+                    first_line = val.split('\n')[0].strip()
+                    clean_first = re.sub(r'[\*`]', '', first_line).strip()
+                    data['songay_str'] = clean_first
+
                 lines = val.split('\n')
                 for line in lines:
                     line = line.strip()
@@ -310,6 +326,15 @@ class DiscordDATService:
                                 'gio': float(lm.group(3)),
                                 'phien': int(lm.group(4))
                             })
+
+                # Tự tính số ngày từ lịch trình phiên chạy nếu chuỗi chưa bóc tách chuẩn
+                if (not data['songay_str'] or 'ngày' not in data['songay_str']) and data['lich_trinh_ngay']:
+                    data['songay_str'] = f"{len(data['lich_trinh_ngay'])}/5 ngày"
+
+                m_calc = re.search(r'(\d+)\s*/\s*(\d+)', data.get('songay_str', ''))
+                if m_calc:
+                    if int(m_calc.group(1)) >= int(m_calc.group(2)):
+                        data['songay_dat'] = True
             elif 'Số phiên hợp lệ' in name:
                 try: data['so_phien_hople'] = int(val.strip())
                 except: pass
@@ -372,6 +397,12 @@ class DiscordDATService:
         if embeds:
             for e in embeds:
                 parsed = self.parse_embed_data(e, attachments)
+                e_title = e.get('title', '')
+                if 'Phiên học' in e_title or 'phien' in (parsed.get('pdf_filename') or '').lower():
+                    parsed['is_phien_embed'] = True
+                if 'Thông tin' in e_title or 'Kiểm tra' in e_title or 'DAT' in e_title or parsed.get('songay_str'):
+                    parsed['is_dat_embed'] = True
+
                 if phien_pdf:
                     parsed['pdf_filename'] = phien_pdf['filename']
                     parsed['pdf_url'] = phien_pdf['url']
@@ -469,12 +500,12 @@ class DiscordDATService:
         remaining = [item for item in query_items if item not in found]
         return found, remaining
 
-    def query_student(self, query_text, command='dat', timeout_sec=16):
+    def query_student(self, query_text, command='dat', timeout_sec=16, force=False):
         """
         Gửi lệnh tra cứu (/dat, /phien, /lythuyet) với tốc độ tối ưu cao:
-        1. Quét nhanh kênh Discord (Fast Cache): Nếu bot vừa mới trả lời học viên này gần đây,
+        1. Quét nhanh kênh Discord (Fast Cache): Nếu bot vừa mới trả lời học viên này gần đây và không yêu cầu force,
            lấy ngay kết quả trong 0.1s không cần gọi lại bot!
-        2. Tự động gửi Slash Command Interaction nếu chưa có trong kênh.
+        2. Tự động gửi Slash Command Interaction nếu chưa có trong kênh hoặc khi force=True.
         3. Nhận diện thông minh phản hồi: Hỗ trợ cả trường hợp trùng tên nhiều khóa và tự động
            bắt tiếp thông tin khi chọn khóa trên Discord.
         """
@@ -490,37 +521,49 @@ class DiscordDATService:
         q_clean = str(query_text).strip()
         q_lower = q_clean.lower()
 
-        # BƯỚC 1: FAST SCAN & Lấy mốc ID tin nhắn mới nhất trong 1 lượt gọi duy nhất (tiết kiệm 300ms)
+        # BƯỚC 1: FAST SCAN (chỉ dùng khi force=False)
         latest_id = self.latest_msg_id
-        try:
-            r_l = self.session.get(f"https://discord.com/api/v9/channels/{CHANNEL_ID}/messages?limit=12", timeout=3.5)
-            if r_l.status_code == 200:
-                raw_recent = r_l.json()
-                if raw_recent and isinstance(raw_recent, list) and len(raw_recent) > 0:
-                    latest_id = raw_recent[0].get('id')
+        if not force:
+            try:
+                r_l = self.session.get(f"https://discord.com/api/v9/channels/{CHANNEL_ID}/messages?limit=12", timeout=3.5)
+                if r_l.status_code == 200:
+                    raw_recent = r_l.json()
+                    if raw_recent and isinstance(raw_recent, list) and len(raw_recent) > 0:
+                        latest_id = raw_recent[0].get('id')
+                        self.latest_msg_id = latest_id
+
+                        for m in raw_recent:
+                            for st in self.parse_discord_message(m):
+                                st_mahv = st.get('mahv', '').lower()
+                                st_cccd = st.get('cccd', '').lower()
+                                st_hoten = st.get('hoten', '').lower()
+
+                                matched = False
+                                if q_lower and (q_lower == st_mahv or q_lower == st_cccd or q_lower == st_hoten):
+                                    matched = True
+                                elif q_lower and (q_lower in st_mahv or q_lower in st_hoten or (len(q_lower) >= 6 and q_lower in st_cccd)):
+                                    matched = True
+
+                                if matched:
+                                    # CHỈ chấp nhận cache DAT nếu đúng là embed DAT (có songay_str hoặc lich_trinh_ngay hoặc is_dat_embed)
+                                    # TUYỆT ĐỐI không lấy nhầm tin nhắn /phien vì /phien không có số ngày!
+                                    if command == 'dat' and not st.get('is_phien_embed') and (st.get('songay_str') or st.get('lich_trinh_ngay') or st.get('is_dat_embed')):
+                                        return {'success': True, 'data': [st], 'source': 'recent_channel_cache'}
+                                    elif command == 'phien' and st.get('pdf_url'):
+                                        return {'success': True, 'data': [st], 'source': 'recent_channel_cache'}
+                                    elif command == 'lythuyet' and st.get('lythuyet_pdf_url'):
+                                        return {'success': True, 'data': [st], 'source': 'recent_channel_cache'}
+            except Exception:
+                pass
+        else:
+            # Khi force=True, lấy mốc tin nhắn mới nhất trước khi gửi lệnh để chờ tin mới
+            try:
+                r_l = self.session.get(f"https://discord.com/api/v9/channels/{CHANNEL_ID}/messages?limit=1", timeout=3.5)
+                if r_l.status_code == 200 and r_l.json():
+                    latest_id = r_l.json()[0]['id']
                     self.latest_msg_id = latest_id
-
-                    for m in raw_recent:
-                        for st in self.parse_discord_message(m):
-                            st_mahv = st.get('mahv', '').lower()
-                            st_cccd = st.get('cccd', '').lower()
-                            st_hoten = st.get('hoten', '').lower()
-
-                            matched = False
-                            if q_lower and (q_lower == st_mahv or q_lower == st_cccd or q_lower == st_hoten):
-                                matched = True
-                            elif q_lower and (q_lower in st_mahv or q_lower in st_hoten or (len(q_lower) >= 6 and q_lower in st_cccd)):
-                                matched = True
-
-                            if matched:
-                                if command == 'dat' and (st.get('quangduong', 0) > 0 or st.get('thoigian', 0) > 0 or st.get('msg_id')):
-                                    return {'success': True, 'data': [st], 'source': 'recent_channel_cache'}
-                                elif command == 'phien' and st.get('pdf_url'):
-                                    return {'success': True, 'data': [st], 'source': 'recent_channel_cache'}
-                                elif command == 'lythuyet' and st.get('lythuyet_pdf_url'):
-                                    return {'success': True, 'data': [st], 'source': 'recent_channel_cache'}
-        except Exception:
-            pass
+            except Exception:
+                pass
 
         # BƯỚC 2: Gửi Slash Command Interaction tới Discord Bot
         interaction_url = 'https://discord.com/api/v9/interactions'
@@ -617,8 +660,14 @@ class DiscordDATService:
                                 matches.append(st)
 
                         if matches:
-                            self.latest_msg_id = mid
-                            return {'success': True, 'data': matches}
+                            if command == 'dat':
+                                dat_matches = [s for s in matches if not s.get('is_phien_embed') and (s.get('songay_str') or s.get('lich_trinh_ngay') or s.get('is_dat_embed') or s.get('quangduong', 0) > 0)]
+                                if dat_matches:
+                                    self.latest_msg_id = mid
+                                    return {'success': True, 'data': dat_matches}
+                            else:
+                                self.latest_msg_id = mid
+                                return {'success': True, 'data': matches}
 
             time.sleep(0.28)
 
