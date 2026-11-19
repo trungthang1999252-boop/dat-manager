@@ -617,8 +617,9 @@
                             <th class="py-3 px-3 text-center min-w-[95px] bg-slate-100/95">Giờ Đêm</th>
                             <th class="py-3 px-3 text-center min-w-[95px] bg-slate-100/95">Giờ TĐ</th>
                             <th class="py-3 px-3 text-center min-w-[90px] bg-slate-100/95">Ngày Đường</th>
+                            <th class="py-3 px-3 text-center min-w-[110px] bg-slate-100/95 text-indigo-700">Ảnh Cabin</th>
                             <th class="py-3 px-3 text-center min-w-[105px] bg-slate-100/95">Lý Thuyết</th>
-                            <th class="py-3 px-3 text-center min-w-[105px] bg-slate-100/95">Báo Cáo Phiên</th>
+                            <th class="py-3 px-3 text-center min-w-[125px] bg-slate-100/95">Phiên Học (/dongbo)</th>
                             <th class="py-3 px-3 text-center min-w-[100px] bg-slate-100/95">Kết Quả DAT</th>
                             <th class="py-3 px-3 text-center min-w-[120px] bg-slate-100/95 text-purple-700">ĐK Tốt Nghiệp</th>
                             <th class="py-3 px-3 min-w-[110px] bg-slate-100/95">Ghi Chú</th>
@@ -2213,7 +2214,34 @@
                 ? `<span class="px-2 py-1 rounded-md text-[11px] font-extrabold bg-emerald-100 text-emerald-800 border border-emerald-300 inline-flex items-center shadow-2xs whitespace-nowrap"><i class="fa-solid fa-check text-emerald-600 mr-1"></i>${days}</span>`
                 : `<div class="inline-flex flex-col items-center"><span class="px-2 py-0.5 rounded-md text-[11px] font-extrabold bg-rose-100 text-rose-800 border border-rose-300 inline-flex items-center shadow-2xs whitespace-nowrap"><i class="fa-solid fa-xmark text-rose-600 mr-1"></i>${days}</span><span class="text-[9px] text-rose-600 font-bold mt-0.5">Chưa đủ</span></div>`;
 
-            // 6. Báo cáo lý thuyết (Đạt: Xanh | Chưa đạt: Đỏ | Chưa có: Nút tra)
+            // 6. Cột Ảnh Cabin (/cabin)
+            const stId = (s.mahv || s.cccd || s.hoten || '').trim();
+            const stIdSafe = stId.replace(/[^a-zA-Z0-9_-]/g, '_');
+            let cabinCell = `
+                <input type="file" id="cabin-input-${stIdSafe}" accept="image/*" class="hidden" onchange="uploadCabinImage('${stId}', this, '${stIdSafe}')">
+            `;
+            if (s.cabin_image_url || s.cabin_uploaded) {
+                const imgUrl = s.cabin_image_url || ('/uploads/cabin/' + encodeURIComponent(s.mahv || s.cccd) + '.jpg');
+                cabinCell += `
+                    <div class="inline-flex flex-col items-center">
+                        <div class="inline-flex items-center space-x-1">
+                            <img src="${imgUrl}" onclick="viewFullImage('${imgUrl}', '${s.hoten || ''}')" class="w-7 h-7 rounded-md object-cover border border-emerald-400 cursor-pointer hover:scale-110 transition shadow-2xs" title="Bấm xem ảnh lớn">
+                            <button type="button" onclick="document.getElementById('cabin-input-${stIdSafe}').click()" class="text-slate-400 hover:text-indigo-600 p-0.5 rounded transition" title="Chọn ảnh khác để gửi lại /cabin">
+                                <i class="fa-solid fa-arrows-rotate text-[10px]"></i>
+                            </button>
+                        </div>
+                        <span class="text-[9px] font-bold text-emerald-700 bg-emerald-50 px-1 py-0.2 rounded border border-emerald-200 mt-0.5" title="${s.cabin_status || 'Đã nạp khuôn mặt điểm danh vào Bot'}">✅ Đã nạp</span>
+                    </div>
+                `;
+            } else {
+                cabinCell += `
+                    <button type="button" id="cabin-btn-${stIdSafe}" onclick="document.getElementById('cabin-input-${stIdSafe}').click()" class="px-2 py-1 rounded-md text-[11px] font-extrabold bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 transition inline-flex items-center shadow-2xs whitespace-nowrap cursor-pointer" title="Tải ảnh khuôn mặt để bot tự động chạy /cabin cho học viên này">
+                        <i class="fa-solid fa-camera text-indigo-600 mr-1.5"></i>Tải ảnh
+                    </button>
+                `;
+            }
+
+            // 7. Báo cáo lý thuyết (Đạt: Xanh | Chưa đạt: Đỏ | Chưa có: Nút tra)
             let ltCell = '';
             if (s.totnghiep_has_pdf) {
                 if (s.lythuyet_dat) {
@@ -2228,10 +2256,45 @@
                 ltCell = `<button onclick="reQueryStudent('${s.mahv || s.cccd || s.hoten}', 'lythuyet')" class="px-2 py-1 rounded-md text-[11px] font-extrabold bg-rose-100 text-rose-800 border border-rose-300 hover:bg-rose-200 transition inline-flex items-center shadow-2xs whitespace-nowrap" title="Bấm để tự động kiểm tra lý thuyết (/lythuyet)"><i class="fa-solid fa-arrows-rotate text-rose-600 mr-1"></i>Chưa Có (Tra)</button>`;
             }
 
-            // 7. Báo cáo phiên học (Đủ: XANH LÁ | Thiếu: ĐỎ)
-            const pdfCell = s.pdf_url
-                ? `<button onclick="previewPdf('${s.mahv || s.cccd}', '${s.hoten || ''}')" class="px-2 py-1 rounded-md text-[11px] font-extrabold bg-emerald-100 text-emerald-800 border border-emerald-300 hover:bg-emerald-200 transition inline-flex items-center shadow-2xs whitespace-nowrap" title="Xem PDF Phiên Học"><i class="fa-solid fa-file-pdf text-red-600 mr-1"></i>Đã Có PDF</button>`
-                : `<button onclick="reQueryStudent('${s.mahv || s.cccd}', 'phien')" class="px-2 py-1 rounded-md text-[11px] font-extrabold bg-rose-100 text-rose-800 border border-rose-300 hover:bg-rose-200 transition inline-flex items-center shadow-2xs whitespace-nowrap" title="Bấm để lấy PDF phiên (/phien)"><i class="fa-solid fa-xmark text-rose-600 mr-1"></i>Chưa Có (Tra)</button>`;
+            // 8. Báo cáo phiên học & Tự động đồng bộ phiên (/dongbo)
+            const safePhienId = 'phien-btn-' + stIdSafe;
+            let pdfCell = '';
+
+            if (s.has_permanent_error || (s.phien_status && s.phien_status.includes('Lỗi vĩnh viễn'))) {
+                const reasons = (s.phien_permanent_reasons || []).join('; ') || 'Vi phạm thời gian (<5p, >10h, cách nhau <15p) hoặc Y/c chạy bù';
+                pdfCell = `
+                    <div class="inline-flex flex-col items-center">
+                        <button type="button" id="${safePhienId}" onclick="quickRefreshPhien('${stId}', '${safePhienId}', event)" class="px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-rose-100 text-rose-800 border border-rose-300 hover:bg-rose-200 transition inline-flex items-center shadow-2xs whitespace-nowrap cursor-pointer" title="❌ LỖI VĨNH VIỄN: ${reasons}. Bắt buộc chạy bù, Tổng cục không tiếp nhận. Bấm để tra lại!">
+                            <i class="fa-solid fa-triangle-exclamation text-rose-600 mr-1"></i>Lỗi vĩnh viễn
+                        </button>
+                        <span class="text-[9px] text-rose-600 font-bold mt-0.5">Y/c chạy bù</span>
+                    </div>
+                `;
+            } else if (s.phien_recoverable_cars && s.phien_recoverable_cars.length > 0) {
+                const firstCar = s.phien_recoverable_cars[0];
+                pdfCell = `
+                    <div class="inline-flex flex-col items-center">
+                        <button type="button" id="${safePhienId}" onclick="triggerDongBo('${stId}', '${firstCar}', '${safePhienId}', event)" class="px-2 py-0.5 rounded-md text-[11px] font-extrabold bg-amber-100 text-amber-800 border border-amber-300 hover:bg-amber-200 transition inline-flex items-center shadow-2xs whitespace-nowrap cursor-pointer" title="⚡ Bấm để gửi lệnh /dongbo trên xe ${firstCar} ngay (Chỉ chạy khi xe online)">
+                            <i class="fa-solid fa-bolt text-amber-600 mr-1"></i>Đồng bộ: ${firstCar}
+                        </button>
+                        <button type="button" onclick="previewPdf('${s.mahv || s.cccd}', '${s.hoten || ''}')" class="text-[9px] text-blue-600 hover:underline font-bold mt-0.5">
+                            Xem PDF (${s.so_phien_loi || 0} lỗi)
+                        </button>
+                    </div>
+                `;
+            } else if (s.pdf_url) {
+                pdfCell = `
+                    <button type="button" id="${safePhienId}" onclick="previewPdf('${s.mahv || s.cccd}', '${s.hoten || ''}')" class="px-2 py-1 rounded-md text-[11px] font-extrabold bg-emerald-100 text-emerald-800 border border-emerald-300 hover:bg-emerald-200 transition inline-flex items-center shadow-2xs whitespace-nowrap" title="Xem PDF Phiên Học (${s.so_phien_hople || ''} phiên hợp lệ)">
+                        <i class="fa-solid fa-file-pdf text-red-600 mr-1"></i>Đã Có PDF
+                    </button>
+                `;
+            } else {
+                pdfCell = `
+                    <button type="button" id="${safePhienId}" onclick="quickRefreshPhien('${stId}', '${safePhienId}', event)" class="px-2 py-1 rounded-md text-[11px] font-extrabold bg-rose-100 text-rose-800 border border-rose-300 hover:bg-rose-200 transition inline-flex items-center shadow-2xs whitespace-nowrap cursor-pointer" title="Bấm 1-chạm để tra cứu phiên học (/phien)">
+                        <i class="fa-solid fa-arrows-rotate text-rose-600 mr-1"></i>Chưa Có (Tra)
+                    </button>
+                `;
+            }
 
             // 8. Kết quả DAT (Đủ: XANH LÁ | Thiếu: ĐỎ)
             const passBadge = (s.ketqua === 'Đạt')
@@ -2282,6 +2345,7 @@
                 <td class="py-3 px-3 text-center">${demCell}</td>
                 <td class="py-3 px-3 text-center">${tdCell}</td>
                 <td class="py-3 px-3 text-center">${daysCell}</td>
+                <td class="py-3 px-3 text-center">${cabinCell}</td>
                 <td class="py-3 px-3 text-center">${ltCell}</td>
                 <td class="py-3 px-3 text-center">${pdfCell}</td>
                 <td class="py-3 px-3 text-center">${passBadge}</td>
@@ -2500,6 +2564,172 @@
                 showToast('Lỗi kết nối khi cập nhật /dat ngầm.', false);
                 if (btn) { btn.innerHTML = origHtml; btn.disabled = false; }
             }
+        }
+
+        async function quickRefreshPhien(identifier, btnId, event) {
+            if (event) {
+                event.stopPropagation();
+                event.preventDefault();
+            }
+            if (!identifier) return;
+
+            const btn = document.getElementById(btnId);
+            const origHtml = btn ? btn.innerHTML : '';
+            if (btn) {
+                btn.innerHTML = `<span class="px-2 py-1 rounded-md text-[11px] font-extrabold bg-blue-100 text-blue-800 border border-blue-300 inline-flex items-center shadow-2xs whitespace-nowrap"><i class="fa-solid fa-arrows-rotate fa-spin text-blue-600 mr-1.5"></i>Đang tra /phien...</span>`;
+                btn.disabled = true;
+            }
+
+            try {
+                const res = await fetch('/api/query', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query: identifier, type: 'phien', force: true })
+                });
+
+                if (!res.ok) {
+                    showToast(`Máy chủ đang bận (${res.status}). Vui lòng thử lại sau 3 giây!`, false);
+                    if (btn) { btn.innerHTML = origHtml; btn.disabled = false; }
+                    return;
+                }
+
+                const data = await res.json();
+                if (data.success && (data.student || (data.students && data.students.length > 0))) {
+                    const updated = data.student || data.students[0];
+                    if (updated.has_permanent_error) {
+                        showToast(`⚠️ Học viên ${updated.hoten || identifier} có phiên lỗi vĩnh viễn (yêu cầu chạy bù)!`, false);
+                    } else if (updated.phien_recoverable_cars && updated.phien_recoverable_cars.length > 0) {
+                        showToast(`⚡ Đã phát hiện xe lỗi: ${updated.phien_recoverable_cars.join(', ')}. Hệ thống đã đưa vào hàng đợi tự động /dongbo!`);
+                    } else {
+                        showToast(`✅ Đã cập nhật phiên học cho ${updated.hoten || identifier}: Hoàn toàn hợp lệ!`);
+                    }
+
+                    const idx = currentStudents.findIndex(s => 
+                        (s.mahv && updated.mahv && s.mahv === updated.mahv) ||
+                        (s.cccd && updated.cccd && s.cccd === updated.cccd) ||
+                        (s.hoten && updated.hoten && s.hoten.toLowerCase() === updated.hoten.toLowerCase())
+                    );
+                    if (idx >= 0) {
+                        currentStudents[idx] = updated;
+                    } else {
+                        currentStudents.unshift(updated);
+                    }
+                    renderTable();
+                    loadStats();
+                } else {
+                    showToast(data.error || 'Không thể tra cứu phiên học từ Discord.', false);
+                    if (btn) { btn.innerHTML = origHtml; btn.disabled = false; }
+                }
+            } catch (err) {
+                console.error("Lỗi quickRefreshPhien:", err);
+                showToast('Lỗi kết nối khi tra cứu phiên học.', false);
+                if (btn) { btn.innerHTML = origHtml; btn.disabled = false; }
+            }
+        }
+
+        async function uploadCabinImage(studentKey, inputEl, safeId) {
+            if (!inputEl.files || !inputEl.files[0]) return;
+            const file = inputEl.files[0];
+
+            const btn = document.getElementById('cabin-btn-' + safeId);
+            const origHtml = btn ? btn.innerHTML : '';
+            if (btn) {
+                btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i>Đang nạp Discord...`;
+                btn.disabled = true;
+            }
+
+            const formData = new FormData();
+            formData.append('image', file);
+            formData.append('student_key', studentKey);
+
+            try {
+                showToast(`Đang tải ảnh và gọi lệnh /cabin bên Discord cho học viên...`);
+                const res = await fetch('/api/cabin/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showToast(`✅ ${data.message || 'Đã lưu điểm danh khuôn mặt cabin thành công!'}`);
+                    const s = currentStudents.find(st => (st.mahv === studentKey || st.cccd === studentKey || st.hoten === studentKey));
+                    if (s) {
+                        s.cabin_uploaded = true;
+                        s.cabin_image_url = data.cabin_image_url;
+                        s.cabin_status = data.message;
+                    }
+                    renderTable();
+                } else {
+                    showToast(data.error || 'Lỗi khi gửi ảnh cabin sang Discord.', false);
+                    if (btn) { btn.innerHTML = origHtml; btn.disabled = false; }
+                }
+            } catch (err) {
+                console.error("Lỗi uploadCabinImage:", err);
+                showToast('Lỗi kết nối khi tải ảnh cabin.', false);
+                if (btn) { btn.innerHTML = origHtml; btn.disabled = false; }
+            }
+        }
+
+        async function triggerDongBo(studentKey, biensoxe, btnId, event) {
+            if (event) {
+                event.stopPropagation();
+                event.preventDefault();
+            }
+            const btn = document.getElementById(btnId);
+            const origHtml = btn ? btn.innerHTML : '';
+            if (btn) {
+                btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i>Đang kiểm tra xe...`;
+                btn.disabled = true;
+            }
+
+            try {
+                const res = await fetch('/api/dongbo/trigger', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ mhv: studentKey, biensoxe: biensoxe })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showToast(`✅ ${data.message || 'Đã gửi lệnh /dongbo! Đang bảo máy DAT đẩy phiên...'}`);
+                    if (btn) {
+                        btn.innerHTML = `<i class="fa-solid fa-check text-emerald-600 mr-1"></i>Đã gửi lệnh`;
+                        setTimeout(() => { btn.innerHTML = origHtml; btn.disabled = false; }, 5000);
+                    }
+                } else {
+                    showToast(`⚠️ ${data.error || 'Chưa thể đồng bộ lúc này.'}`, false);
+                    if (btn) { btn.innerHTML = origHtml; btn.disabled = false; }
+                }
+            } catch (err) {
+                console.error("Lỗi triggerDongBo:", err);
+                showToast('Lỗi kết nối khi đồng bộ phiên.', false);
+                if (btn) { btn.innerHTML = origHtml; btn.disabled = false; }
+            }
+        }
+
+        function viewFullImage(url, title) {
+            let modal = document.getElementById('image-viewer-modal');
+            if (!modal) {
+                modal = document.createElement('div');
+                modal.id = 'image-viewer-modal';
+                modal.className = 'fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 backdrop-blur-xs cursor-pointer';
+                modal.onclick = () => modal.classList.add('hidden');
+                modal.innerHTML = `
+                    <div class="relative max-w-lg w-full bg-white rounded-2xl overflow-hidden shadow-2xl p-4 cursor-default" onclick="event.stopPropagation()">
+                        <div class="flex items-center justify-between pb-3 border-b border-slate-200">
+                            <h3 id="image-viewer-title" class="font-black text-slate-800 text-sm"></h3>
+                            <button onclick="document.getElementById('image-viewer-modal').classList.add('hidden')" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 hover:text-slate-800 transition">
+                                <i class="fa-solid fa-xmark text-sm"></i>
+                            </button>
+                        </div>
+                        <div class="mt-3 flex justify-center">
+                            <img id="image-viewer-img" src="" class="max-h-[70vh] rounded-xl object-contain shadow-md">
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+            }
+            document.getElementById('image-viewer-title').innerText = 'Ảnh Khuôn Mặt Cabin: ' + (title || '');
+            document.getElementById('image-viewer-img').src = url;
+            modal.classList.remove('hidden');
         }
 
         async function syncFromDiscord(showFeedback = true) {
