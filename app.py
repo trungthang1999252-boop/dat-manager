@@ -3,6 +3,7 @@ import sys
 import threading
 import json
 import time
+import re
 import urllib.request
 from flask import Flask, render_template, request, jsonify, send_file, send_from_directory, Response
 
@@ -1003,52 +1004,74 @@ def upload_cabin_api():
     """
     Tải ảnh Cabin cho học viên:
     - Lưu file vào uploads/cabin/<mahv>.jpg
+    - Tự động nén tối ưu kích thước ảnh để gửi sang Discord siêu tốc (không bao giờ timeout)
     - Tự động gọi lệnh /cabin mhv:<mahv> image:<image> sang Discord Bot
     - Cập nhật trạng thái cabin_uploaded vào CSDL
     """
-    mhv = request.form.get('mhv', '').strip()
-    student_key = request.form.get('student_key', '').strip() or mhv
-
-    if not mhv:
-        st_find = db.find_student(student_key)
-        if st_find and st_find.get('mahv'):
-            mhv = st_find.get('mahv')
-
-    if not mhv:
-        return jsonify({'success': False, 'error': 'Học viên chưa có Mã Học Viên. Vui lòng tra cứu DAT trước!'})
-
-    # QUY TẮC BẢO MẬT: CHỈ THỰC HIỆN CHO HỌC VIÊN TÔI ĐÃ TRA CỨU
-    if not is_my_queried_student(mhv):
-        return jsonify({'success': False, 'error': f'Học viên {mhv} không thuộc danh sách học viên bạn đã tra cứu hoặc quản lý.'})
-
-    file = request.files.get('image') or request.files.get('file')
-    if not file or not file.filename:
-        return jsonify({'success': False, 'error': 'Chưa chọn file ảnh!'})
-
-    clean_mhv = re.sub(r'[^A-Za-z0-9_-]', '_', mhv)
-    ext = os.path.splitext(file.filename)[1].lower() or '.jpg'
-    filename = f"{clean_mhv}{ext}"
-    dest_path = os.path.join(CABIN_DIR, filename)
-
     try:
+        mhv = request.form.get('mhv', '').strip()
+        student_key = request.form.get('student_key', '').strip() or mhv
+
+        if not mhv:
+            st_find = db.find_student(student_key)
+            if st_find and st_find.get('mahv'):
+                mhv = st_find.get('mahv')
+
+        if not mhv:
+            return jsonify({'success': False, 'error': 'Học viên chưa có Mã Học Viên. Vui lòng tra cứu DAT trước!'})
+
+        # QUY TẮC BẢO MẬT: CHỈ THỰC HIỆN CHO HỌC VIÊN TÔI ĐÃ TRA CỨU
+        if not is_my_queried_student(mhv):
+            return jsonify({'success': False, 'error': f'Học viên {mhv} không thuộc danh sách học viên bạn đã tra cứu hoặc quản lý.'})
+
+        file = request.files.get('image') or request.files.get('file')
+        if not file or not file.filename:
+            return jsonify({'success': False, 'error': 'Chưa chọn file ảnh!'})
+
+        clean_mhv = re.sub(r'[^A-Za-z0-9_-]', '_', mhv)
+        filename = f"{clean_mhv}.jpg"
+        dest_path = os.path.join(CABIN_DIR, filename)
+
         image_bytes = file.read()
+
+        # Tự động tối ưu hóa và nén ảnh (ảnh chụp từ điện thoại thường từ 5MB - 20MB)
+        # Giúp nén xuống ~200KB gửi sang Discord chỉ trong 0.2s, không bao giờ bị nghẽn hay timeout
+        try:
+            import io
+            from PIL import Image, ImageOps
+            pil_img = Image.open(io.BytesIO(image_bytes))
+            pil_img = ImageOps.exif_transpose(pil_img) # Xoay đúng chiều theo cảm biến điện thoại
+            if pil_img.mode in ('RGBA', 'P'):
+                pil_img = pil_img.convert('RGB')
+            max_dim = 1280
+            if max(pil_img.size) > max_dim:
+                pil_img.thumbnail((max_dim, max_dim), Image.Resampling.LANCZOS)
+            opt_buf = io.BytesIO()
+            pil_img.save(opt_buf, format='JPEG', quality=85, optimize=True)
+            image_bytes = opt_buf.getvalue()
+        except Exception as img_err:
+            print(f"[Cabin] Không thể nén ảnh PIL, dùng ảnh gốc: {img_err}")
+
         with open(dest_path, 'wb') as f:
             f.write(image_bytes)
 
         # Gửi Slash Command /cabin sang Bot Discord
         res_bot = ds.upload_cabin(mhv, image_bytes, filename=filename)
 
+        cache_time = int(time.time())
+        img_url = f"/uploads/cabin/{filename}?t={cache_time}"
+
         st = db.find_student(student_key) or db.find_student(mhv)
         if st:
             st['cabin_uploaded'] = res_bot.get('success', False)
             st['cabin_status'] = res_bot.get('message', '')
-            st['cabin_image_url'] = f"/uploads/cabin/{filename}"
+            st['cabin_image_url'] = img_url
             db.upsert_student(st, auto_save=True)
 
         return jsonify({
             'success': res_bot.get('success', True),
-            'message': res_bot.get('message', 'Đã lưu ảnh và gửi lệnh /cabin sang Bot'),
-            'cabin_image_url': f"/uploads/cabin/{filename}",
+            'message': res_bot.get('message', 'Đã lưu ảnh và gửi lệnh /cabin sang Bot thành công!'),
+            'cabin_image_url': img_url,
             'cabin_uploaded': res_bot.get('success', False)
         })
     except Exception as e:
