@@ -169,7 +169,7 @@
     "mahv": "52001-20261012-000016",
     "khoa": "CD_112B.01",
     "hang": "B.01",
-    "ngaysinh": ""
+    "ngaysinh": "02/07/2004"
   },
   "TRẦN THỊ THANH NHÀN": {
     "hoten": "TRẦN THỊ THANH NHÀN",
@@ -178,5 +178,13 @@
     "khoa": "CD_238B",
     "hang": "B",
     "ngaysinh": "30/10/2006"
+  },
+  "HUỲNH TẤN MẠNH": {
+    "hoten": "HUỲNH TẤN MẠNH",
+    "cccd": "051206009958",
+    "mahv": "52001-20261007-000022",
+    "khoa": "CD_14C1",
+    "hang": "C1",
+    "ngaysinh": "02/05/2006"
   }
 }
