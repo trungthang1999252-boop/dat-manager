@@ -24,6 +24,9 @@ os.makedirs(UPLOADS_DIR, exist_ok=True)
 
 # Khởi tạo Services
 ds = discord_service.DiscordDATService()
+init_token = discord_service.auto_detect_discord_token()
+if init_token:
+    ds.set_token(init_token)
 db = database.StudentDatabase()
 
 # Luồng tự động đồng bộ ngầm định kỳ với Discord
@@ -72,6 +75,62 @@ def start_auto_sync_worker():
     t.start()
 
 start_auto_sync_worker()
+
+def start_self_ping_worker():
+    """Tự động đánh thức máy chủ ngầm để không bao giờ bị rơi vào chế độ ngủ đông (Keep-Alive)."""
+    def _pinger():
+        time.sleep(20)
+        app_url = os.environ.get('RENDER_EXTERNAL_URL', 'https://dat-manager-pro.onrender.com')
+        ping_url = f"{app_url}/api/ping"
+        while True:
+            try:
+                req = urllib.request.Request(ping_url, headers={'User-Agent': 'KeepAlive/1.0'})
+                with urllib.request.urlopen(req, timeout=10) as resp:
+                    pass
+            except Exception:
+                pass
+            time.sleep(12 * 60)  # Đánh thức định kỳ mỗi 12 phút
+
+    t = threading.Thread(target=_pinger, daemon=True)
+    t.start()
+
+start_self_ping_worker()
+
+@app.route('/api/ping', methods=['GET'])
+def ping():
+    return jsonify({
+        'status': 'ok',
+        'timestamp': time.time(),
+        'connected': ds.is_connected()
+    })
+
+@app.route('/api/backup/download', methods=['GET'])
+def backup_download():
+    """Tải toàn bộ dữ liệu học viên dưới dạng file JSON về điện thoại/máy tính."""
+    return send_file(
+        database.STUDENTS_FILE,
+        as_attachment=True,
+        download_name=f"Backup_DAT_Manager_{time.strftime('%Y%m%d_%H%M%S')}.json"
+    )
+
+@app.route('/api/backup/upload', methods=['POST'])
+def backup_upload():
+    """Khôi phục dữ liệu học viên từ file JSON backup."""
+    if 'file' not in request.files:
+        return jsonify({'success': False, 'error': 'Chưa chọn file sao lưu!'})
+    f = request.files['file']
+    if not f.filename.endswith('.json'):
+        return jsonify({'success': False, 'error': 'Vui lòng chọn đúng file đuôi .json!'})
+    try:
+        data = json.load(f)
+        if isinstance(data, list):
+            db.students = data
+            db._save()
+            return jsonify({'success': True, 'count': len(db.students)})
+        else:
+            return jsonify({'success': False, 'error': 'Định dạng dữ liệu file không đúng danh sách học viên!'})
+    except Exception as e:
+        return jsonify({'success': False, 'error': f'Lỗi khôi phục: {str(e)}'})
 
 @app.route('/')
 def index():
@@ -133,9 +192,11 @@ def get_lan_info():
 @app.route('/api/status', methods=['GET'])
 def get_status():
     connected = ds.is_connected()
+    uinfo = ds.get_user_info() if connected else None
     return jsonify({
         'connected': connected,
         'has_token': bool(ds.token),
+        'username': uinfo.get('username') if uinfo else None,
         'channel_id': discord_service.CHANNEL_ID,
         'guild_id': discord_service.GUILD_ID,
         'app_id': discord_service.APP_ID
@@ -727,12 +788,20 @@ def reset_app():
 
 @app.route('/api/restart_server', methods=['POST'])
 def restart_server():
-    def _delayed_restart():
-        time.sleep(1)
-        python = sys.executable
-        os.execl(python, python, *sys.argv)
-    threading.Thread(target=_delayed_restart, daemon=True).start()
-    return jsonify({'success': True, 'message': 'Đang khởi động lại máy chủ trong 1-2 giây...'})
+    try:
+        # Tự động nạp lại CSDL, tính toán lại toàn bộ chỉ tiêu định mức và kết nối lại Discord
+        db.students = db._load()
+        db.roster = db._load_roster()
+        db._sync_students_from_roster()
+        db.recalculate_all()
+
+        token = discord_service.auto_detect_discord_token()
+        if token:
+            ds.set_token(token)
+
+        return jsonify({'success': True, 'message': 'Đã làm mới và khởi động lại dịch vụ thành công trong 0.5s!'})
+    except Exception as e:
+        return jsonify({'success': False, 'error': f'Lỗi khởi động lại: {str(e)}'}), 500
 
 @app.route('/api/totnghiep_details/<student_key>', methods=['GET'])
 def get_totnghiep_details(student_key):
