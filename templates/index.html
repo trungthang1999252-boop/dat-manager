@@ -24,8 +24,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <!-- Chart.js CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- QRCode JS CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <!-- Google Fonts Inter -->
@@ -56,7 +54,7 @@
         }
         
         @media print {
-            header, .no-print, #query-section, #kpi-section, #chart-section, .action-col, #mobile-bottom-bar { display: none !important; }
+            header, .no-print, #query-section, #kpi-section, .action-col, #mobile-bottom-bar { display: none !important; }
             body { background: white !important; color: black !important; font-size: 10pt; padding-bottom: 0 !important; }
             .print-only { display: block !important; }
             table { width: 100% !important; border: 1px solid #000 !important; }
@@ -113,31 +111,10 @@
                         <span>Cập Nhật Khóa</span>
                     </button>
 
-                    <!-- Nút Tự Động Đồng Bộ -->
-                    <button onclick="toggleAutoSync()" id="btn-auto-sync" class="bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-400/40 text-emerald-200 text-xs font-bold px-3 py-2 rounded-xl transition flex items-center space-x-2 shadow-xs" title="Nhấp để Bật/Tắt tự động đồng bộ liên tục với Discord (Mặc định: BẬT)">
-                        <span class="relative flex h-2 w-2">
-                            <span id="auto-sync-ping" class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                            <span id="auto-sync-dot" class="relative inline-flex rounded-full h-2 w-2 bg-emerald-400"></span>
-                        </span>
-                        <span id="auto-sync-label">Tự Động Đồng Bộ: BẬT (20s)</span>
-                    </button>
-
                     <!-- Nút Đồng Bộ Ngay -->
-                    <button onclick="syncFromDiscord(false)" id="btn-sync" class="bg-white/10 hover:bg-white/20 text-white text-xs font-bold px-3 py-2 rounded-xl transition flex items-center space-x-1.5 border border-white/20 shadow-xs" title="Quét và đồng bộ dữ liệu ngay lập tức">
+                    <button onclick="syncFromDiscord(false)" id="btn-sync" class="bg-white/10 hover:bg-white/20 text-white text-xs font-bold px-3 py-2 rounded-xl transition flex items-center space-x-1.5 border border-white/20 shadow-xs" title="Quét và đồng bộ dữ liệu học viên của tôi từ Discord">
                         <i class="fa-solid fa-rotate"></i>
                         <span>Đồng Bộ Ngay</span>
-                    </button>
-
-                    <!-- Nút Biểu Đồ -->
-                    <button onclick="toggleCharts()" class="bg-white/10 hover:bg-white/20 text-white text-xs font-semibold px-2.5 py-2 rounded-xl transition flex items-center space-x-1.5 border border-white/20" title="Xem biểu đồ phân tích trực quan">
-                        <i class="fa-solid fa-chart-pie"></i>
-                        <span>Biểu đồ</span>
-                    </button>
-
-                    <!-- Nút Xuất Excel -->
-                    <button onclick="exportToExcel()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold px-2.5 py-2 rounded-xl transition flex items-center space-x-1.5 shadow-sm" title="Xuất toàn bộ bảng danh sách ra Excel">
-                        <i class="fa-solid fa-file-excel"></i>
-                        <span>Excel</span>
                     </button>
 
                     <!-- Nút Sao Lưu Dữ Liệu -->
@@ -258,9 +235,9 @@
                             <i class="fa-solid fa-camera text-indigo-600"></i>
                             <span>Thêm Từ Ảnh (OCR)</span>
                         </button>
-                        <button type="button" onclick="switchTab('roster')" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 px-2.5 py-1 rounded-lg font-bold transition flex items-center space-x-1 shadow-xs">
-                            <i class="fa-solid fa-file-excel text-emerald-600"></i>
-                            <span>Nhập File Excel</span>
+                        <button type="button" onclick="openAddRosterModal()" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 px-2.5 py-1 rounded-lg font-bold transition flex items-center space-x-1 shadow-xs">
+                            <i class="fa-solid fa-user-plus text-emerald-600"></i>
+                            <span>Thêm Học Viên</span>
                         </button>
                     </div>
                 </div>
@@ -444,22 +421,13 @@
                                 <i class="fa-solid fa-plus"></i>
                                 <span>Thêm Học Viên</span>
                             </button>
-                            <button onclick="document.getElementById('roster-excel-input').click()" class="bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs px-3.5 py-2 rounded-xl transition flex items-center space-x-1.5 shadow-sm" title="Nhập danh sách học viên từ tệp Excel (.xlsx)">
-                                <i class="fa-solid fa-file-excel text-emerald-200"></i>
-                                <span>Nhập File Excel (.xlsx)</span>
-                            </button>
-                            <input type="file" id="roster-excel-input" accept=".xlsx,.xls" class="hidden" onchange="uploadRosterExcel(this.files[0])">
                             <button onclick="openRosterImageModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs px-3.5 py-2 rounded-xl transition flex items-center space-x-1.5 shadow-sm" title="Quét ảnh danh sách hoặc ảnh CCCD nạp vào hồ sơ gốc">
                                 <i class="fa-solid fa-camera"></i>
                                 <span>Thêm Từ Ảnh (OCR)</span>
                             </button>
-                            <button onclick="openPasteRosterModal()" class="bg-slate-700 hover:bg-slate-800 text-white font-bold text-xs px-3.5 py-2 rounded-xl transition flex items-center space-x-1.5 shadow-sm" title="Dán danh sách văn bản sao chép từ Excel hoặc Word">
+                            <button onclick="openPasteRosterModal()" class="bg-slate-700 hover:bg-slate-800 text-white font-bold text-xs px-3.5 py-2 rounded-xl transition flex items-center space-x-1.5 shadow-sm" title="Dán danh sách văn bản sao chép từ Word hoặc Zalo">
                                 <i class="fa-solid fa-paste"></i>
                                 <span>Dán Danh Sách</span>
-                            </button>
-                            <button onclick="exportRosterExcel()" class="bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-bold text-xs px-3 py-2 rounded-xl transition flex items-center space-x-1.5 shadow-xs" title="Tải về file Excel danh sách gốc">
-                                <i class="fa-solid fa-download text-emerald-600"></i>
-                                <span>Xuất Excel</span>
                             </button>
                             <button onclick="clearRosterConfirm()" class="text-slate-400 hover:text-rose-600 p-2 text-xs" title="Xóa toàn bộ danh sách gốc">
                                 <i class="fa-solid fa-trash-can"></i>
@@ -567,36 +535,13 @@
             </button>
 
             <!-- Tổng Km tích lũy -->
-            <button onclick="toggleCharts()" id="kpi-card-total-km" class="bg-white p-3.5 rounded-2xl border-t-4 border-t-indigo-500 border border-slate-200 shadow-xs hover:shadow-md hover:-translate-y-0.5 transition-all flex items-center space-x-3 text-left group cursor-pointer focus:outline-none" title="Nhấp để xem biểu đồ phân tích trực quan">
-                <div class="w-10 h-10 rounded-xl bg-indigo-50 group-hover:bg-indigo-100 text-indigo-600 flex items-center justify-center text-base shadow-inner transition shrink-0">
+            <div id="kpi-card-total-km" class="bg-white p-3.5 rounded-2xl border-t-4 border-t-indigo-500 border border-slate-200 shadow-xs flex items-center space-x-3 text-left">
+                <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-base shadow-inner shrink-0">
                     <i class="fa-solid fa-tachometer-alt"></i>
                 </div>
                 <div>
                     <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Tổng Km</p>
                     <p id="stat-total-km" class="text-lg font-black text-indigo-600">0.0</p>
-                </div>
-            </button>
-        </section>
-
-        <!-- Charts Section (Collapsible) -->
-        <section id="chart-section" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 hidden no-print">
-            <div class="flex items-center justify-between mb-4 border-b pb-3">
-                <h3 class="font-bold text-slate-800 text-sm flex items-center space-x-2">
-                    <i class="fa-solid fa-chart-column text-blue-600"></i>
-                    <span>Thống Kê Trực Quan Tiến Độ Khóa Học</span>
-                </h3>
-                <button onclick="toggleCharts()" class="text-slate-400 hover:text-slate-600 text-xs">
-                    <i class="fa-solid fa-xmark"></i> Thu gọn
-                </button>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
-                <div class="h-64 flex flex-col items-center">
-                    <p class="text-xs font-semibold text-slate-600 mb-2">Tỷ Lệ Đạt Điều Kiện Thi DAT</p>
-                    <canvas id="chart-pass-rate"></canvas>
-                </div>
-                <div class="h-64 flex flex-col items-center">
-                    <p class="text-xs font-semibold text-slate-600 mb-2">Phân Bổ Học Viên Theo Khóa Học</p>
-                    <canvas id="chart-courses"></canvas>
                 </div>
             </div>
         </section>
@@ -1449,8 +1394,6 @@
         let currentStudents = [];
         let debounceTimer = null;
         let activeStudentForNote = null;
-        let chartPassRate = null;
-        let chartCourses = null;
         let ocrExtractedStudents = [];
         let currentRosterStudents = [];
         let autocompleteSelectedIdx = -1;
@@ -1461,8 +1404,6 @@
             loadStudents();
             loadRosterBadge();
             setupDropZone();
-            startAutoSyncTimer();
-            setTimeout(runSilentAutoSync, 2000); // Tự động quét cập nhật lần đầu sau khi tải trang 2 giây
             checkDiscordStatus(); // Kiểm tra trạng thái Bot Discord
 
             // Đóng danh sách gợi ý khi bấm ra ngoài
@@ -1885,17 +1826,6 @@
             await loadStudents();
         }
 
-        // ================= Core Chart & Navigation =================
-        function toggleCharts() {
-            const sec = document.getElementById('chart-section');
-            if (sec.classList.contains('hidden')) {
-                sec.classList.remove('hidden');
-                renderCharts();
-            } else {
-                sec.classList.add('hidden');
-            }
-        }
-
         async function loadStats() {
             try {
                 const res = await fetch('/api/stats');
@@ -1924,43 +1854,6 @@
             } catch (err) {
                 console.error(err);
             }
-        }
-
-        function renderCharts() {
-            if (!window.lastStats) return;
-            const data = window.lastStats;
-
-            const ctx1 = document.getElementById('chart-pass-rate').getContext('2d');
-            if (chartPassRate) chartPassRate.destroy();
-            chartPassRate = new Chart(ctx1, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Đạt Đủ Điều Kiện', 'Thiếu Km/Giờ', 'Thiếu Ngày Đường'],
-                    datasets: [{
-                        data: [data.passed, data.missing_km, data.missing_days],
-                        backgroundColor: ['#10b981', '#ef4444', '#f59e0b']
-                    }]
-                },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
-            });
-
-            const ctx2 = document.getElementById('chart-courses').getContext('2d');
-            if (chartCourses) chartCourses.destroy();
-            const courseLabels = Object.keys(data.course_stats || {});
-            const courseTotals = courseLabels.map(k => data.course_stats[k].total);
-            const coursePass = courseLabels.map(k => data.course_stats[k].passed);
-
-            chartCourses = new Chart(ctx2, {
-                type: 'bar',
-                data: {
-                    labels: courseLabels,
-                    datasets: [
-                        { label: 'Tổng Học Viên', data: courseTotals, backgroundColor: '#3b82f6' },
-                        { label: 'Số Đạt Chuẩn', data: coursePass, backgroundColor: '#10b981' }
-                    ]
-                },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
-            });
         }
 
         function debounceLoad() {
@@ -2427,70 +2320,6 @@
             handleQuery(type);
         }
 
-        // ================= Tự Động Đồng Bộ Discord (Auto-Sync) =================
-        let autoSyncTimer = null;
-        let autoSyncActive = true;
-        let autoSyncIntervalSec = 6;
-
-        function startAutoSyncTimer() {
-            if (autoSyncTimer) clearInterval(autoSyncTimer);
-            if (!autoSyncActive) return;
-            autoSyncTimer = setInterval(() => {
-                runSilentAutoSync();
-            }, autoSyncIntervalSec * 1000);
-        }
-
-        async function runSilentAutoSync() {
-            if (!autoSyncActive) return;
-            try {
-                const res = await fetch('/api/sync', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ limit: 15 })
-                });
-                const data = await res.json();
-                if (data.success && data.synced_count > 0) {
-                    showToast(`⚡ Tự động cập nhật ${data.synced_count} học viên mới nhất từ Discord!`);
-                    await loadStats();
-                    await loadStudents();
-                }
-            } catch (e) {
-                // Im lặng khi mạng gián đoạn để không làm phiền người dùng
-            }
-        }
-
-        async function toggleAutoSync() {
-            autoSyncActive = !autoSyncActive;
-            const label = document.getElementById('auto-sync-label');
-            const ping = document.getElementById('auto-sync-ping');
-            const dot = document.getElementById('auto-sync-dot');
-            const btn = document.getElementById('btn-auto-sync');
-
-            // Báo backend cập nhật trạng thái luồng ngầm
-            fetch('/api/auto_sync_toggle', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ enabled: autoSyncActive })
-            }).catch(() => {});
-
-            if (autoSyncActive) {
-                if (label) label.innerText = `Tự Động Đồng Bộ: BẬT (${autoSyncIntervalSec}s)`;
-                if (ping) ping.classList.remove('hidden');
-                if (dot) dot.className = 'relative inline-flex rounded-full h-2 w-2 bg-emerald-400';
-                if (btn) btn.className = 'bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-400/40 text-emerald-200 text-xs font-semibold px-3 py-1.5 rounded-lg transition flex items-center space-x-2 shadow-xs';
-                startAutoSyncTimer();
-                showToast(`Đã BẬT tự động đồng bộ Discord (quét mỗi ${autoSyncIntervalSec} giây)`);
-                runSilentAutoSync();
-            } else {
-                if (label) label.innerText = 'Tự Động Đồng Bộ: TẮT';
-                if (ping) ping.classList.add('hidden');
-                if (dot) dot.className = 'relative inline-flex rounded-full h-2 w-2 bg-slate-400';
-                if (btn) btn.className = 'bg-slate-700/50 hover:bg-slate-700/80 border border-slate-500/40 text-slate-300 text-xs font-semibold px-3 py-1.5 rounded-lg transition flex items-center space-x-2 shadow-xs';
-                if (autoSyncTimer) clearInterval(autoSyncTimer);
-                showToast('Đã TẮT tự động đồng bộ Discord', false);
-            }
-        }
-
         async function syncFromDiscord(showFeedback = true) {
             const btn = document.getElementById('btn-sync');
             const origHtml = btn ? btn.innerHTML : '';
@@ -2508,7 +2337,7 @@
                 const data = await res.json();
                 if (data.success) {
                     if (showFeedback || data.synced_count > 0) {
-                        showToast(`Đã đồng bộ ${data.synced_count} lượt tra cứu từ Discord!`);
+                        showToast(`Đã đồng bộ ${data.synced_count} lượt tra cứu của học viên từ Discord!`);
                     }
                     await loadStats();
                     await loadStudents();
@@ -2523,14 +2352,6 @@
                     btn.disabled = false;
                 }
             }
-        }
-
-        function exportToExcel() {
-            const search = document.getElementById('table-search').value;
-            const course = document.getElementById('course-filter').value;
-            const status = document.getElementById('status-filter').value;
-            const sort = document.getElementById('sort-filter').value;
-            window.location.href = `/api/export_excel?search=${encodeURIComponent(search)}&course=${encodeURIComponent(course)}&status=${encodeURIComponent(status)}&sort=${encodeURIComponent(sort)}`;
         }
 
         function previewPdf(key, name) {
@@ -3159,31 +2980,6 @@
             }
         }
 
-        async function uploadRosterExcel(file) {
-            if (!file) return;
-            const formData = new FormData();
-            formData.append('file', file);
-            showToast('Đang đọc và nhập danh sách từ file Excel...');
-
-            try {
-                const res = await fetch('/api/roster/import_excel', {
-                    method: 'POST',
-                    body: formData
-                });
-                const data = await res.json();
-                if (data.success) {
-                    showToast(`Đã nhập thành công ${data.count} học viên từ file Excel!`);
-                    await loadRoster();
-                } else {
-                    showToast(data.error || 'Lỗi đọc file Excel', false);
-                }
-            } catch (e) {
-                showToast('Lỗi tải file Excel lên máy chủ', false);
-            } finally {
-                document.getElementById('roster-excel-input').value = '';
-            }
-        }
-
         function openPasteRosterModal() {
             document.getElementById('roster-paste-input').value = '';
             document.getElementById('roster-paste-modal').classList.remove('hidden');
@@ -3265,10 +3061,6 @@
             } catch (e) {
                 showToast('Lỗi xóa danh sách gốc', false);
             }
-        }
-
-        function exportRosterExcel() {
-            window.location.href = '/api/roster/export';
         }
 
         // ================= Thêm Hồ Sơ Gốc Từ Hình Ảnh (AI OCR & QR) =================
