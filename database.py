@@ -31,8 +31,8 @@ BENCHMARKS = {
     'B1':    {'km': 710.0, 'gio': 12.0, 'dem': 2.5, 'tudong_min': 0.0, 'days': 5},
     'B':     {'km': 810.0, 'gio': 20.0, 'dem': 3.0, 'tudong_min': 2.0, 'days': 5},
     'B2':    {'km': 810.0, 'gio': 20.0, 'dem': 3.0, 'tudong_min': 2.0, 'days': 5},
-    'C1':    {'km': 825.0, 'gio': 24.0, 'dem': 2.5, 'tudong_min': 1.0, 'days': 5},
-    'C':     {'km': 825.0, 'gio': 24.0, 'dem': 2.5, 'tudong_min': 1.0, 'days': 5},
+    'C1':    {'km': 825.0, 'gio': 24.0, 'dem': 2.0, 'tudong_min': 2.0, 'days': 5},
+    'C':     {'km': 825.0, 'gio': 24.0, 'dem': 2.0, 'tudong_min': 2.0, 'days': 5},
     'B-CM':  {'km': 210.0, 'gio': 5.0,  'dem': 1.0, 'tudong_min': 0.0, 'days': 0},
     'B-Cm':  {'km': 210.0, 'gio': 5.0,  'dem': 1.0, 'tudong_min': 0.0, 'days': 0},
     'CM-CE': {'km': 210.0, 'gio': 5.0,  'dem': 1.0, 'tudong_min': 0.0, 'days': 2},
@@ -163,6 +163,16 @@ class StudentDatabase:
                     u['quangduong'] = s['quangduong']
                 if s.get('thoigian', 0) > u.get('thoigian', 0):
                     u['thoigian'] = s['thoigian']
+                if s.get('thoigian_dem', 0) > u.get('thoigian_dem', 0):
+                    u['thoigian_dem'] = s['thoigian_dem']
+                if s.get('thoigian_tudong', 0) > u.get('thoigian_tudong', 0):
+                    u['thoigian_tudong'] = s['thoigian_tudong']
+                if s.get('songay_str') and s.get('songay_str') not in ('', '0/5 ngày'):
+                    u['songay_str'] = s['songay_str']
+                if s.get('lich_trinh_ngay') and len(s.get('lich_trinh_ngay', [])) > len(u.get('lich_trinh_ngay', [])):
+                    u['lich_trinh_ngay'] = s['lich_trinh_ngay']
+                if s.get('songay_dat'):
+                    u['songay_dat'] = True
                 if s.get('pdf_url') and not u.get('pdf_url'):
                     u['pdf_url'] = s['pdf_url']
                 if s.get('lythuyet_pdf_url') and not u.get('lythuyet_pdf_url'):
@@ -287,8 +297,8 @@ class StudentDatabase:
 
         target_km = bm['km']
         target_gio = bm['gio']
-        dem_min = bm.get('dem', 2.0)
-        tudong_min = bm.get('tudong_min', 0.0)
+        dem_min = float(student.get('thoigian_dem_toithieu') or bm.get('dem', 2.0))
+        tudong_min = float(student.get('thoigian_tudong_toithieu') if student.get('thoigian_tudong_toithieu') is not None else bm.get('tudong_min', 0.0))
 
         curr_km = float(student.get('quangduong', 0.0) or 0.0)
         curr_gio = float(student.get('thoigian', 0.0) or 0.0)
@@ -303,10 +313,19 @@ class StudentDatabase:
         is_km_ok = curr_km >= (target_km - 0.5)
         is_gio_ok = curr_gio >= (target_gio - 0.05)
         is_dem_ok = curr_dem >= (dem_min - 0.05)
-        is_tudong_ok = (tudong_min == 0.0) or (curr_tudong >= (tudong_min - 0.05))
+        is_tudong_ok = (tudong_min == 0.0) or (curr_tudong >= tudong_min)
 
         songay_dat = bool(student.get('songay_dat', False))
-        m_day = re.search(r'(\d+)\s*/\s*(\d+)', student.get('songay_str', ''))
+        songay_str = (student.get('songay_str') or '').strip()
+        lich_trinh = student.get('lich_trinh_ngay', []) or []
+
+        # Tự động đồng bộ số ngày từ lịch trình phiên nếu songay_str rỗng hoặc 0/5
+        if (not songay_str or songay_str in ('', '0/5 ngày', '0 ngày')) and len(lich_trinh) > 0:
+            target_days = 2 if ('CM' in hang or 'LÊN' in hang or 'CE' in hang) else 5
+            songay_str = f"{len(lich_trinh)}/{target_days} ngày"
+            student['songay_str'] = songay_str
+
+        m_day = re.search(r'(\d+)\s*/\s*(\d+)', songay_str)
         if m_day and int(m_day.group(1)) >= int(m_day.group(2)):
             songay_dat = True
 
@@ -382,13 +401,18 @@ class StudentDatabase:
             existing = self.students.pop(existing_key) if (target_key != existing_key and target_key) else self.students[existing_key]
 
             for k, v in student_data.items():
-                if v or v == 0:
+                if v or (v is not False and v == 0):
                     if k == 'lich_trinh_ngay' and not v and existing.get('lich_trinh_ngay'):
                         continue
                     if k == 'note' and not v and existing.get('note'):
                         continue
                     # Không ghi đè quãng đường/thời gian nếu dữ liệu mới là rỗng hoặc 0 từ lệnh lý thuyết
                     if k in ('quangduong', 'thoigian', 'thoigian_dem', 'thoigian_tudong') and v == 0 and existing.get(k, 0) > 0:
+                        continue
+                    # Không ghi đè số ngày nếu dữ liệu mới rỗng hoặc 0/5 trong khi dữ liệu cũ đã có
+                    if k == 'songay_str' and (not v or v in ('', '0/5 ngày')) and existing.get('songay_str') and existing.get('songay_str') not in ('', '0/5 ngày'):
+                        continue
+                    if k == 'songay_dat' and not v and existing.get('songay_dat') is True:
                         continue
                     existing[k] = v
 
