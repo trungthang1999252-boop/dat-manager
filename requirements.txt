@@ -8,3 +8,4 @@ zxing-cpp>=2.1.0
 cryptography>=41.0.0
 gunicorn>=21.2.0
 werkzeug>=3.0.0
+PyMuPDF>=1.23.0
