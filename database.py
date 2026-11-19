@@ -74,11 +74,14 @@ class StudentDatabase:
             s_cccd = s_st.get('cccd', '').strip()
             s_mahv = s_st.get('mahv', '').strip()
             s_hoten = strip_vietnamese_accents(s_st.get('hoten', ''))
-            # Giữ lại học viên nếu thuộc danh sách quản lý (Roster)
+            # Giữ lại học viên nếu thuộc danh sách quản lý (Roster) HOẶC do chính tôi tra cứu
             is_mine = (s_key in roster_keys or 
                        (s_cccd and s_cccd in roster_keys) or 
-                       (s_mahv and s_mahv in roster_keys) or
-                       (s_hoten and s_hoten in roster_keys))
+                       (s_mahv and s_mahv in roster_keys) or 
+                       (s_hoten and s_hoten in roster_keys) or
+                       s_st.get('is_my_query') or
+                       s_st.get('interaction_username') == 'tranthang252' or
+                       s_st.get('interaction_user_id') in ('1380376964304474173', '1380096710386384937'))
             if is_mine:
                 key = s_mahv or s_cccd or s_st.get('hoten')
                 cleaned_students[key] = s_st
@@ -175,6 +178,52 @@ class StudentDatabase:
         for k, s in list(self.students.items()):
             self.students[k] = self.calculate_progress(s)
         self._save()
+
+    def purge_foreign_students(self):
+        """
+        Chỉ giữ lại những học viên có trong hồ sơ gốc (Roster)
+        hoặc do chính giáo viên này tra cứu. Xóa sạch mọi học viên lạ bị lẫn từ kênh chung.
+        """
+        roster_keys = set()
+        for r_key, r_st in self.roster.items():
+            cccd = (r_st.get('cccd') or '').strip().lower()
+            mahv = (r_st.get('mahv') or '').strip().lower()
+            hoten = (r_st.get('hoten') or r_key or '').strip()
+            if hoten:
+                roster_keys.add(hoten.lower())
+                roster_keys.add(strip_vietnamese_accents(hoten).lower())
+            if cccd:
+                roster_keys.add(cccd)
+            if mahv:
+                roster_keys.add(mahv)
+
+        cleaned = {}
+        for s_key, s in list(self.students.items()):
+            s_cccd = (s.get('cccd') or '').strip().lower()
+            s_mahv = (s.get('mahv') or '').strip().lower()
+            s_hoten = (s.get('hoten') or '').strip().lower()
+            s_no_acc = strip_vietnamese_accents(s.get('hoten') or '').lower()
+
+            is_in_roster = (
+                (s_hoten and s_hoten in roster_keys) or
+                (s_no_acc and s_no_acc in roster_keys) or
+                (s_cccd and s_cccd in roster_keys) or
+                (s_mahv and s_mahv in roster_keys)
+            )
+            is_queried_by_me = (
+                s.get('is_my_query') or
+                s.get('interaction_username') == 'tranthang252' or
+                s.get('interaction_user_id') in ('1380376964304474173', '1380096710386384937')
+            )
+
+            if is_in_roster or is_queried_by_me:
+                key = s.get('mahv') or s.get('cccd') or s.get('hoten')
+                if key:
+                    cleaned[key] = s
+
+        self.students = cleaned
+        self._save()
+        return len(cleaned)
 
     def _load_roster(self):
         if os.path.exists(ROSTER_FILE):
