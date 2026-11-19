@@ -1949,7 +1949,7 @@
                 document.getElementById('stat-passed').innerText = data.passed;
                 document.getElementById('stat-missing-km').innerText = data.missing_km;
                 document.getElementById('stat-missing-days').innerText = data.missing_days;
-                document.getElementById('stat-total-km').innerText = data.total_km.toFixed(1) + ' km';
+                document.getElementById('stat-total-km').innerText = (data.total_km != null ? data.total_km : 0).toFixed(1) + ' km';
 
                 const courseSelect = document.getElementById('course-filter');
                 const selectedVal = courseSelect.value;
@@ -2118,7 +2118,7 @@
                     const headerTr = document.createElement('tr');
                     headerTr.className = 'bg-gradient-to-r from-slate-800 to-blue-950 text-white font-bold text-xs';
                     headerTr.innerHTML = `
-                        <td colspan="14" class="py-2.5 px-4 shadow-xs border-t-2 border-blue-500">
+                        <td colspan="15" class="py-2.5 px-4 shadow-xs border-t-2 border-blue-500">
                             <div class="flex items-center justify-between">
                                 <div class="flex items-center space-x-2.5">
                                     <span class="w-6 h-6 rounded-md bg-blue-500/30 border border-blue-400/40 text-blue-200 flex items-center justify-center text-xs">
@@ -2156,14 +2156,18 @@
         }
 
         function createStudentRow(s, idx) {
-            const tr = document.createElement('tr');
-            tr.className = 'hover:bg-blue-50/40 transition divide-x divide-slate-100';
+            try {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-blue-50/40 transition divide-x divide-slate-100';
 
-            // 1. Quãng đường (Đủ: XANH LÁ | Thiếu: ĐỎ) - BẤM VÀO ĐỂ TỰ CHẠY LỆNH /DAT NGẦM QUA DISCORD
-            const km = (s.quangduong || 0).toFixed(1);
-            const targetKm = (s.target_km || 810).toFixed(0);
-            const stId = (s.mahv || s.cccd || s.hoten || '').trim();
-            const safeCellId = 'km-btn-' + stId.replace(/[^a-zA-Z0-9_-]/g, '_');
+                // 1. Quãng đường (Đủ: XANH LÁ | Thiếu: ĐỎ) - BẤM VÀO ĐỂ TỰ CHẠY LỆNH /DAT NGẦM QUA DISCORD
+                const km = (s.quangduong || 0).toFixed(1);
+                const targetKm = (s.target_km || 810).toFixed(0);
+                const stId = (s.mahv || s.cccd || s.hoten || '').trim();
+                const stIdSafe = stId.replace(/[^a-zA-Z0-9_-]/g, '_');
+                const safeCellId = 'km-btn-' + stIdSafe;
+                const escapedStId = stId.replace(/'/g, "\\'");
+                const escapedHoten = (s.hoten || '').replace(/'/g, "\\'");
             const kmCell = `
                 <button type="button"
                         id="${safeCellId}"
@@ -2215,8 +2219,7 @@
                 : `<div class="inline-flex flex-col items-center"><span class="px-2 py-0.5 rounded-md text-[11px] font-extrabold bg-rose-100 text-rose-800 border border-rose-300 inline-flex items-center shadow-2xs whitespace-nowrap"><i class="fa-solid fa-xmark text-rose-600 mr-1"></i>${days}</span><span class="text-[9px] text-rose-600 font-bold mt-0.5">Chưa đủ</span></div>`;
 
             // 6. Cột Ảnh Cabin (/cabin)
-            const stId = (s.mahv || s.cccd || s.hoten || '').trim();
-            const stIdSafe = stId.replace(/[^a-zA-Z0-9_-]/g, '_');
+            // stId and stIdSafe are already defined at the start of createStudentRow
             let cabinCell = `
                 <input type="file" id="cabin-input-${stIdSafe}" accept="image/*" class="hidden" onchange="uploadCabinImage('${stId}', this, '${stIdSafe}')">
             `;
@@ -2360,7 +2363,13 @@
                     </div>
                 </td>
             `;
-            return tr;
+                return tr;
+            } catch (err) {
+                console.error('Lỗi hiển thị dòng học viên:', err, s);
+                const errTr = document.createElement('tr');
+                errTr.innerHTML = `<td colspan="15" class="py-2 px-3 text-rose-500 text-xs">Lỗi hiển thị học viên: ${s.hoten || s.mahv || ''} (${err.message})</td>`;
+                return errTr;
+            }
         }
 
         async function handleQuery(type) {
@@ -4017,26 +4026,19 @@
             window.location.href = '/?update=' + Date.now();
         }
 
-        // Đăng ký Service Worker và tự động làm mới khi có phiên bản mới
+        // Đăng ký Service Worker an toàn và tự động làm mới khi có phiên bản mới
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/service-worker.js?v=4.0').then((reg) => {
-                    reg.update();
-                    reg.onupdatefound = () => {
-                        const installingWorker = reg.installing;
-                        if (installingWorker) {
-                            installingWorker.onstatechange = () => {
-                                if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                                    window.location.reload();
-                                }
-                            };
-                        }
-                    };
-                }).catch(() => {});
-
+                let refreshing = false;
                 navigator.serviceWorker.addEventListener('controllerchange', () => {
+                    if (refreshing) return;
+                    refreshing = true;
+                    console.log('🔄 Ứng dụng đã cập nhật phiên bản mới!');
                     window.location.reload();
                 });
+
+                navigator.serviceWorker.register('/service-worker.js')
+                    .catch(err => console.log('SW registration error:', err));
             });
         }
     </script>
