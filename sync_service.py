@@ -3,7 +3,11 @@ sync_service.py - Module Quản lý & Tự Động Hóa Đồng Bộ Phiên Lỗ
 Dự án: Kiểm tra điều kiện chạy DAT (Trường CĐ Cơ điện - Xây dựng và Nông Lâm Trung Bộ)
 
 Quy tắc nghiệp vụ:
-1. Phân tích kết quả /phien hoặc file _phienhoc.pdf:
+1. NGUYÊN TẮC BẢO MẬT & PHÂN QUYỀN:
+   - TUYỆT ĐỐI CHỈ THỰC HIỆN CHO HỌC VIÊN TÔI ĐÃ TRA CỨU (Học viên nằm trong danh sách hồ sơ gốc Roster hoặc do chính tôi tra cứu is_my_query == True).
+   - Tuyệt đối không can thiệp hay tự động đồng bộ cho học viên lạ của người khác trên kênh chung.
+
+2. Phân tích kết quả /phien hoặc file _phienhoc.pdf:
    - LỖI VĨNH VIỄN (Hoàn toàn không thể đẩy về Tổng cục):
      + Vi phạm thời gian: B-0015 (< 5 phút), B-0017 (> 10 giờ), B-0020 (cách nhau < 15 phút).
      + Trạng thái 'Y/c chạy bù' (Vận tốc TB < 20 km/h hoặc vi phạm thời gian bắt buộc chạy bù).
@@ -15,7 +19,7 @@ Quy tắc nghiệp vụ:
      + Trạng thái 'Chưa lên TC', lỗi timeout, ngắt kết nối máy chủ (-99, null, 0, 503, B-0010, B-0011, 7, 6, 103...).
      -> Đưa vào Hàng đợi Tự động Đồng bộ ngầm qua lệnh /dongbo.
 
-2. Điều kiện thực thi lệnh /dongbo:
+3. Điều kiện thực thi lệnh /dongbo:
    - Phải đúng mã học viên lỗi (mhv) và trên xe bị lỗi (biensoxe).
    - Chỉ chạy lệnh khi xe cần chạy mã lệnh đó đang ONLINE (kiểm tra qua /xeonline).
    - Thời gian thực hiện lệnh /dongbo cách nhau TỐI THIỂU 10 PHÚT (600 giây).
@@ -55,14 +59,16 @@ def clean_plate(plate_str):
 class AutoSyncManager:
     """
     Quản lý Hàng đợi & Tiến trình Tự động Đồng bộ Tổng cục (/dongbo) chạy ngầm:
+    - CHỈ THỰC HIỆN CHO HỌC VIÊN TÔI ĐÃ TRA CỨU.
     - Quản lý danh sách các xe và học viên bị lỗi phiên cần đẩy lên TC.
     - Kiểm tra xe đang Online trước khi chạy lệnh.
     - Giữ khoảng cách tối thiểu 10 phút giữa các lần chạy.
     - Tự động chạy tới khi hết phiên lỗi.
     """
-    def __init__(self, discord_service_getter=None):
+    def __init__(self, discord_service_getter=None, my_student_checker=None):
         self.lock = threading.Lock()
         self.get_ds = discord_service_getter
+        self.is_my_student = my_student_checker
         self.queue = self._load_queue()
         self.is_running = False
         self.thread = None
@@ -88,6 +94,11 @@ class AutoSyncManager:
     def add_to_queue(self, mahv, biensoxe, hoten="", khoa="", error_sessions=None):
         """Thêm học viên và xe bị lỗi phiên vào hàng đợi tự động đồng bộ."""
         if not mahv or not biensoxe:
+            return False
+
+        # QUY TẮC: CHỈ THỰC HIỆN CHO HỌC VIÊN TÔI ĐÃ TRA CỨU
+        if self.is_my_student and not self.is_my_student(mahv):
+            print(f"🛑 [AutoSync] Từ chối thêm vào hàng đợi: {mahv} không thuộc danh sách học viên tôi đã tra cứu!")
             return False
             
         c_plate = clean_plate(biensoxe)
@@ -173,6 +184,10 @@ class AutoSyncManager:
 
     def execute_dongbo(self, mahv, biensoxe, ds=None):
         """Gửi lệnh /dongbo mhv:<mahv> biensoxe:<biensoxe> tới bot."""
+        # QUY TẮC: CHỈ THỰC HIỆN CHO HỌC VIÊN TÔI ĐÃ TRA CỨU
+        if self.is_my_student and not self.is_my_student(mahv):
+            return {'success': False, 'error': f'Học viên {mahv} không thuộc danh sách bạn đã tra cứu hoặc quản lý.'}
+
         if not ds and self.get_ds:
             ds = self.get_ds()
         if not ds:
@@ -180,7 +195,7 @@ class AutoSyncManager:
 
         c_plate = clean_plate(biensoxe)
         try:
-            print(f"🚀 [AutoSync] Đang gửi /dongbo mhv={mahv} biensoxe={c_plate}...")
+            print(f"🚀 [AutoSync] Đang gửi /dongbo mhv={mahv} biensoxe={c_plate} (Học viên của tôi)...")
             res = ds.send_dongbo(mahv, c_plate)
             return res
         except Exception as e:
@@ -220,6 +235,15 @@ class AutoSyncManager:
                     mahv = t['mahv']
                     biensoxe = t['biensoxe']
                     next_time = t.get('next_allowed_time', 0)
+
+                    # KIỂM TRA BẢO MẬT: CHỈ THỰC HIỆN CHO HỌC VIÊN TÔI ĐÃ TRA CỨU
+                    if self.is_my_student and not self.is_my_student(mahv):
+                        print(f"🛑 [AutoSync] Loại bỏ {mahv} khỏi hàng đợi vì không phải học viên tôi đã tra cứu!")
+                        with self.lock:
+                            if tid in self.queue:
+                                del self.queue[tid]
+                                self._save_queue()
+                        continue
 
                     # 1. KIỂM TRA ĐIỀU KIỆN 10 PHÚT
                     if now < next_time:
@@ -292,9 +316,11 @@ class AutoSyncManager:
 # Global instance
 _sync_manager_instance = None
 
-def get_sync_manager(ds_getter=None):
+def get_sync_manager(ds_getter=None, my_student_checker=None):
     global _sync_manager_instance
     if _sync_manager_instance is None:
-        _sync_manager_instance = AutoSyncManager(discord_service_getter=ds_getter)
+        _sync_manager_instance = AutoSyncManager(discord_service_getter=ds_getter, my_student_checker=my_student_checker)
         _sync_manager_instance.start_worker()
+    elif my_student_checker and not _sync_manager_instance.is_my_student:
+        _sync_manager_instance.is_my_student = my_student_checker
     return _sync_manager_instance
