@@ -155,6 +155,17 @@ class DiscordDATService:
         except Exception:
             return False
 
+    def get_user_info(self):
+        if not self.token:
+            return None
+        try:
+            resp = self.session.get('https://discord.com/api/v9/users/@me', timeout=4)
+            if resp.status_code == 200:
+                return resp.json()
+        except Exception:
+            pass
+        return None
+
     def parse_embed_data(self, embed, attachments=None):
         data = {
             'mahv': '',
