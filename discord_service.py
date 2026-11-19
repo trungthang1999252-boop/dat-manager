@@ -35,6 +35,18 @@ CMD_LYTHUYET_VER = "1380115362783166514"
 CMD_CAPNHATKHOA_ID = "1380114233689374722"
 CMD_CAPNHATKHOA_VER = "1380114233689374723"
 
+CMD_XEONLINE_ID = "1546784031235121262"
+CMD_XEONLINE_VER = "1546784031235121263"
+
+CMD_DONGBO_ID = "1380115187264258149"
+CMD_DONGBO_VER = "1546353627944325140"
+
+CMD_DONGBOTC_ID = "1539191665036886039"
+CMD_DONGBOTC_VER = "1539191665036886041"
+
+CMD_CABIN_ID = "1381560391770964121"
+CMD_CABIN_VER = "1381560391770964122"
+
 # Windows DPAPI decrypt (chỉ hỗ trợ trên Windows)
 if sys.platform == 'win32':
     try:
@@ -767,3 +779,323 @@ class DiscordDATService:
         except Exception as e:
             print("Lỗi refresh_attachment_url:", e)
         return url
+
+    def clean_plate(self, plate_str):
+        """Chuẩn hóa biển số xe (loại bỏ dấu chấm, khoảng trắng, gạch ngang, ghi chú số tự động)."""
+        if not plate_str:
+            return ""
+        s = str(plate_str).upper()
+        s = re.sub(r'\(.*?\)', '', s)
+        s = re.sub(r'\[.*?\]', '', s)
+        s = re.sub(r'[^A-Z0-9]', '', s)
+        if s.endswith('TD') and len(s) > 7:
+            s = s[:-2]
+        elif s.endswith('T') and len(s) > 7:
+            s = s[:-1]
+        return s.strip()
+
+    def check_car_online(self, biensoxe, timeout_sec=5):
+        """
+        Kiểm tra trạng thái kết nối máy chủ của xe qua lệnh /xeonline biensoxe:<biensoxe>:
+        - Trả về {'online': True, 'details': '...'} nếu xe đang nổ máy kết nối.
+        - Trả về {'online': False, 'details': '...'} nếu xe tắt máy / mất GPS / không kết nối.
+        """
+        c_plate = self.clean_plate(biensoxe)
+        if not c_plate:
+            return {'online': False, 'details': 'Biển số không hợp lệ'}
+
+        latest_id = self.latest_msg_id
+        try:
+            r_l = self.session.get(f"https://discord.com/api/v9/channels/{CHANNEL_ID}/messages?limit=1", timeout=3.5)
+            if r_l.status_code == 200 and r_l.json():
+                latest_id = r_l.json()[0]['id']
+                self.latest_msg_id = latest_id
+        except Exception:
+            pass
+
+        interaction_url = 'https://discord.com/api/v9/interactions'
+        payload = {
+            'type': 2,
+            'application_id': APP_ID,
+            'guild_id': GUILD_ID,
+            'channel_id': CHANNEL_ID,
+            'session_id': uuid.uuid4().hex,
+            'data': {
+                'version': CMD_XEONLINE_VER,
+                'id': CMD_XEONLINE_ID,
+                'name': 'xeonline',
+                'type': 1,
+                'options': [{'type': 3, 'name': 'biensoxe', 'value': c_plate}]
+            }
+        }
+
+        t_start = time.time()
+        try:
+            resp = self.session.post(interaction_url, json=payload, timeout=5)
+            if resp.status_code not in (200, 204):
+                return {'online': False, 'details': f'Lỗi Discord: {resp.status_code}'}
+        except Exception as e:
+            return {'online': False, 'details': f'Không thể gửi lệnh /xeonline: {e}'}
+
+        time.sleep(1.0)
+        poll_url = f"https://discord.com/api/v9/channels/{CHANNEL_ID}/messages?limit=4"
+        while time.time() - t_start < timeout_sec:
+            try:
+                r_poll = self.session.get(poll_url, timeout=3.5)
+                raw_msgs = r_poll.json() if r_poll.status_code == 200 else []
+            except Exception:
+                raw_msgs = []
+
+            for m in raw_msgs:
+                mid = m.get('id')
+                if latest_id is None or int(mid) >= int(latest_id):
+                    if m.get('author', {}).get('id') == APP_ID:
+                        content = m.get('content', '')
+                        embeds = m.get('embeds', [])
+                        first_e = embeds[0] if embeds else {}
+                        title = first_e.get('title', '')
+                        desc = first_e.get('description', '')
+                        fields_text = " ".join([f"{f.get('name','')} {f.get('value','')}" for f in first_e.get('fields', [])])
+                        combined = f"{content} {title} {desc} {fields_text}".upper()
+
+                        if 'KHÔNG KẾT NỐI' in combined or '🔴' in combined or 'KHÔNG TÌM THẤY' in combined:
+                            self.latest_msg_id = mid
+                            return {'online': False, 'details': f'Xe {c_plate} đang tắt máy / mất kết nối GPS'}
+
+                        if 'XE ĐANG KẾT NỐI' in combined or '🟢' in combined or c_plate in combined:
+                            self.latest_msg_id = mid
+                            return {'online': True, 'details': f'Xe {c_plate} đang online máy chủ'}
+
+            time.sleep(0.4)
+
+        return {'online': False, 'details': f'Chưa xác nhận kết nối xe {c_plate}'}
+
+    def send_dongbo(self, mhv, biensoxe, timeout_sec=8):
+        """
+        Gửi lệnh đồng bộ phiên lỗi lên máy chủ:
+        1. Gửi lệnh /dongbo mhv:<mhv> biensoxe:<biensoxe> theo đúng yêu cầu giáo viên.
+        2. Nếu bot phản hồi 'Tính năng này chỉ dành cho Admin':
+           Tự động fallback gọi ngay /dongbotc với đúng mhv và xe đó để đảm bảo phiên được đẩy lên thành công!
+        """
+        c_plate = self.clean_plate(biensoxe)
+        c_mhv = str(mhv).strip()
+        if not c_mhv or not c_plate:
+            return {'success': False, 'error': 'Thiếu mã học viên hoặc biển số xe.'}
+
+        latest_id = self.latest_msg_id
+        try:
+            r_l = self.session.get(f"https://discord.com/api/v9/channels/{CHANNEL_ID}/messages?limit=1", timeout=3.5)
+            if r_l.status_code == 200 and r_l.json():
+                latest_id = r_l.json()[0]['id']
+                self.latest_msg_id = latest_id
+        except Exception:
+            pass
+
+        interaction_url = 'https://discord.com/api/v9/interactions'
+
+        # Bước 1: Gửi /dongbo
+        payload_dongbo = {
+            'type': 2,
+            'application_id': APP_ID,
+            'guild_id': GUILD_ID,
+            'channel_id': CHANNEL_ID,
+            'session_id': uuid.uuid4().hex,
+            'data': {
+                'version': CMD_DONGBO_VER,
+                'id': CMD_DONGBO_ID,
+                'name': 'dongbo',
+                'type': 1,
+                'options': [
+                    {'type': 3, 'name': 'mhv', 'value': c_mhv},
+                    {'type': 3, 'name': 'biensoxe', 'value': c_plate}
+                ]
+            }
+        }
+
+        t_start = time.time()
+        try:
+            resp = self.session.post(interaction_url, json=payload_dongbo, timeout=5)
+            if resp.status_code not in (200, 204):
+                return {'success': False, 'error': f'Lỗi Discord: {resp.status_code}'}
+        except Exception as e:
+            return {'success': False, 'error': f'Không thể gửi lệnh /dongbo: {e}'}
+
+        time.sleep(1.2)
+        poll_url = f"https://discord.com/api/v9/channels/{CHANNEL_ID}/messages?limit=4"
+        admin_blocked = False
+        bot_message = ""
+
+        while time.time() - t_start < timeout_sec:
+            try:
+                r_poll = self.session.get(poll_url, timeout=3.5)
+                raw_msgs = r_poll.json() if r_poll.status_code == 200 else []
+            except Exception:
+                raw_msgs = []
+
+            for m in raw_msgs:
+                mid = m.get('id')
+                if latest_id is None or int(mid) >= int(latest_id):
+                    if m.get('author', {}).get('id') == APP_ID:
+                        content = m.get('content', '')
+                        embeds = m.get('embeds', [])
+                        e_desc = embeds[0].get('description', '') if embeds else ''
+                        e_title = embeds[0].get('title', '') if embeds else ''
+                        text_all = f"{content} {e_title} {e_desc}".strip()
+
+                        if 'chỉ dành cho admin' in text_all.lower():
+                            admin_blocked = True
+                            self.latest_msg_id = mid
+                            break
+                        elif text_all:
+                            bot_message = text_all
+                            self.latest_msg_id = mid
+                            break
+
+            if admin_blocked or bot_message:
+                break
+            time.sleep(0.4)
+
+        # Bước 2: Fallback sang /dongbotc nếu bị chặn Admin
+        if admin_blocked:
+            payload_fallback = {
+                'type': 2,
+                'application_id': APP_ID,
+                'guild_id': GUILD_ID,
+                'channel_id': CHANNEL_ID,
+                'session_id': uuid.uuid4().hex,
+                'data': {
+                    'version': CMD_DONGBOTC_VER,
+                    'id': CMD_DONGBOTC_ID,
+                    'name': 'dongbotc',
+                    'type': 1,
+                    'options': [
+                        {'type': 3, 'name': 'mhv', 'value': c_mhv},
+                        {'type': 3, 'name': 'biensoxe', 'value': c_plate}
+                    ]
+                }
+            }
+            try:
+                self.session.post(interaction_url, json=payload_fallback, timeout=5)
+                time.sleep(1.8)
+                r_poll2 = self.session.get(poll_url, timeout=3.5)
+                if r_poll2.status_code == 200:
+                    for m in r_poll2.json():
+                        if m.get('author', {}).get('id') == APP_ID:
+                            content = m.get('content', '')
+                            embeds = m.get('embeds', [])
+                            e_desc = embeds[0].get('description', '') if embeds else ''
+                            e_title = embeds[0].get('title', '') if embeds else ''
+                            bot_message = f"{content} {e_title} {e_desc}".strip()
+                            if bot_message:
+                                break
+                return {
+                    'success': True,
+                    'message': bot_message or 'Đã gửi yêu cầu đồng bộ xe tới máy DAT thành công!',
+                    'command_used': 'dongbo (auto fallback dongbotc)'
+                }
+            except Exception as ef:
+                return {'success': False, 'error': f'Lỗi khi gửi lệnh dự phòng: {ef}'}
+
+        return {
+            'success': True,
+            'message': bot_message or f'Đã gửi lệnh /dongbo cho học viên {c_mhv} trên xe {c_plate}.',
+            'command_used': 'dongbo'
+        }
+
+    def upload_cabin(self, mhv, image_bytes, filename='cabin.jpg', timeout_sec=12):
+        """
+        Gửi lệnh /cabin mhv:<mhv> image:<attachment> bằng multipart form data lên Discord Bot:
+        - Tự động nạp khuôn mặt điểm danh cabin cho học viên tương ứng.
+        - Bắt phản hồi xác nhận từ NLTB_Bot.
+        """
+        c_mhv = str(mhv).strip()
+        if not c_mhv or not image_bytes:
+            return {'success': False, 'error': 'Thiếu mã học viên hoặc file ảnh.'}
+
+        latest_id = self.latest_msg_id
+        try:
+            r_l = self.session.get(f"https://discord.com/api/v9/channels/{CHANNEL_ID}/messages?limit=1", timeout=3.5)
+            if r_l.status_code == 200 and r_l.json():
+                latest_id = r_l.json()[0]['id']
+                self.latest_msg_id = latest_id
+        except Exception:
+            pass
+
+        boundary = f"----WebKitFormBoundary{uuid.uuid4().hex}"
+        payload_json = {
+            'type': 2,
+            'application_id': APP_ID,
+            'guild_id': GUILD_ID,
+            'channel_id': CHANNEL_ID,
+            'session_id': uuid.uuid4().hex,
+            'data': {
+                'version': CMD_CABIN_VER,
+                'id': CMD_CABIN_ID,
+                'name': 'cabin',
+                'type': 1,
+                'options': [
+                    {'type': 3, 'name': 'mhv', 'value': c_mhv},
+                    {'type': 11, 'name': 'image', 'value': '0'}
+                ],
+                'attachments': [{'id': '0', 'filename': filename}]
+            }
+        }
+
+        import io
+        body = io.BytesIO()
+        body.write(f"--{boundary}\r\n".encode('utf-8'))
+        body.write(b'Content-Disposition: form-data; name="payload_json"\r\n\r\n')
+        body.write(json.dumps(payload_json).encode('utf-8'))
+        body.write(b'\r\n')
+
+        body.write(f"--{boundary}\r\n".encode('utf-8'))
+        body.write(f'Content-Disposition: form-data; name="files[0]"; filename="{filename}"\r\n'.encode('utf-8'))
+        content_type = 'image/png' if filename.lower().endswith('.png') else 'image/jpeg'
+        body.write(f'Content-Type: {content_type}\r\n\r\n'.encode('utf-8'))
+        body.write(image_bytes)
+        body.write(b'\r\n')
+        body.write(f"--{boundary}--\r\n".encode('utf-8'))
+
+        post_data = body.getvalue()
+        headers = {
+            'Authorization': self.token,
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
+            'Content-Type': f'multipart/form-data; boundary={boundary}'
+        }
+
+        t_start = time.time()
+        try:
+            resp = requests.post('https://discord.com/api/v9/interactions', data=post_data, headers=headers, timeout=8)
+            if resp.status_code not in (200, 204):
+                return {'success': False, 'error': f'Discord API lỗi: {resp.status_code} ({resp.text[:120]})'}
+        except Exception as e:
+            return {'success': False, 'error': f'Lỗi kết nối khi gửi ảnh cabin: {e}'}
+
+        time.sleep(1.5)
+        poll_url = f"https://discord.com/api/v9/channels/{CHANNEL_ID}/messages?limit=4"
+        while time.time() - t_start < timeout_sec:
+            try:
+                r_poll = self.session.get(poll_url, timeout=3.5)
+                raw_msgs = r_poll.json() if r_poll.status_code == 200 else []
+            except Exception:
+                raw_msgs = []
+
+            for m in raw_msgs:
+                mid = m.get('id')
+                if latest_id is None or int(mid) >= int(latest_id):
+                    if m.get('author', {}).get('id') == APP_ID:
+                        content = m.get('content', '')
+                        embeds = m.get('embeds', [])
+                        e_desc = embeds[0].get('description', '') if embeds else ''
+                        e_title = embeds[0].get('title', '') if embeds else ''
+                        full_txt = f"{content} {e_title} {e_desc}".strip()
+                        if 'điểm danh' in full_txt.lower() or 'khuôn mặt' in full_txt.lower() or '✅' in full_txt:
+                            self.latest_msg_id = mid
+                            return {'success': True, 'message': full_txt or 'Đã lưu dữ liệu điểm danh khuôn mặt thành công'}
+                        elif '❌' in full_txt or 'lỗi' in full_txt.lower():
+                            self.latest_msg_id = mid
+                            return {'success': False, 'error': full_txt}
+
+            time.sleep(0.5)
+
+        return {'success': True, 'message': f'Đã gửi ảnh cabin cho học viên {c_mhv} tới máy chủ thành công'}
