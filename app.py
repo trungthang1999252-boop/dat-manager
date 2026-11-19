@@ -307,8 +307,6 @@ def query_student():
         st_dat['interaction_username'] = 'tranthang252'
         st_dat['interaction_user_id'] = '1380376964304474173'
         saved_st = db.upsert_student(st_dat, auto_save=True)
-        if saved_st and saved_st.get('hoten') and saved_st.get('hoten') not in db.roster:
-            db.add_to_roster(saved_st, auto_save=True)
 
         mahv = (saved_st or {}).get('mahv') or st_dat.get('mahv')
         lt_target = mahv if mahv else ((saved_st or {}).get('cccd') or (saved_st or {}).get('hoten') or target_query)
@@ -325,8 +323,6 @@ def query_student():
                     st_lt['interaction_username'] = 'tranthang252'
                     st_lt['interaction_user_id'] = '1380376964304474173'
                     saved_st = db.upsert_student(st_lt, auto_save=True)
-                    if saved_st and saved_st.get('hoten') and saved_st.get('hoten') not in db.roster:
-                        db.add_to_roster(saved_st, auto_save=True)
             except Exception as e_lt:
                 print("Lỗi tự động tra cứu lý thuyết sau /dat:", e_lt)
 
@@ -361,8 +357,6 @@ def query_student():
             it['interaction_user_id'] = '1380376964304474173'
             saved = db.upsert_student(it, auto_save=True)
             if saved:
-                if saved.get('hoten') and saved.get('hoten') not in db.roster:
-                    db.add_to_roster(saved, auto_save=True)
                 saved = ensure_lythuyet_evaluated(saved)
                 saved_list.append(saved)
 
@@ -391,8 +385,6 @@ def query_student():
                 st['interaction_user_id'] = '1380376964304474173'
                 saved = db.upsert_student(st)
                 if saved:
-                    if saved.get('hoten') and saved.get('hoten') not in db.roster:
-                        db.add_to_roster(saved, auto_save=True)
                     if cmd_type == 'lythuyet' or saved.get('lythuyet_pdf_url'):
                         saved = ensure_lythuyet_evaluated(saved)
                     saved_list.append(saved)
@@ -403,8 +395,6 @@ def query_student():
                 raw_data['interaction_user_id'] = '1380376964304474173'
             saved = db.upsert_student(raw_data)
             if saved:
-                if saved.get('hoten') and saved.get('hoten') not in db.roster:
-                    db.add_to_roster(saved, auto_save=True)
                 if cmd_type == 'lythuyet' or saved.get('lythuyet_pdf_url'):
                     saved = ensure_lythuyet_evaluated(saved)
                 saved_list.append(saved)
