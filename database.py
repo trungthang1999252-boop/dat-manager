@@ -3,6 +3,7 @@ import re
 import json
 import shutil
 import unicodedata
+import threading
 from datetime import datetime
 
 DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data')
@@ -42,6 +43,7 @@ BENCHMARKS = {
 
 class StudentDatabase:
     def __init__(self):
+        self._lock = threading.Lock()
         self.roster = self._load_roster()
         self.students = self._load()
         self._sync_students_from_roster()
@@ -235,11 +237,14 @@ class StudentDatabase:
         return {}
 
     def _save_roster(self):
-        try:
-            with open(ROSTER_FILE, 'w', encoding='utf-8') as f:
-                json.dump(self.roster, f, ensure_ascii=False, indent=2)
-        except Exception as e:
-            print("Lỗi lưu danh sách gốc:", e)
+        with self._lock:
+            try:
+                tmp_file = ROSTER_FILE + '.tmp'
+                with open(tmp_file, 'w', encoding='utf-8') as f:
+                    json.dump(self.roster, f, ensure_ascii=False, indent=2)
+                os.replace(tmp_file, ROSTER_FILE)
+            except Exception as e:
+                print("Lỗi lưu danh sách gốc:", e)
 
     def _load(self):
         if os.path.exists(STUDENTS_FILE):
@@ -251,17 +256,20 @@ class StudentDatabase:
         return {}
 
     def _save(self):
-        try:
-            with open(STUDENTS_FILE, 'w', encoding='utf-8') as f:
-                json.dump(self.students, f, ensure_ascii=False, indent=2)
-            
-            # Backup định kỳ theo ngày
-            today_str = datetime.now().strftime('%Y%m%d')
-            backup_file = os.path.join(BACKUP_DIR, f'students_{today_str}.json')
-            if not os.path.exists(backup_file):
-                shutil.copyfile(STUDENTS_FILE, backup_file)
-        except Exception as e:
-            print("Lỗi lưu cơ sở dữ liệu:", e)
+        with self._lock:
+            try:
+                tmp_file = STUDENTS_FILE + '.tmp'
+                with open(tmp_file, 'w', encoding='utf-8') as f:
+                    json.dump(self.students, f, ensure_ascii=False, indent=2)
+                os.replace(tmp_file, STUDENTS_FILE)
+                
+                # Backup định kỳ theo ngày
+                today_str = datetime.now().strftime('%Y%m%d')
+                backup_file = os.path.join(BACKUP_DIR, f'students_{today_str}.json')
+                if not os.path.exists(backup_file):
+                    shutil.copyfile(STUDENTS_FILE, backup_file)
+            except Exception as e:
+                print("Lỗi lưu cơ sở dữ liệu:", e)
 
     def calculate_progress(self, student):
         """Tính toán tỷ lệ hoàn thành % và các chỉ tiêu chuẩn hóa theo hạng xe."""
