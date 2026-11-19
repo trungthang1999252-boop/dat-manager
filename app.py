@@ -123,8 +123,15 @@ def backup_upload():
         return jsonify({'success': False, 'error': 'Vui lòng chọn đúng file đuôi .json!'})
     try:
         data = json.load(f)
-        if isinstance(data, list):
-            db.students = data
+        if isinstance(data, dict):
+            db.students.update(data)
+            db._save()
+            return jsonify({'success': True, 'count': len(db.students)})
+        elif isinstance(data, list):
+            for s in data:
+                key = s.get('mahv') or s.get('cccd') or s.get('hoten')
+                if key:
+                    db.students[key] = s
             db._save()
             return jsonify({'success': True, 'count': len(db.students)})
         else:
