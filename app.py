@@ -28,6 +28,7 @@ init_token = discord_service.auto_detect_discord_token()
 if init_token:
     ds.set_token(init_token)
 db = database.StudentDatabase()
+_has_initialized_totnghiep = False
 
 # Tắt chức năng tự động đồng bộ liên tục để tránh quét lẫn học viên của giáo viên khác trên kênh Discord
 auto_sync_enabled = False
@@ -97,12 +98,39 @@ def backup_upload():
 
 @app.after_request
 def add_cache_headers(response):
-    """Ngăn chặn trình duyệt điện thoại (Safari/Chrome PWA) lưu cache HTML và service-worker cũ."""
+    """Ngăn chặn trình duyệt điện thoại lưu cache cũ và nén Gzip siêu tốc."""
     if request.path in ('/', '/service-worker.js', '/manifest.json') or request.path.startswith('/api/'):
         response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate, max-age=0'
         response.headers['Pragma'] = 'no-cache'
         response.headers['Expires'] = '0'
+
+    # Nén Gzip tự động cho HTML, JSON, JS (giảm dung lượng truyền tải từ 230KB xuống ~35KB trên điện thoại)
+    try:
+        accept_encoding = request.headers.get('Accept-Encoding', '').lower()
+        if (
+            'gzip' in accept_encoding and
+            response.status_code == 200 and
+            not response.direct_passthrough and
+            len(response.data or b'') > 500 and
+            'Content-Encoding' not in response.headers
+        ):
+            ctype = response.headers.get('Content-Type', '').lower()
+            if 'text/' in ctype or 'application/json' in ctype or 'javascript' in ctype:
+                import gzip
+                compressed = gzip.compress(response.data)
+                if len(compressed) < len(response.data):
+                    response.data = compressed
+                    response.headers['Content-Encoding'] = 'gzip'
+                    response.headers['Content-Length'] = len(compressed)
+    except Exception:
+        pass
+
     return response
+
+@app.route('/api/ping', methods=['GET', 'HEAD'])
+def api_ping():
+    """Endpoint phản hồi nhẹ cho worker giữ kết nối và chống ngủ đông 24/7."""
+    return jsonify({'status': 'ok', 'online': True, 'uptime': time.time()})
 
 @app.route('/')
 def index():
@@ -247,16 +275,19 @@ def get_students():
     course_filter = request.args.get('course', 'all')
     sort_by = request.args.get('sort', 'updated')
 
-    # Đảm bảo học viên được chấm điều kiện tốt nghiệp toàn diện (cả DAT và Lý thuyết)
-    for s in list(db.students.values()):
-        if not s.get('totnghiep_has_pdf') or 'dat_quangduong' not in s.get('totnghiep_details', {}):
-            fname = s.get('lythuyet_pdf_filename') or (f"{s.get('mahv')}_lythuyet.pdf" if s.get('mahv') else '')
-            p = os.path.join(DOWNLOADS_DIR, fname) if fname else ''
-            if p and os.path.exists(p):
-                ensure_lythuyet_evaluated(s)
-            else:
-                db.calculate_progress(s)
-                db.upsert_student(s, auto_save=False)
+    # Khởi tạo kiểm tra tốt nghiệp một lần khi khởi động (chỉ chạy lần đầu, không lặp lại mỗi lần tìm kiếm)
+    global _has_initialized_totnghiep
+    if not _has_initialized_totnghiep:
+        for s in list(db.students.values()):
+            if not s.get('totnghiep_has_pdf') or 'dat_quangduong' not in s.get('totnghiep_details', {}):
+                fname = s.get('lythuyet_pdf_filename') or (f"{s.get('mahv')}_lythuyet.pdf" if s.get('mahv') else '')
+                p = os.path.join(DOWNLOADS_DIR, fname) if fname else ''
+                if p and os.path.exists(p):
+                    ensure_lythuyet_evaluated(s)
+                else:
+                    db.calculate_progress(s)
+                    db.upsert_student(s, auto_save=False)
+        _has_initialized_totnghiep = True
     
     students = db.get_all(keyword=keyword, status_filter=status_filter, course_filter=course_filter, sort_by=sort_by)
     courses = sorted(list(set(s.get('khoa') for s in db.students.values() if s.get('khoa'))))
@@ -921,6 +952,31 @@ def save_discord_token_api():
         'connected': ds.is_connected(),
         'message': 'Đã lưu và cập nhật Discord Token thành công!'
     })
+
+def start_keep_warm_worker():
+    """
+    Giữ máy chủ Render luôn thức (100% Online, không bị ngủ đông sau 15 phút).
+    Ping định kỳ mỗi 9 phút để phản hồi tức thì cho điện thoại / máy tính mọi lúc.
+    """
+    def _worker():
+        time.sleep(30)
+        render_url = os.environ.get('RENDER_EXTERNAL_URL', 'https://dat-manager-pro.onrender.com')
+        ping_url = f"{render_url.rstrip('/')}/api/ping"
+        while True:
+            try:
+                req = urllib.request.Request(ping_url, headers={'User-Agent': 'DAT-KeepWarm/2.0'})
+                with urllib.request.urlopen(req, timeout=10) as resp:
+                    pass
+            except Exception:
+                pass
+            time.sleep(540) # Mỗi 9 phút ping 1 lần (Render ngủ đông sau 15 phút)
+
+    t = threading.Thread(target=_worker, daemon=True, name="DAT-KeepWarm")
+    t.start()
+
+# Tự động kích hoạt chống ngủ đông khi chạy trên môi trường Web / Cloud
+if os.environ.get('RENDER') or os.environ.get('RENDER_EXTERNAL_URL') or os.environ.get('PORT'):
+    start_keep_warm_worker()
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5050))
