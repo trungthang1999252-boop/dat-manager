@@ -10,7 +10,13 @@ Quy tắc xét điều kiện thi tốt nghiệp (theo yêu cầu của thầy):
 
 import os
 import re
-import fitz
+try:
+    import fitz
+except ImportError:
+    try:
+        import pymupdf as fitz
+    except ImportError:
+        fitz = None
 
 # 13 Hàng kiểm tra trong bảng báo cáo lý thuyết của Discord Bot
 ROW_DEFINITIONS = [
@@ -40,6 +46,15 @@ def evaluate_pdf_file(pdf_path, exempt_all_cabin=False):
             'ketqua_totnghiep': 'Chưa tra LT',
             'is_dat': False,
             'failing_items': ['Chưa có file PDF'],
+            'passed_items': [],
+            'details': {}
+        }
+
+    if fitz is None:
+        return {
+            'ketqua_totnghiep': 'Chưa tra LT',
+            'is_dat': False,
+            'failing_items': ['Thư viện PDF chưa sẵn sàng'],
             'passed_items': [],
             'details': {}
         }
@@ -234,6 +249,7 @@ def evaluate_student(student_record, downloads_dir, exempt_all_cabin=False):
             pdf_path = candidate
 
     has_pdf = False
+    lt_fails = []
     if pdf_path and os.path.exists(pdf_path):
         has_pdf = True
         res = evaluate_pdf_file(pdf_path, exempt_all_cabin=exempt_all_cabin)
@@ -242,7 +258,8 @@ def evaluate_student(student_record, downloads_dir, exempt_all_cabin=False):
             v['group'] = 'LY_THUYET'
             v['rule'] = 'Miễn trừ (Bỏ qua)' if v.get('exempt') else 'Bắt buộc đạt'
             combined_details[k] = v
-        for f_item in res.get('failing_items', []):
+        lt_fails = res.get('failing_items', [])
+        for f_item in lt_fails:
             combined_failing.append(f_item)
     else:
         # Nếu chưa có PDF lý thuyết
@@ -260,6 +277,25 @@ def evaluate_student(student_record, downloads_dir, exempt_all_cabin=False):
             combined_failing.append("Đang chờ tải báo cáo lý thuyết")
         else:
             combined_failing.append("Chưa tra cứu lý thuyết (/lythuyet)")
+
+    # Đánh giá riêng phần Lý thuyết
+    if has_pdf:
+        if len(lt_fails) == 0:
+            student_record['lythuyet_dat'] = True
+            student_record['lythuyet_status'] = 'Đạt'
+            student_record['lythuyet_reason'] = 'Tất cả các môn lý thuyết đều tích xanh (đã miễn trừ cabin)'
+        else:
+            student_record['lythuyet_dat'] = False
+            student_record['lythuyet_status'] = 'Không'
+            student_record['lythuyet_reason'] = f"Chưa đạt các môn: {', '.join(lt_fails)}"
+    else:
+        student_record['lythuyet_dat'] = False
+        if student_record.get('lythuyet_pdf_url'):
+            student_record['lythuyet_status'] = 'Đang tải'
+            student_record['lythuyet_reason'] = 'Đang chờ tải báo cáo lý thuyết'
+        else:
+            student_record['lythuyet_status'] = 'Chưa tra'
+            student_record['lythuyet_reason'] = 'Chưa tra cứu lý thuyết (/lythuyet)'
 
     # 3. Kết luận tổng hợp điều kiện thi tốt nghiệp
     # ĐẠT = Hoàn thành đủ số km, đủ giờ, đủ ngày đường VÀ tất cả môn lý thuyết đều tích xanh (trừ hình cabin)
