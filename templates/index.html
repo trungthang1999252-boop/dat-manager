@@ -2087,6 +2087,7 @@
         }
 
         function renderTable(list) {
+            if (!list) list = currentStudents || [];
             const tbody = document.getElementById('student-tbody');
             const emptyState = document.getElementById('empty-state');
             tbody.innerHTML = '';
@@ -2657,8 +2658,13 @@
                     method: 'POST',
                     body: formData
                 });
-                const data = await res.json();
-                if (data.success) {
+                let data = null;
+                try {
+                    data = await res.json();
+                } catch (jsonErr) {
+                    throw new Error(res.status === 500 ? 'Máy chủ gặp sự cố nội bộ (500)' : 'Không nhận diện được phản hồi từ máy chủ');
+                }
+                if (data && data.success) {
                     showToast(`✅ ${data.message || 'Đã lưu điểm danh khuôn mặt cabin thành công!'}`);
                     const s = currentStudents.find(st => (st.mahv === studentKey || st.cccd === studentKey || st.hoten === studentKey));
                     if (s) {
@@ -2666,14 +2672,14 @@
                         s.cabin_image_url = data.cabin_image_url;
                         s.cabin_status = data.message;
                     }
-                    renderTable();
+                    renderTable(currentStudents);
                 } else {
-                    showToast(data.error || 'Lỗi khi gửi ảnh cabin sang Discord.', false);
+                    showToast(data?.error || 'Lỗi khi gửi ảnh cabin sang Discord.', false);
                     if (btn) { btn.innerHTML = origHtml; btn.disabled = false; }
                 }
             } catch (err) {
                 console.error("Lỗi uploadCabinImage:", err);
-                showToast('Lỗi kết nối khi tải ảnh cabin.', false);
+                showToast('Lỗi khi tải ảnh cabin: ' + (err.message || 'Không thể kết nối máy chủ'), false);
                 if (btn) { btn.innerHTML = origHtml; btn.disabled = false; }
             }
         }
