@@ -136,6 +136,15 @@ class StudentDatabase:
                     'thoigian_dat': False,
                     'thoigian_dem_dat': False,
                     'thoigian_tudong_dat': False,
+                    'cabin_uploaded': r_st.get('cabin_uploaded', False),
+                    'cabin_status': r_st.get('cabin_status', ''),
+                    'cabin_image_url': r_st.get('cabin_image_url', ''),
+                    'so_phien_hople': r_st.get('so_phien_hople', 0),
+                    'so_phien_loi': r_st.get('so_phien_loi', 0),
+                    'phien_status': r_st.get('phien_status', 'Chưa tra phiên'),
+                    'phien_loi_detail': r_st.get('phien_loi_detail', []),
+                    'phien_recoverable_cars': r_st.get('phien_recoverable_cars', []),
+                    'phien_permanent_reasons': r_st.get('phien_permanent_reasons', []),
                     'has_lythuyet': False,
                     'lythuyet_pdf_url': None,
                     'pdf_url': None,
@@ -350,6 +359,19 @@ class StudentDatabase:
 
         student['has_lythuyet'] = bool(student.get('lythuyet_pdf_url') or student.get('has_lythuyet'))
         student['has_phien_pdf'] = bool(student.get('pdf_url'))
+
+        # Đánh giá trạng thái phiên học (Phiên hợp lệ, Lỗi vĩnh viễn, hoặc Chờ đồng bộ)
+        if student.get('has_permanent_error') or student.get('phien_permanent_reasons'):
+            student['phien_status'] = 'Lỗi vĩnh viễn (Y/c chạy bù)'
+        elif student.get('phien_recoverable_cars'):
+            cars_str = ", ".join(student.get('phien_recoverable_cars', []))
+            student['phien_status'] = f"Chờ đồng bộ ({cars_str})"
+        elif student.get('so_phien_loi', 0) > 0:
+            student['phien_status'] = f"Có {student.get('so_phien_loi')} phiên lỗi"
+        elif student.get('so_phien_hople', 0) > 0:
+            student['phien_status'] = 'Hợp lệ'
+        elif not student.get('phien_status'):
+            student['phien_status'] = 'Chưa tra phiên'
 
         # Đánh giá lại kết quả tổng DAT
         if is_km_ok and is_gio_ok and is_dem_ok and is_tudong_ok and songay_dat:
