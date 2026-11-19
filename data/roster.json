@@ -1,0 +1,182 @@
+{
+  "PHẠM VĂN TRÍ": {
+    "hoten": "PHẠM VĂN TRÍ",
+    "cccd": "",
+    "mahv": "",
+    "ngaysinh": "20/01/1998",
+    "hang": "",
+    "khoa": "",
+    "sdt": "",
+    "ghichu": "",
+    "created_at": "16/11/2026 20:17:40",
+    "updated_at": "16/11/2026 20:17:40"
+  },
+  "PHẠM ĐĂNG KHÔI": {
+    "hoten": "PHẠM ĐĂNG KHÔI",
+    "cccd": "051205004748",
+    "mahv": "52001-20261016-000100",
+    "ngaysinh": "04/04/2005",
+    "hang": "C1",
+    "khoa": "CD_15C1",
+    "sdt": "",
+    "ghichu": "",
+    "created_at": "16/11/2026 20:17:40",
+    "updated_at": "16/11/2026 20:17:40"
+  },
+  "PHẠM VĂN PHƯƠNG": {
+    "hoten": "PHẠM VĂN PHƯƠNG",
+    "cccd": "051204002881",
+    "mahv": "52001-20261016-000102",
+    "ngaysinh": "28/06/2004",
+    "hang": "C1",
+    "khoa": "CD_15C1",
+    "sdt": "",
+    "ghichu": "",
+    "created_at": "16/11/2026 20:17:40",
+    "updated_at": "16/11/2026 20:17:40"
+  },
+  "DƯƠNG VĂN VŨ": {
+    "hoten": "DƯƠNG VĂN VŨ",
+    "cccd": "051099012088",
+    "mahv": "52001-20261016-000088",
+    "ngaysinh": "28/02/1999",
+    "hang": "C1",
+    "khoa": "CD_15C1",
+    "sdt": "",
+    "ghichu": "",
+    "created_at": "16/11/2026 20:17:40",
+    "updated_at": "16/11/2026 20:17:40"
+  },
+  "NGUYỄN THỊ LAN ÂN": {
+    "hoten": "NGUYỄN THỊ LAN ÂN",
+    "cccd": "066300006778",
+    "mahv": "52001-20261016-000040",
+    "ngaysinh": "08/11/2000",
+    "hang": "C1",
+    "khoa": "CD_15C1",
+    "sdt": "",
+    "ghichu": "",
+    "created_at": "16/11/2026 20:17:40",
+    "updated_at": "16/11/2026 20:17:40"
+  },
+  "TRƯƠNG VĂN QUỐC": {
+    "hoten": "TRƯƠNG VĂN QUỐC",
+    "cccd": "066095024563",
+    "mahv": "52001-20261016-000041",
+    "ngaysinh": "09/07/1995",
+    "hang": "C1",
+    "khoa": "CD_15C1",
+    "sdt": "",
+    "ghichu": "",
+    "created_at": "16/11/2026 20:17:40",
+    "updated_at": "16/11/2026 20:17:40"
+  },
+  "NGUYỄN HỮU QUỲNH": {
+    "hoten": "NGUYỄN HỮU QUỲNH",
+    "cccd": "066093016739",
+    "mahv": "52001-20261016-000043",
+    "ngaysinh": "02/12/1993",
+    "hang": "C1",
+    "khoa": "CD_15C1",
+    "sdt": "",
+    "ghichu": "",
+    "created_at": "16/11/2026 20:17:40",
+    "updated_at": "16/11/2026 20:17:40"
+  },
+  "VÕ TRUNG TÍNH": {
+    "hoten": "VÕ TRUNG TÍNH",
+    "cccd": "052204008882",
+    "mahv": "52001-20261016-000039",
+    "ngaysinh": "04/09/2004",
+    "hang": "C1",
+    "khoa": "CD_15C1",
+    "sdt": "",
+    "ghichu": "",
+    "created_at": "16/11/2026 20:17:40",
+    "updated_at": "16/11/2026 20:17:40"
+  },
+  "ĐOÀN VĂN TUẤN": {
+    "hoten": "ĐOÀN VĂN TUẤN",
+    "cccd": "066094010954",
+    "mahv": "52001-20261016-000042",
+    "ngaysinh": "10/07/1994",
+    "hang": "C1",
+    "khoa": "CD_15C1",
+    "sdt": "",
+    "ghichu": "",
+    "created_at": "16/11/2026 20:17:40",
+    "updated_at": "16/11/2026 20:17:40"
+  },
+  "ĐÀO HUỲNH ANH KHOA": {
+    "hoten": "ĐÀO HUỲNH ANH KHOA",
+    "cccd": "051207000248",
+    "mahv": "52001-20260920-000092",
+    "khoa": "CD_238B",
+    "hang": "B",
+    "ngaysinh": "12/11/2007"
+  },
+  "NGUYỄN NGỌC TÂN": {
+    "hoten": "NGUYỄN NGỌC TÂN",
+    "cccd": "091092018244",
+    "mahv": "52001-20261022-000155",
+    "khoa": "CD_27CE",
+    "hang": "Cm-CE",
+    "ngaysinh": "01/06/1992"
+  },
+  "LÊ THỊ HỒNG DIỄM": {
+    "hoten": "LÊ THỊ HỒNG DIỄM",
+    "cccd": "051187006039",
+    "mahv": "52001-20260916-000013",
+    "khoa": "CD_110B.01",
+    "hang": "B.01",
+    "ngaysinh": "10/01/1987"
+  },
+  "PHẠM VĂN BẢO": {
+    "hoten": "PHẠM VĂN BẢO",
+    "cccd": "051205010920",
+    "mahv": "52001-20261007-000089",
+    "khoa": "CD_14C1",
+    "hang": "C1",
+    "ngaysinh": "15/01/2005"
+  },
+  "NGUYỄN HỒNG PHƯƠNG": {
+    "hoten": "NGUYỄN HỒNG PHƯƠNG",
+    "cccd": "051192000653",
+    "mahv": "52001-20260916-000038",
+    "khoa": "CD_110B.01",
+    "hang": "B.01",
+    "ngaysinh": "03/10/1992"
+  },
+  "LÊ THỊ PHƯỚC BÌNH": {
+    "hoten": "LÊ THỊ PHƯỚC BÌNH",
+    "cccd": "052177005292",
+    "mahv": "52001-20261004-000074",
+    "khoa": "CD_111B.01",
+    "hang": "B.01",
+    "ngaysinh": "22/12/1977"
+  },
+  "TRẦN THỊ NHUNG": {
+    "hoten": "TRẦN THỊ NHUNG",
+    "cccd": "052199001701",
+    "mahv": "52001-20260920-000112",
+    "khoa": "CD_238B",
+    "hang": "B",
+    "ngaysinh": "06/01/1999"
+  },
+  "TRẦN THIỆN SƠN": {
+    "hoten": "TRẦN THIỆN SƠN",
+    "cccd": "086204006484",
+    "mahv": "52001-20261012-000016",
+    "khoa": "CD_112B.01",
+    "hang": "B.01",
+    "ngaysinh": ""
+  },
+  "TRẦN THỊ THANH NHÀN": {
+    "hoten": "TRẦN THỊ THANH NHÀN",
+    "cccd": "052306001691",
+    "mahv": "52001-20260920-000113",
+    "khoa": "CD_238B",
+    "hang": "B",
+    "ngaysinh": "30/10/2006"
+  }
+}
