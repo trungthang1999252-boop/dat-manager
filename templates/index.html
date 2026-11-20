@@ -2112,7 +2112,7 @@
 
     </div>
 
-    <!-- Modal Đồng Bộ / Cập Nhật Dữ Liệu Khóa Học (/capnhatkhoa) -->
+    <!-- Modal Đồng Bộ / Cập Nhật Dữ Liệu Khóa Học (/capnhatkhoa) - Chọn Nhiều Khóa -->
     <div id="sync-course-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl border border-slate-100">
             <div class="flex items-center justify-between border-b border-slate-100 pb-3">
@@ -2132,12 +2132,24 @@
 
             <div class="space-y-3">
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1">Chọn Khóa Học Hoặc Nhập Mã Khóa:</label>
-                    <div class="space-y-2">
-                        <select id="sync-course-select" onchange="document.getElementById('sync-course-input').value = this.value" class="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-amber-500">
-                        </select>
-                        <input type="text" id="sync-course-input" placeholder="Hoặc nhập mã khóa khác (VD: CD_15C1, B2-K24...)" 
-                            class="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-mono font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500 uppercase">
+                    <div class="flex items-center justify-between mb-1.5">
+                        <label class="text-xs font-bold text-slate-700">Chọn Một Hoặc Nhiều Khóa Cần Cập Nhật:</label>
+                        <div class="flex items-center space-x-2 text-[11px]">
+                            <button type="button" onclick="selectAllSyncCourses(true)" class="text-amber-700 hover:text-amber-800 font-bold hover:underline">Chọn tất cả</button>
+                            <span class="text-slate-300">|</span>
+                            <button type="button" onclick="selectAllSyncCourses(false)" class="text-slate-500 hover:text-slate-700 hover:underline">Bỏ chọn</button>
+                        </div>
+                    </div>
+                    <div id="sync-course-list" class="max-h-40 overflow-y-auto p-2 bg-slate-50 border border-slate-200 rounded-2xl space-y-1.5 text-xs shadow-inner">
+                        <!-- Populated dynamically -->
+                    </div>
+                    <div class="mt-2.5">
+                        <label class="block text-[11px] font-semibold text-slate-600 mb-1">Hoặc nhập thêm mã khóa (ngăn cách bằng dấu phẩy):</label>
+                        <input type="text" id="sync-course-input" placeholder="VD: CD_15C1, CD_15C2, B2-K24..." 
+                            class="w-full p-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-mono font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500 uppercase">
+                    </div>
+                    <div class="mt-2 flex items-center justify-between text-[11px] bg-amber-50/70 border border-amber-200 px-3 py-1.5 rounded-xl font-bold text-amber-800">
+                        <span id="sync-course-summary"><i class="fa-solid fa-list-check mr-1.5 text-amber-600"></i>Đã chọn: 0 khóa</span>
                     </div>
                 </div>
 
@@ -2152,7 +2164,7 @@
                 <div id="sync-course-loading" class="hidden text-center py-2 space-y-2">
                     <div class="inline-flex items-center space-x-2 bg-amber-50 border border-amber-200 text-amber-800 px-4 py-2 rounded-xl text-xs font-semibold animate-pulse">
                         <i class="fa-solid fa-spinner fa-spin text-amber-600 text-base"></i>
-                        <span>Đang gửi lệnh /capnhatkhoa tới Bot và đồng bộ...</span>
+                        <span id="sync-course-loading-text">Đang gửi lệnh /capnhatkhoa tới Bot và đồng bộ...</span>
                     </div>
                 </div>
             </div>
@@ -2163,14 +2175,13 @@
                 </button>
                 <button type="button" id="btn-do-sync-course" onclick="executeSyncCourse()" class="bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs px-4 py-2 rounded-xl transition flex items-center space-x-1.5 shadow-md active:scale-95">
                     <i class="fa-solid fa-cloud-arrow-down"></i>
-                    <span>Cập Nhật Ngay</span>
+                    <span>Cập Nhật Các Khóa Đã Chọn</span>
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- Modal Xóa Khóa Học (Đã Thi Xong) -->
-
+    <!-- Modal Xóa Khóa Học (Đã Thi Xong) - Chọn Nhiều Khóa -->
     <div id="delete-course-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl border border-slate-100">
             <div class="flex items-center justify-between border-b border-slate-100 pb-3">
@@ -2180,7 +2191,7 @@
                     </div>
                     <div>
                         <h3 class="text-sm font-bold text-slate-800">Xóa Khóa Học (Đã Thi Xong)</h3>
-                        <p class="text-[11px] text-slate-500">Xóa vĩnh viễn toàn bộ học viên thuộc khóa đã thi xong</p>
+                        <p class="text-[11px] text-slate-500">Xóa vĩnh viễn toàn bộ học viên thuộc các khóa đã thi xong</p>
                     </div>
                 </div>
                 <button onclick="closeModal('delete-course-modal')" class="text-slate-400 hover:text-slate-600 p-1">
@@ -2190,12 +2201,24 @@
 
             <div class="space-y-3">
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1">Chọn Khóa Học Đã Thi Xong Cần Xóa:</label>
-                    <div class="space-y-2">
-                        <select id="delete-course-select" onchange="document.getElementById('delete-course-input').value = this.value" class="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-rose-500">
-                        </select>
-                        <input type="text" id="delete-course-input" placeholder="Hoặc nhập chính xác mã khóa cần xóa (VD: CD_15C1)..." 
-                            class="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-mono font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-rose-500">
+                    <div class="flex items-center justify-between mb-1.5">
+                        <label class="text-xs font-bold text-slate-700">Chọn Một Hoặc Nhiều Khóa Đã Thi Xong Cần Xóa:</label>
+                        <div class="flex items-center space-x-2 text-[11px]">
+                            <button type="button" onclick="selectAllDeleteCourses(true)" class="text-rose-700 hover:text-rose-800 font-bold hover:underline">Chọn tất cả</button>
+                            <span class="text-slate-300">|</span>
+                            <button type="button" onclick="selectAllDeleteCourses(false)" class="text-slate-500 hover:text-slate-700 hover:underline">Bỏ chọn</button>
+                        </div>
+                    </div>
+                    <div id="delete-course-list" class="max-h-40 overflow-y-auto p-2 bg-rose-50/40 border border-rose-200 rounded-2xl space-y-1.5 text-xs shadow-inner">
+                        <!-- Populated dynamically -->
+                    </div>
+                    <div class="mt-2.5">
+                        <label class="block text-[11px] font-semibold text-slate-600 mb-1">Hoặc nhập thêm mã khóa cần xóa (ngăn cách bằng dấu phẩy):</label>
+                        <input type="text" id="delete-course-input" placeholder="VD: CD_15C1, CD_15C2..." 
+                            class="w-full p-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-mono font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-rose-500 uppercase">
+                    </div>
+                    <div class="mt-2 flex items-center justify-between text-[11px] bg-rose-50 border border-rose-200 px-3 py-1.5 rounded-xl font-bold text-rose-800">
+                        <span id="delete-course-summary"><i class="fa-solid fa-triangle-exclamation mr-1.5 text-rose-600"></i>Đã chọn: 0 khóa (0 học viên)</span>
                     </div>
                 </div>
 
@@ -2204,7 +2227,7 @@
                         <i class="fa-solid fa-triangle-exclamation"></i>
                         <span>Lưu ý quan trọng:</span>
                     </div>
-                    <p class="leading-relaxed">Tính năng này sẽ <b>xóa vĩnh viễn tất cả học viên</b> thuộc khóa đã chọn khỏi cả danh sách theo dõi và hồ sơ gốc, đồng thời tự động cập nhật lên đám mây. Chỉ thực hiện khi khóa này đã hoàn thành kỳ thi sát hạch!</p>
+                    <p class="leading-relaxed">Tính năng này sẽ <b>xóa vĩnh viễn tất cả học viên</b> thuộc các khóa đã chọn khỏi cả danh sách theo dõi và hồ sơ gốc, đồng thời tự động cập nhật lên đám mây. Chỉ thực hiện khi các khóa này đã hoàn thành kỳ thi sát hạch!</p>
                 </div>
             </div>
 
@@ -2212,9 +2235,9 @@
                 <button type="button" onclick="closeModal('delete-course-modal')" class="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl transition">
                     Hủy Bỏ
                 </button>
-                <button type="button" id="btn-do-delete-course" onclick="executeDeleteCourse()" class="bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs px-4 py-2 rounded-xl transition flex items-center space-x-1.5 shadow-md">
+                <button type="button" id="btn-do-delete-course" onclick="executeDeleteCourse()" class="bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs px-4 py-2 rounded-xl transition flex items-center space-x-1.5 shadow-md active:scale-95">
                     <i class="fa-solid fa-trash-can"></i>
-                    <span>Xác Nhận Xóa Khóa</span>
+                    <span>Xác Nhận Xóa Các Khóa Đã Chọn</span>
                 </button>
             </div>
         </div>
@@ -7753,80 +7776,109 @@ let _loadStudentsAbortCtrl = null;
 
 
 
-        // ================= Cập Nhật Khóa Học (/capnhatkhoa) =================
+        // ================= Cập Nhật Khóa Học (/capnhatkhoa) - Chọn Nhiều Khóa =================
         function openSyncCourseModal() {
             triggerHaptic();
             const modal = document.getElementById('sync-course-modal');
             if (!modal) return;
             modal.classList.remove('hidden');
 
-            const select = document.getElementById('sync-course-select');
-            if (select) {
-                select.innerHTML = '<option value="">-- Chọn khóa học trong danh sách --</option>';
+            const container = document.getElementById('sync-course-list');
+            const input = document.getElementById('sync-course-input');
+            if (input) input.value = '';
 
-                const courses = new Set();
+            if (container) {
+                container.innerHTML = '';
+                const courseCounts = {};
                 const listToCheck = (typeof currentStudents !== 'undefined' && Array.isArray(currentStudents) && currentStudents.length > 0)
                     ? currentStudents
                     : (typeof studentList !== 'undefined' && Array.isArray(studentList) ? studentList : []);
 
                 listToCheck.forEach(s => {
-                    if (s.khoa && s.khoa.trim()) courses.add(s.khoa.trim());
+                    const c = (s.khoa || '').trim();
+                    if (c) courseCounts[c] = (courseCounts[c] || 0) + 1;
                 });
 
                 if (typeof rosterList !== 'undefined' && Array.isArray(rosterList)) {
                     rosterList.forEach(r => {
-                        if (r.khoa && r.khoa.trim()) courses.add(r.khoa.trim());
+                        const c = (r.khoa || '').trim();
+                        if (c && !courseCounts[c]) courseCounts[c] = 0;
                     });
                 }
 
-                Array.from(courses).sort().forEach(c => {
-                    const opt = document.createElement('option');
-                    opt.value = c;
-                    opt.textContent = `Khóa: ${c}`;
-                    select.appendChild(opt);
-                });
-
-                const currentFilterCourse = document.getElementById('course-filter')?.value;
-                if (currentFilterCourse && currentFilterCourse !== 'all') {
-                    select.value = currentFilterCourse;
-                    document.getElementById('sync-course-input').value = currentFilterCourse;
-                } else if (courses.size > 0) {
-                    const firstCourse = Array.from(courses)[0];
-                    select.value = firstCourse;
-                    document.getElementById('sync-course-input').value = firstCourse;
+                const sortedCourses = Object.keys(courseCounts).sort();
+                if (sortedCourses.length === 0) {
+                    container.innerHTML = '<div class="text-center py-4 text-slate-400 text-xs">(Không có khóa học nào trong danh sách)</div>';
                 } else {
-                    document.getElementById('sync-course-input').value = '';
+                    const currentFilter = document.getElementById('course-filter')?.value;
+                    sortedCourses.forEach((c) => {
+                        const isPreChecked = (currentFilter && currentFilter !== 'all' && currentFilter === c);
+                        const row = document.createElement('label');
+                        row.className = 'flex items-center justify-between p-2 bg-white rounded-xl border border-slate-200 hover:border-amber-300 hover:bg-amber-50/40 cursor-pointer transition';
+                        row.innerHTML = `
+                            <div class="flex items-center space-x-2.5">
+                                <input type="checkbox" class="sync-course-cb rounded text-amber-600 focus:ring-amber-500 w-4 h-4 cursor-pointer" value="${c}" data-count="${courseCounts[c]}" ${isPreChecked ? 'checked' : ''} onchange="updateSyncCourseSummary()">
+                                <span class="font-bold text-slate-800 text-xs">${c}</span>
+                            </div>
+                            <span class="text-[11px] font-semibold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">${courseCounts[c]} học viên</span>
+                        `;
+                        container.appendChild(row);
+                    });
                 }
+                updateSyncCourseSummary();
+            }
+        }
+
+        function selectAllSyncCourses(checked) {
+            document.querySelectorAll('.sync-course-cb').forEach(cb => cb.checked = checked);
+            updateSyncCourseSummary();
+        }
+
+        function updateSyncCourseSummary() {
+            const checked = Array.from(document.querySelectorAll('.sync-course-cb:checked'));
+            let totalStudents = 0;
+            checked.forEach(cb => {
+                totalStudents += parseInt(cb.dataset.count || '0', 10);
+            });
+            const summary = document.getElementById('sync-course-summary');
+            if (summary) {
+                summary.innerHTML = `<i class="fa-solid fa-list-check mr-1.5 text-amber-600"></i>Đã chọn: <b>${checked.length}</b> khóa (${totalStudents} học viên)`;
             }
         }
 
         async function executeSyncCourse() {
             triggerHaptic();
-            const course = document.getElementById('sync-course-input')?.value.trim();
-            if (!course) {
-                showToast('Vui lòng nhập hoặc chọn mã khóa học cần cập nhật!', false);
+            const checked = Array.from(document.querySelectorAll('.sync-course-cb:checked')).map(cb => cb.value.trim());
+            const extraInput = (document.getElementById('sync-course-input')?.value || '').trim();
+            const extraCourses = extraInput ? extraInput.split(',').map(s => s.trim().toUpperCase()).filter(Boolean) : [];
+
+            const allSelected = Array.from(new Set([...checked, ...extraCourses]));
+            if (allSelected.length === 0) {
+                showToast('Vui lòng chọn hoặc nhập ít nhất một mã khóa học cần cập nhật!', false);
                 return;
             }
 
             const btn = document.getElementById('btn-do-sync-course');
             const loading = document.getElementById('sync-course-loading');
+            const loadingText = document.getElementById('sync-course-loading-text');
             const origHtml = btn ? btn.innerHTML : '';
             if (btn) {
                 btn.disabled = true;
-                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> <span>Đang gửi lệnh...</span>';
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> <span>Đang cập nhật...</span>';
             }
             if (loading) loading.classList.remove('hidden');
-            showToast(`Đang gửi lệnh /capnhatkhoa cho khóa ${course} tới Discord Bot...`);
+            if (loadingText) loadingText.innerText = `Đang gửi lệnh /capnhatkhoa cho ${allSelected.length} khóa tới Bot...`;
+            showToast(`Đang gửi lệnh /capnhatkhoa cho ${allSelected.length} khóa tới Discord Bot...`);
 
             try {
                 const res = await fetch('/api/sync_course', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ course: course })
+                    body: JSON.stringify({ courses: allSelected })
                 });
                 const data = await res.json();
                 if (data.success) {
-                    showToast(`✅ ${data.message || 'Cập nhật thành công! Bot đã kéo dữ liệu mới nhất từ trường.'}`);
+                    showToast(`✅ ${data.message || `Đã cập nhật thành công ${allSelected.length} khóa học!`}`);
                     closeModal('sync-course-modal');
                     await loadStudents();
                 } else {
@@ -7843,19 +7895,19 @@ let _loadStudentsAbortCtrl = null;
             }
         }
 
-        // ================= Xóa Khóa Học (Đã Thi Xong) =================
+        // ================= Xóa Khóa Học (Đã Thi Xong) - Chọn Nhiều Khóa =================
         function openDeleteCourseModal() {
             triggerHaptic();
             const modal = document.getElementById('delete-course-modal');
             if (!modal) return;
             modal.classList.remove('hidden');
 
-            const select = document.getElementById('delete-course-select');
+            const container = document.getElementById('delete-course-list');
             const input = document.getElementById('delete-course-input');
             if (input) input.value = '';
-            if (select) {
-                select.innerHTML = '<option value="">-- Chọn khóa học cần xóa --</option>';
 
+            if (container) {
+                container.innerHTML = '';
                 const courseCounts = {};
                 const listToCheck = (typeof currentStudents !== 'undefined' && Array.isArray(currentStudents) && currentStudents.length > 0)
                     ? currentStudents
@@ -7863,46 +7915,78 @@ let _loadStudentsAbortCtrl = null;
 
                 listToCheck.forEach(s => {
                     const c = (s.khoa || '').trim();
-                    if (c) {
-                        courseCounts[c] = (courseCounts[c] || 0) + 1;
-                    }
+                    if (c) courseCounts[c] = (courseCounts[c] || 0) + 1;
                 });
 
                 if (typeof rosterList !== 'undefined' && Array.isArray(rosterList)) {
                     rosterList.forEach(r => {
                         const c = (r.khoa || '').trim();
-                        if (c && !courseCounts[c]) {
-                            courseCounts[c] = 0;
-                        }
+                        if (c && !courseCounts[c]) courseCounts[c] = 0;
                     });
                 }
 
                 const sortedCourses = Object.keys(courseCounts).sort();
                 if (sortedCourses.length === 0) {
-                    select.innerHTML = '<option value="">(Không có khóa nào trong danh sách)</option>';
+                    container.innerHTML = '<div class="text-center py-4 text-slate-400 text-xs">(Không có khóa học nào trong danh sách)</div>';
                 } else {
-                    sortedCourses.forEach(c => {
-                        const opt = document.createElement('option');
-                        opt.value = c;
-                        opt.textContent = `Khóa: ${c} (${courseCounts[c]} học viên)`;
-                        select.appendChild(opt);
+                    sortedCourses.forEach((c) => {
+                        const row = document.createElement('label');
+                        row.className = 'flex items-center justify-between p-2 bg-white rounded-xl border border-slate-200 hover:border-rose-300 hover:bg-rose-50/40 cursor-pointer transition';
+                        row.innerHTML = `
+                            <div class="flex items-center space-x-2.5">
+                                <input type="checkbox" class="delete-course-cb rounded text-rose-600 focus:ring-rose-500 w-4 h-4 cursor-pointer" value="${c}" data-count="${courseCounts[c]}" onchange="updateDeleteCourseSummary()">
+                                <span class="font-bold text-slate-800 text-xs">${c}</span>
+                            </div>
+                            <span class="text-[11px] font-bold text-rose-700 bg-rose-50 border border-rose-200 px-2 py-0.5 rounded-full">${courseCounts[c]} học viên</span>
+                        `;
+                        container.appendChild(row);
                     });
                 }
+                updateDeleteCourseSummary();
+            }
+        }
+
+        function selectAllDeleteCourses(checked) {
+            document.querySelectorAll('.delete-course-cb').forEach(cb => cb.checked = checked);
+            updateDeleteCourseSummary();
+        }
+
+        function updateDeleteCourseSummary() {
+            const checked = Array.from(document.querySelectorAll('.delete-course-cb:checked'));
+            let totalStudents = 0;
+            checked.forEach(cb => {
+                totalStudents += parseInt(cb.dataset.count || '0', 10);
+            });
+            const summary = document.getElementById('delete-course-summary');
+            if (summary) {
+                summary.innerHTML = `<i class="fa-solid fa-triangle-exclamation mr-1.5 text-rose-600"></i>Đã chọn: <b>${checked.length}</b> khóa (tổng cộng <b>${totalStudents}</b> học viên sẽ bị xóa vĩnh viễn)`;
             }
         }
 
         async function executeDeleteCourse() {
             triggerHaptic();
-            const select = document.getElementById('delete-course-select');
-            const input = document.getElementById('delete-course-input');
-            const courseVal = (input?.value || select?.value || '').trim();
+            const checked = Array.from(document.querySelectorAll('.delete-course-cb:checked')).map(cb => cb.value.trim());
+            const extraInput = (document.getElementById('delete-course-input')?.value || '').trim();
+            const extraCourses = extraInput ? extraInput.split(',').map(s => s.trim().toUpperCase()).filter(Boolean) : [];
 
-            if (!courseVal) {
-                showToast('Vui lòng chọn hoặc nhập tên khóa học cần xóa!', false);
+            const allSelected = Array.from(new Set([...checked, ...extraCourses]));
+            if (allSelected.length === 0) {
+                showToast('Vui lòng chọn hoặc nhập ít nhất một khóa học cần xóa!', false);
                 return;
             }
 
-            if (!confirm(`CẢNH BÁO NGUY HIỂM:\nBạn có chắc chắn muốn XÓA VĨNH VIỄN toàn bộ học viên thuộc khóa "${courseVal}" (đã thi xong) không?\n\nHành động này không thể hoàn tác!`)) {
+            let totalStudents = 0;
+            document.querySelectorAll('.delete-course-cb:checked').forEach(cb => {
+                totalStudents += parseInt(cb.dataset.count || '0', 10);
+            });
+
+            const confirmMsg = `CẢNH BÁO NGUY HIỂM:
+Bạn có chắc chắn muốn XÓA VĨNH VIỄN toàn bộ học viên thuộc ${allSelected.length} khóa đã chọn:
+"${allSelected.join(', ')}"
+(Tổng cộng ${totalStudents} học viên)?
+
+Hành động này không thể hoàn tác!`;
+            if (!confirm(confirmMsg)) {
                 return;
             }
 
@@ -7910,19 +7994,19 @@ let _loadStudentsAbortCtrl = null;
             const origHtml = btn ? btn.innerHTML : '';
             if (btn) {
                 btn.disabled = true;
-                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> <span>Đang xóa khóa...</span>';
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> <span>Đang xóa các khóa...</span>';
             }
-            showToast(`Đang xóa toàn bộ học viên khóa ${courseVal}...`);
+            showToast(`Đang xóa toàn bộ học viên thuộc ${allSelected.length} khóa đã chọn...`);
 
             try {
                 const res = await fetch('/api/course/delete', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ course: courseVal })
+                    body: JSON.stringify({ courses: allSelected })
                 });
                 const data = await res.json();
                 if (data.success) {
-                    showToast(`✅ ${data.message || `Đã xóa thành công ${data.deleted_count} học viên thuộc khóa ${courseVal}!`}`);
+                    showToast(`✅ ${data.message || `Đã xóa thành công ${data.deleted_count} học viên thuộc ${allSelected.length} khóa!`}`);
                     closeModal('delete-course-modal');
                     await loadStats();
                     await loadStudents();
