@@ -4,6 +4,7 @@ import json
 import shutil
 import unicodedata
 import threading
+import time
 from datetime import datetime
 
 DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data')
@@ -56,7 +57,10 @@ BENCHMARKS = {
 
 class StudentDatabase:
     def __init__(self):
-        self._lock = threading.Lock()
+        self._lock = threading.RLock()
+        self._stats_cache = None
+        self.version = 1
+        self.last_modified = time.time()
         self.roster = self._load_roster()
         self.students = self._load()
         self._sync_students_from_roster()
@@ -280,6 +284,9 @@ class StudentDatabase:
                 with open(tmp_file, 'w', encoding='utf-8') as f:
                     json.dump(self.roster, f, ensure_ascii=False, indent=2)
                 os.replace(tmp_file, ROSTER_FILE)
+                self._stats_cache = None
+                self.version += 1
+                self.last_modified = time.time()
                 notify_data_changed()
             except Exception as e:
                 print("Lỗi lưu danh sách gốc:", e)
@@ -300,6 +307,9 @@ class StudentDatabase:
                 with open(tmp_file, 'w', encoding='utf-8') as f:
                     json.dump(self.students, f, ensure_ascii=False, indent=2)
                 os.replace(tmp_file, STUDENTS_FILE)
+                self._stats_cache = None
+                self.version += 1
+                self.last_modified = time.time()
                 notify_data_changed()
                 
                 # Backup định kỳ theo ngày
@@ -563,7 +573,8 @@ class StudentDatabase:
         return False
 
     def get_all(self, keyword=None, status_filter='all', course_filter='all', sort_by='updated'):
-        results = list(self.students.values())
+        with self._lock:
+            results = list(self.students.values())
 
         # Lọc theo từ khóa (Tên, CCCD, Mã HV, Khóa, Ghi chú)
         if keyword:
@@ -779,28 +790,49 @@ class StudentDatabase:
         self._save()
 
     def get_statistics(self):
-        total = len(self.students)
-        passed = sum(1 for s in self.students.values() if s.get('ketqua') == 'Đạt')
-        missing_days = sum(1 for s in self.students.values() if s.get('songay_dat') is False and s.get('quangduong_dat') is True)
-        missing_km = sum(1 for s in self.students.values() if s.get('quangduong_dat') is False or s.get('thoigian_dat') is False)
-        totnghiep_passed = sum(1 for s in self.students.values() if s.get('dieukien_totnghiep') == 'Đạt')
-        totnghiep_failed = sum(1 for s in self.students.values() if s.get('dieukien_totnghiep') == 'Không')
-        
-        courses = sorted(list(set(s.get('khoa') for s in self.students.values() if s.get('khoa'))))
-        total_km = sum(s.get('quangduong', 0.0) for s in self.students.values())
+        with self._lock:
+            if self._stats_cache is not None:
+                return dict(self._stats_cache)
+            students_list = list(self.students.values())
 
-        # Thống kê phân bổ theo khóa
+        total = len(students_list)
+        passed = sum(1 for s in students_list if s.get('ketqua') == 'Đạt')
+        missing_days = sum(1 for s in students_list if s.get('songay_dat') is False and s.get('quangduong_dat') is True)
+        missing_km = sum(1 for s in students_list if s.get('quangduong_dat') is False or s.get('thoigian_dat') is False)
+        totnghiep_passed = sum(1 for s in students_list if s.get('dieukien_totnghiep') == 'Đạt')
+        totnghiep_failed = sum(1 for s in students_list if s.get('dieukien_totnghiep') == 'Không')
+
+        # One-pass grouping for courses and total_km (siêu tốc khi nhiều truy cập)
+        total_km = 0.0
+        course_buckets = {}
+        for s in students_list:
+            km = float(s.get('quangduong', 0.0) or 0.0)
+            total_km += km
+            c = s.get('khoa')
+            if c:
+                if c not in course_buckets:
+                    course_buckets[c] = {'total': 0, 'passed': 0, 'totnghiep_passed': 0, 'km_sum': 0.0}
+                b = course_buckets[c]
+                b['total'] += 1
+                if s.get('ketqua') == 'Đạt':
+                    b['passed'] += 1
+                if s.get('dieukien_totnghiep') == 'Đạt':
+                    b['totnghiep_passed'] += 1
+                b['km_sum'] += km
+
+        courses = sorted(list(course_buckets.keys()))
         course_stats = {}
         for c in courses:
-            c_students = [s for s in self.students.values() if s.get('khoa') == c]
+            b = course_buckets[c]
+            cnt = max(1, b['total'])
             course_stats[c] = {
-                'total': len(c_students),
-                'passed': sum(1 for s in c_students if s.get('ketqua') == 'Đạt'),
-                'totnghiep_passed': sum(1 for s in c_students if s.get('dieukien_totnghiep') == 'Đạt'),
-                'avg_km': round(sum(s.get('quangduong', 0.0) for s in c_students) / max(1, len(c_students)), 1)
+                'total': b['total'],
+                'passed': b['passed'],
+                'totnghiep_passed': b['totnghiep_passed'],
+                'avg_km': round(b['km_sum'] / cnt, 1)
             }
 
-        return {
+        res = {
             'total': total,
             'passed': passed,
             'missing_days': missing_days,
@@ -811,6 +843,9 @@ class StudentDatabase:
             'course_stats': course_stats,
             'total_km': round(total_km, 2)
         }
+        with self._lock:
+            self._stats_cache = res
+        return res
 
     # =========================================================================
     # QUẢN LÝ DANH SÁCH HỌC VIÊN BAN ĐẦU (MASTER ROSTER & SMART RESOLUTION)
@@ -1133,16 +1168,20 @@ class StudentDatabase:
         q_digits = re.sub(r'\D', '', q_raw)
 
         # Tập hợp tất cả học viên đã có, ƯU TIÊN các bản ghi trong self.students vì đã có Mã HV (mahv) và CCCD
+        with self._lock:
+            st_values = list(self.students.values())
+            roster_values = list(self.roster.values())
+
         pool = []
         seen = set()
 
-        for s in self.students.values():
+        for s in st_values:
             key = s.get('mahv') or s.get('cccd') or s.get('hoten')
             if key and key not in seen:
                 seen.add(key)
                 pool.append(s)
 
-        for r in self.roster.values():
+        for r in roster_values:
             r_key = r.get('mahv') or r.get('cccd') or r.get('hoten')
             r_norm = strip_vietnamese_accents(r.get('hoten', ''))
             if r_key not in seen and r_norm not in seen:
