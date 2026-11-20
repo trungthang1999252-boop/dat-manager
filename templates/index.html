@@ -3251,21 +3251,19 @@
 
 
         function showToast(msg, isSuccess = true) {
-
             const t = document.getElementById('toast');
-
             const icon = document.getElementById('toast-icon');
-
             const text = document.getElementById('toast-msg');
 
-            text.innerText = msg;
+            let cleanMsg = msg;
+            if (cleanMsg && (cleanMsg.includes('10005') || cleanMsg.includes('Tích Hợp Không Xác Định') || cleanMsg.includes('T\\u00edch H\\u1ee3p') || cleanMsg.includes('Unknown Integration'))) {
+                cleanMsg = '⚠️ Hệ thống lệnh Bot Discord trường vừa cập nhật phiên bản mới. Ứng dụng đã tự động nạp lệnh mới nhất, vui lòng thử lại sau giây lát!';
+            }
 
+            text.innerText = cleanMsg;
             icon.className = isSuccess ? 'fa-solid fa-circle-check text-emerald-400 text-base' : 'fa-solid fa-circle-exclamation text-rose-400 text-base';
-
             t.classList.remove('translate-y-20', 'opacity-0');
-
             setTimeout(() => t.classList.add('translate-y-20', 'opacity-0'), 3500);
-
         }
 
 
