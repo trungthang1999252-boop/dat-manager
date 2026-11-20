@@ -1112,6 +1112,14 @@
 
                     </button>
 
+                    <button onclick="openTeacherSyncModal()" class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-xs px-3.5 py-1.5 rounded-xl transition flex items-center space-x-1.5 shadow-sm active:scale-95 border border-blue-400" title="Tự động quét toàn bộ trường từ Google Sheet và đẩy danh sách học viên theo từng khoá về App">
+
+                        <i class="fa-solid fa-chalkboard-user"></i>
+
+                        <span>👨‍🏫 Đẩy DS Theo Giáo Viên</span>
+
+                    </button>
+
                 </div>
 
 
@@ -1736,6 +1744,133 @@
 
 
 
+    <!-- Modal Tự Động Đẩy Danh Sách Học Viên Theo Giáo Viên (Google Sheet) -->
+    <div id="teacher-sync-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3 sm:p-4">
+        <div class="bg-white rounded-3xl max-w-2xl w-full p-5 sm:p-6 space-y-4 shadow-2xl border border-slate-100 max-h-[92vh] overflow-y-auto flex flex-col">
+            <!-- Modal Header -->
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                <div class="flex items-center space-x-2.5">
+                    <div class="w-10 h-10 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white flex items-center justify-center shadow-md shrink-0">
+                        <i class="fa-solid fa-chalkboard-user text-lg"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-sm sm:text-base font-bold text-slate-800">Tự Động Đẩy Danh Sách Học Viên Theo Giáo Viên</h3>
+                        <p class="text-[11px] text-slate-500">Quét dữ liệu trực tiếp từ Google Sheet trường và đẩy học viên vào App theo từng khoá</p>
+                    </div>
+                </div>
+                <button onclick="closeModal('teacher-sync-modal')" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <!-- Google Sheet info card -->
+            <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-2xl p-3.5 shadow-xs">
+                <div class="flex items-start space-x-3">
+                    <div class="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center text-sm shadow-sm shrink-0 mt-0.5">
+                        <i class="fa-brands fa-google-drive"></i>
+                    </div>
+                    <div class="text-xs">
+                        <p class="font-bold text-blue-900">Liên kết Google Sheet Danh Sách Khoá Toàn Trường (127 khoá):</p>
+                        <a href="https://docs.google.com/spreadsheets/d/1FRC_xHYy36NntmKyRhXlXL0csqybXqE64FQUA7NcTVI/edit?usp=sharing" target="_blank" class="text-[11px] text-blue-600 hover:text-blue-800 underline truncate block max-w-full font-mono mt-0.5">
+                            https://docs.google.com/spreadsheets/d/1FRC_xHYy36NntmKyRhXlXL0csqybXqE64FQUA7NcTVI
+                        </a>
+                        <p class="text-[10px] text-slate-500 mt-1">
+                            <i class="fa-solid fa-circle-info text-blue-500 mr-1"></i>Hệ thống sẽ quét song song toàn bộ 127 khoá và tự động đẩy học viên thuộc giáo viên vào App, phân theo từng khoá học.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form: Teacher Name & Quick Select -->
+            <div class="space-y-3">
+                <!-- Teacher Input -->
+                <div class="relative">
+                    <label class="text-xs font-bold text-slate-700 flex items-center justify-between mb-1">
+                        <span class="flex items-center space-x-1.5">
+                            <i class="fa-solid fa-user-tie text-blue-600"></i>
+                            <span>Họ và Tên Giáo Viên <span class="text-red-500">*</span></span>
+                        </span>
+                        <span class="text-[10px] text-blue-600 font-semibold" id="teacher-sync-car-badge"></span>
+                    </label>
+                    <div class="relative">
+                        <input type="text" id="teacher-sync-name-input"
+                            placeholder="Gõ đầy đủ họ tên giáo viên (VD: Trần Thái Trung Thắng, Lê Văn Cừ...)"
+                            autocomplete="off"
+                            oninput="handleTeacherSyncInput(this.value)"
+                            onkeydown="if(event.key==='Enter') startTeacherSync()"
+                            class="w-full pl-10 pr-9 py-2.5 bg-white border-2 border-slate-200 rounded-xl text-xs font-bold text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition shadow-xs"
+                        >
+                        <div class="absolute left-3 top-1/2 -translate-y-1/2 text-blue-600">
+                            <i class="fa-solid fa-magnifying-glass text-xs"></i>
+                        </div>
+                        <button type="button" onclick="document.getElementById('teacher-sync-name-input').value=''; document.getElementById('teacher-sync-dropdown').classList.add('hidden'); document.getElementById('teacher-sync-car-badge').innerText=''"
+                            class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                            <i class="fa-solid fa-circle-xmark text-xs"></i>
+                        </button>
+                    </div>
+                    <!-- Dropdown autocomplete -->
+                    <div id="teacher-sync-dropdown"
+                        class="hidden absolute left-0 right-0 top-full mt-1 bg-white border border-slate-200 rounded-xl shadow-xl z-50 max-h-56 overflow-y-auto divide-y divide-slate-100">
+                    </div>
+                </div>
+
+                <!-- Quick Select Popular Teachers -->
+                <div>
+                    <span class="text-[10px] font-bold text-slate-500 block mb-1">Gợi ý chọn nhanh giáo viên:</span>
+                    <div class="flex items-center gap-1.5 flex-wrap" id="teacher-quick-chips">
+                        <button type="button" onclick="selectQuickTeacher('Trần Thái Trung Thắng', '77A24156')" class="bg-blue-50 hover:bg-blue-100 text-blue-700 text-[11px] font-bold px-2.5 py-1 rounded-lg border border-blue-200 transition">
+                            ⭐ Trần Thái Trung Thắng
+                        </button>
+                        <button type="button" onclick="selectQuickTeacher('Lê Văn Cừ', '77A17405')" class="bg-slate-50 hover:bg-slate-100 text-slate-700 text-[11px] font-semibold px-2 py-1 rounded-lg border border-slate-200 transition">
+                            Lê Văn Cừ
+                        </button>
+                        <button type="button" onclick="selectQuickTeacher('Phan Thụy Ánh', '77A15016')" class="bg-slate-50 hover:bg-slate-100 text-slate-700 text-[11px] font-semibold px-2 py-1 rounded-lg border border-slate-200 transition">
+                            Phan Thụy Ánh
+                        </button>
+                        <button type="button" onclick="selectQuickTeacher('Nguyễn Văn Bảy', '77A14307')" class="bg-slate-50 hover:bg-slate-100 text-slate-700 text-[11px] font-semibold px-2 py-1 rounded-lg border border-slate-200 transition">
+                            Nguyễn Văn Bảy
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Course scope selection -->
+                <div>
+                    <label class="text-xs font-bold text-slate-700 flex items-center justify-between mb-1">
+                        <span class="flex items-center space-x-1.5">
+                            <i class="fa-solid fa-graduation-cap text-blue-600"></i>
+                            <span>Phạm Vi Khoá Học:</span>
+                        </span>
+                        <span class="text-[10px] text-slate-400 font-normal">Mặc định: Toàn bộ 127 khoá</span>
+                    </label>
+                    <select id="teacher-sync-course-select"
+                        class="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-xs">
+                        <option value="all">🌟 Tất cả các khoá học (Quét toàn bộ trường ~25s)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Action Button -->
+            <button type="button" onclick="startTeacherSync()"
+                id="teacher-sync-btn"
+                class="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 active:scale-[0.99] text-white font-bold rounded-2xl text-xs sm:text-sm transition flex items-center justify-center space-x-2 shadow-md hover:shadow-lg">
+                <i class="fa-solid fa-cloud-arrow-down text-sm" id="teacher-sync-btn-icon"></i>
+                <span id="teacher-sync-btn-text">🚀 Tự Động Quét & Đẩy Danh Sách Vào App</span>
+            </button>
+
+            <!-- Loading Spinner & Progress -->
+            <div id="teacher-sync-loading" class="hidden flex flex-col items-center justify-center py-6 space-y-3">
+                <div class="w-10 h-10 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
+                <p class="text-xs font-bold text-slate-700" id="teacher-sync-loading-text">Đang quét 127 khoá học trên Google Sheet...</p>
+                <p class="text-[11px] text-slate-500">Đang quét đa luồng song song, vui lòng đợi trong giây lát (~25 giây)</p>
+            </div>
+
+            <!-- Result Box -->
+            <div id="teacher-sync-result" class="hidden"></div>
+        </div>
+    </div>
+
+
+
     <!-- Modal Thống Nhất: Nhập Hồ Sơ Gốc (Quét Ảnh OCR / Nhập Thủ Công) -->
 
     <div id="unified-roster-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3 sm:p-4">
@@ -1788,6 +1923,16 @@
 
                 </button>
 
+                <button type="button" id="tab-btn-roster-mode-gsheet" onclick="switchRosterImportMode('gsheet')" 
+
+                    class="flex-1 py-2 rounded-xl text-xs font-semibold transition flex items-center justify-center space-x-1.5 text-slate-600 hover:text-slate-800">
+
+                    <i class="fa-brands fa-google"></i>
+
+                    <span>Google Sheet</span>
+
+                </button>
+
                 <button type="button" id="tab-btn-roster-mode-manual" onclick="switchRosterImportMode('manual')" 
 
                     class="flex-1 py-2 rounded-xl text-xs font-semibold transition flex items-center justify-center space-x-1.5 text-slate-600 hover:text-slate-800">
@@ -1797,6 +1942,96 @@
                     <span>Nhập Thủ Công</span>
 
                 </button>
+
+            </div>
+
+
+
+            <!-- TAB PANE: Google Sheet (Tự động lấy học viên theo giáo viên) -->
+
+            <div id="roster-mode-gsheet-pane" class="hidden space-y-4">
+
+                <!-- Header mô tả -->
+                <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-2xl p-4 shadow-xs">
+                    <div class="flex items-start space-x-3">
+                        <div class="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center text-lg shadow-sm shrink-0 mt-0.5">
+                            <i class="fa-brands fa-google-drive"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm font-bold text-blue-900">Tự Động Nạp Danh Sách Học Viên Theo Giáo Viên & Khoá</p>
+                            <p class="text-xs text-blue-700 mt-1 leading-relaxed">
+                                Nhập đầy đủ họ tên giáo viên (có gợi ý tự động) → Hệ thống tự động quét tất cả các khoá học trên Google Sheet trung tâm và nạp toàn bộ học viên trực thuộc về ứng dụng.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Input chọn khoá học & họ tên giáo viên -->
+                <div class="space-y-3">
+                    <!-- Chọn khoá học -->
+                    <div>
+                        <label class="text-xs font-bold text-slate-700 flex items-center justify-between mb-1">
+                            <span class="flex items-center space-x-1.5">
+                                <i class="fa-solid fa-graduation-cap text-blue-600"></i>
+                                <span>Khoá Học Áp Dụng:</span>
+                            </span>
+                            <span class="text-[10px] text-slate-400 font-normal">Mặc định: Toàn bộ khoá</span>
+                        </label>
+                        <select id="gsheet-course-select"
+                            class="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-xs">
+                            <option value="all">🌟 Tất cả các khoá học (Quét toàn bộ Google Sheet)</option>
+                        </select>
+                    </div>
+
+                    <!-- Input tên giáo viên kèm Autocomplete Dropdown -->
+                    <div class="relative">
+                        <label class="text-xs font-bold text-slate-700 flex items-center justify-between mb-1">
+                            <span class="flex items-center space-x-1.5">
+                                <i class="fa-solid fa-chalkboard-user text-blue-600"></i>
+                                <span>Họ và Tên Giáo Viên <span class="text-red-500">*</span></span>
+                            </span>
+                            <span class="text-[10px] text-blue-600 font-semibold" id="gsheet-teacher-badge"></span>
+                        </label>
+                        <div class="relative">
+                            <input type="text" id="gsheet-teacher-name"
+                                placeholder="Gõ tên để chọn (VD: Lê Văn Cừ, Phan Thụy Ánh, Nguyễn Văn Bảy...)"
+                                autocomplete="off"
+                                oninput="handleGSheetTeacherInput(this.value)"
+                                onkeydown="if(event.key==='Enter') importFromGSheet()"
+                                class="w-full pl-10 pr-9 py-2.5 bg-white border-2 border-slate-200 rounded-xl text-xs font-bold text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition shadow-xs"
+                            >
+                            <div class="absolute left-3 top-1/2 -translate-y-1/2 text-blue-600">
+                                <i class="fa-solid fa-magnifying-glass text-xs"></i>
+                            </div>
+                            <button type="button" onclick="document.getElementById('gsheet-teacher-name').value=''; document.getElementById('gsheet-teacher-dropdown').classList.add('hidden')"
+                                class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                                <i class="fa-solid fa-circle-xmark text-xs"></i>
+                            </button>
+                        </div>
+                        <!-- Dropdown gợi ý giáo viên -->
+                        <div id="gsheet-teacher-dropdown"
+                            class="hidden absolute left-0 right-0 top-full mt-1 bg-white border border-slate-200 rounded-xl shadow-xl z-50 max-h-56 overflow-y-auto divide-y divide-slate-100">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Nút import -->
+                <button type="button" onclick="importFromGSheet()"
+                    id="gsheet-import-btn"
+                    class="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 active:scale-[0.99] text-white font-bold rounded-2xl text-xs sm:text-sm transition flex items-center justify-center space-x-2 shadow-md hover:shadow-lg">
+                    <i class="fa-brands fa-google text-sm" id="gsheet-btn-icon"></i>
+                    <span id="gsheet-btn-text">Tự Động Nạp Danh Sách Học Viên Từ Google Sheet</span>
+                </button>
+
+                <!-- Loading spinner -->
+                <div id="gsheet-loading" class="hidden flex flex-col items-center justify-center py-6 space-y-3">
+                    <div class="w-10 h-10 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
+                    <p class="text-xs font-bold text-slate-700">Đang quét danh sách học viên qua các khoá học...</p>
+                    <p class="text-[11px] text-slate-500">Đang xử lý song song, thường mất khoảng 3 - 8 giây</p>
+                </div>
+
+                <!-- Kết quả import -->
+                <div id="gsheet-result" class="hidden"></div>
 
             </div>
 
@@ -2925,6 +3160,8 @@
             setupDropZone();
 
             checkDiscordStatus(); // Kiểm tra trạng thái Bot Discord
+
+            loadGSheetMetadata(); // Tự động nạp danh sách giáo viên & khoá học Google Sheet vào bộ nhớ đệm
 
 
 
@@ -4792,6 +5029,38 @@ let _loadStudentsAbortCtrl = null;
 
 
 
+            // KIỂM TRA NẾU NGƯỜI DÙNG NHẬP HỌ TÊN GIÁO VIÊN:
+            // Tự động nhận diện và nạp danh sách tất cả học viên trực thuộc từ Google Sheet
+            try {
+                const removeAccents = (str) => (str || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D').toLowerCase();
+                const qNorm = removeAccents(q);
+                
+                if (!cachedGSheetTeachers || cachedGSheetTeachers.length === 0) {
+                    const resT = await fetch('/api/gsheet/teachers');
+                    const dataT = await resT.json();
+                    if (dataT.success && dataT.teachers) cachedGSheetTeachers = dataT.teachers;
+                }
+
+                const matchedTeacher = (cachedGSheetTeachers || []).find(t => {
+                    const nameNorm = removeAccents(t.name);
+                    return qNorm === nameNorm || (qNorm.length >= 4 && (nameNorm.includes(qNorm) || qNorm.includes(nameNorm))) || (qNorm.split(' ').length >= 2 && qNorm.split(' ').every(w => nameNorm.includes(w)));
+                });
+
+                if (matchedTeacher) {
+                    showToast(`👨‍🏫 Nhận diện Giáo Viên: ${matchedTeacher.name}. Đang tự động nạp học viên từ Google Sheet...`);
+                    openUnifiedRosterModal();
+                    switchRosterImportMode('gsheet');
+                    const teacherInp = document.getElementById('gsheet-teacher-name');
+                    if (teacherInp) teacherInp.value = matchedTeacher.name;
+                    await importFromGSheet(matchedTeacher.name);
+                    return;
+                }
+            } catch (err) {
+                console.warn('Lỗi kiểm tra giáo viên:', err);
+            }
+
+
+
             const loader = document.getElementById('query-loading');
 
             const loaderText = document.getElementById('loading-text');
@@ -6350,6 +6619,46 @@ let _loadStudentsAbortCtrl = null;
 
 
 
+                if (s.is_teacher_gsheet) {
+
+                    item.innerHTML = `
+
+                        <div class="flex items-center space-x-2.5">
+
+                            <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-700 font-bold flex items-center justify-center text-xs shadow-inner">
+
+                                <i class="fa-solid fa-chalkboard-user"></i>
+
+                            </div>
+
+                            <div>
+
+                                <div class="font-bold text-blue-900 text-xs">${s.hoten}</div>
+
+                                <div class="text-[10px] text-blue-600 font-medium">${s.source}</div>
+
+                            </div>
+
+                        </div>
+
+                        <div class="flex items-center space-x-1.5">
+
+                            <span class="bg-blue-600 text-white text-[9px] font-bold px-2 py-0.5 rounded-full shadow-xs">Nạp DS Google Sheet</span>
+
+                            <i class="fa-solid fa-arrow-right text-blue-500 text-xs"></i>
+
+                        </div>
+
+                    `;
+
+                    drop.appendChild(item);
+
+                    return;
+
+                }
+
+
+
                 const srcBadge = s.source === 'Danh Sách Gốc'
 
                     ? '<span class="bg-emerald-100 text-emerald-800 text-[9px] font-bold px-1.5 py-0.5 rounded border border-emerald-300">Hồ Sơ Gốc</span>'
@@ -6409,6 +6718,24 @@ let _loadStudentsAbortCtrl = null;
 
 
         function selectAutocompleteItem(s) {
+
+            if (s.is_teacher_gsheet) {
+
+                closeAutocomplete();
+
+                openUnifiedRosterModal();
+
+                switchRosterImportMode('gsheet');
+
+                const inp = document.getElementById('gsheet-teacher-name');
+
+                if (inp) inp.value = s.teacher_name;
+
+                importFromGSheet(s.teacher_name);
+
+                return;
+
+            }
 
             const input = document.getElementById('query-input');
 
@@ -6900,45 +7227,526 @@ let _loadStudentsAbortCtrl = null;
 
 
 
+        // ======= QUẢN LÝ DỮ LIỆU GOOGLE SHEET THEO GIÁO VIÊN & KHOÁ =======
+        let cachedGSheetTeachers = [];
+        let cachedGSheetCourses = [];
+        let isLoadingGSheetMeta = false;
+
+        async function loadGSheetMetadata() {
+            if (isLoadingGSheetMeta) return;
+            if (cachedGSheetTeachers.length > 0 && cachedGSheetCourses.length > 0) return;
+
+            isLoadingGSheetMeta = true;
+            try {
+                // Tải danh sách giáo viên
+                if (cachedGSheetTeachers.length === 0) {
+                    const resT = await fetch('/api/gsheet/teachers');
+                    const dataT = await resT.json();
+                    if (dataT.success && dataT.teachers) {
+                        cachedGSheetTeachers = dataT.teachers;
+                    }
+                }
+
+                // Tải danh sách khoá học
+                if (cachedGSheetCourses.length === 0) {
+                    const resC = await fetch('/api/gsheet/courses');
+                    const dataC = await resC.json();
+                    if (dataC.success && dataC.courses) {
+                        cachedGSheetCourses = dataC.courses;
+                        const sel = document.getElementById('gsheet-course-select');
+                        if (sel) {
+                            sel.innerHTML = '<option value="all">🌟 Tất cả các khoá học (Quét toàn bộ Google Sheet)</option>';
+                            cachedGSheetCourses.forEach(c => {
+                                const opt = document.createElement('option');
+                                opt.value = c;
+                                opt.textContent = `Khoá: ${c}`;
+                                sel.appendChild(opt);
+                            });
+                        }
+                    }
+                }
+            } catch (err) {
+                console.error('Lỗi nạp metadata Google Sheet:', err);
+            } finally {
+                isLoadingGSheetMeta = false;
+            }
+        }
+
+        function handleGSheetTeacherInput(val) {
+            const drop = document.getElementById('gsheet-teacher-dropdown');
+            const badge = document.getElementById('gsheet-teacher-badge');
+            if (!drop) return;
+
+            if (badge) badge.textContent = '';
+            if (!val || val.trim().length === 0) {
+                drop.classList.add('hidden');
+                drop.innerHTML = '';
+                return;
+            }
+
+            const q = val.trim().toLowerCase();
+            const removeAccents = (str) => (str || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D').toLowerCase();
+            const qNorm = removeAccents(q);
+
+            const matched = cachedGSheetTeachers.filter(t => {
+                const nameNorm = removeAccents(t.name);
+                const shortNorm = removeAccents(t.short);
+                const carNorm = (t.car || '').toLowerCase();
+                return nameNorm.includes(qNorm) || shortNorm.includes(qNorm) || carNorm.includes(q);
+            }).slice(0, 8);
+
+            if (matched.length === 0) {
+                drop.classList.add('hidden');
+                drop.innerHTML = '';
+                return;
+            }
+
+            drop.innerHTML = '';
+            matched.forEach(t => {
+                const item = document.createElement('div');
+                item.className = 'px-3.5 py-2 hover:bg-blue-50 cursor-pointer flex items-center justify-between text-xs transition';
+                item.innerHTML = `
+                    <div class="flex items-center space-x-2">
+                        <i class="fa-solid fa-user-tie text-blue-600 text-xs"></i>
+                        <div>
+                            <span class="font-bold text-slate-800">${t.name}</span>
+                            ${t.short ? `<span class="text-[10px] text-slate-500 ml-1">(${t.short})</span>` : ''}
+                        </div>
+                    </div>
+                    <span class="bg-blue-100 text-blue-800 text-[10px] font-bold px-2 py-0.5 rounded-full border border-blue-200">Xe: ${t.car || '—'}</span>
+                `;
+                item.onclick = () => selectGSheetTeacher(t.name, t.car);
+                drop.appendChild(item);
+            });
+            drop.classList.remove('hidden');
+        }
+
+        function selectGSheetTeacher(name, car) {
+            const inp = document.getElementById('gsheet-teacher-name');
+            const drop = document.getElementById('gsheet-teacher-dropdown');
+            const badge = document.getElementById('gsheet-teacher-badge');
+
+            if (inp) inp.value = name;
+            if (drop) { drop.classList.add('hidden'); drop.innerHTML = ''; }
+            if (badge) badge.textContent = car ? `Xe: ${car}` : '';
+        }
+
         function switchRosterImportMode(mode) {
-
             const btnOcr = document.getElementById('tab-btn-roster-mode-ocr');
-
             const btnManual = document.getElementById('tab-btn-roster-mode-manual');
-
+            const btnGsheet = document.getElementById('tab-btn-roster-mode-gsheet');
             const paneOcr = document.getElementById('roster-mode-ocr-pane');
-
             const paneManual = document.getElementById('roster-mode-manual-pane');
+            const paneGsheet = document.getElementById('roster-mode-gsheet-pane');
 
-
+            const CLASS_ACTIVE = 'flex-1 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center space-x-1.5 bg-white text-blue-700 shadow-sm';
+            const CLASS_ACTIVE_GREEN = 'flex-1 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center space-x-1.5 bg-white text-emerald-700 shadow-sm';
+            const CLASS_INACTIVE = 'flex-1 py-2 rounded-xl text-xs font-semibold transition flex items-center justify-center space-x-1.5 text-slate-600 hover:text-slate-800';
 
             if (!btnOcr || !btnManual || !paneOcr || !paneManual) return;
 
+            // Ẩn tất cả pane
+            if (paneOcr) paneOcr.classList.add('hidden');
+            if (paneManual) paneManual.classList.add('hidden');
+            if (paneGsheet) paneGsheet.classList.add('hidden');
 
+            // Reset tabs
+            if (btnOcr) btnOcr.className = CLASS_INACTIVE;
+            if (btnManual) btnManual.className = CLASS_INACTIVE;
+            if (btnGsheet) btnGsheet.className = CLASS_INACTIVE;
 
             if (mode === 'ocr') {
-
-                btnOcr.className = 'flex-1 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center space-x-1.5 bg-white text-emerald-700 shadow-sm';
-
-                btnManual.className = 'flex-1 py-2 rounded-xl text-xs font-semibold transition flex items-center justify-center space-x-1.5 text-slate-600 hover:text-slate-800';
-
+                btnOcr.className = CLASS_ACTIVE_GREEN;
                 paneOcr.classList.remove('hidden');
-
-                paneManual.classList.add('hidden');
-
+            } else if (mode === 'gsheet') {
+                if (btnGsheet) btnGsheet.className = CLASS_ACTIVE;
+                if (paneGsheet) paneGsheet.classList.remove('hidden');
+                loadGSheetMetadata();
+                setTimeout(() => {
+                    const inp = document.getElementById('gsheet-teacher-name');
+                    if (inp) inp.focus();
+                }, 100);
             } else {
-
-                btnManual.className = 'flex-1 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center space-x-1.5 bg-white text-emerald-700 shadow-sm';
-
-                btnOcr.className = 'flex-1 py-2 rounded-xl text-xs font-semibold transition flex items-center justify-center space-x-1.5 text-slate-600 hover:text-slate-800';
-
-                paneOcr.classList.add('hidden');
-
+                btnManual.className = CLASS_ACTIVE_GREEN;
                 paneManual.classList.remove('hidden');
+            }
+        }
 
+        async function importFromGSheet(overrideTeacherName) {
+            const teacherInput = document.getElementById('gsheet-teacher-name');
+            const courseSelect = document.getElementById('gsheet-course-select');
+            const btn = document.getElementById('gsheet-import-btn');
+            const loading = document.getElementById('gsheet-loading');
+            const resultDiv = document.getElementById('gsheet-result');
+            const btnIcon = document.getElementById('gsheet-btn-icon');
+            const btnText = document.getElementById('gsheet-btn-text');
+
+            const teacherName = (overrideTeacherName || (teacherInput ? teacherInput.value : '')).trim();
+            const courseFilter = courseSelect ? courseSelect.value : 'all';
+
+            if (!teacherName) {
+                if (teacherInput) {
+                    teacherInput.focus();
+                    teacherInput.classList.add('border-red-400', 'ring-2', 'ring-red-100');
+                    setTimeout(() => teacherInput.classList.remove('border-red-400', 'ring-2', 'ring-red-100'), 2000);
+                }
+                showToast('Vui lòng nhập họ tên giáo viên!', false);
+                return;
             }
 
+            // Đóng gợi ý
+            const drop = document.getElementById('gsheet-teacher-dropdown');
+            if (drop) drop.classList.add('hidden');
+
+            // UI Loading state
+            if (btn) btn.disabled = true;
+            if (loading) loading.classList.remove('hidden');
+            if (btn) btn.classList.add('opacity-60', 'cursor-not-allowed');
+            if (resultDiv) { resultDiv.classList.add('hidden'); resultDiv.innerHTML = ''; }
+            if (btnIcon) btnIcon.className = 'fa-solid fa-spinner fa-spin text-sm';
+            if (btnText) btnText.textContent = 'Đang quét toàn bộ các khoá học trên Google Sheet...';
+
+            try {
+                const res = await fetch('/api/roster/import_gsheet', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        teacher_name: teacherName,
+                        course: courseFilter
+                    })
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    const count = data.imported || 0;
+                    const byCourse = data.by_course || {};
+                    const courseEntries = Object.entries(byCourse);
+
+                    let coursesHtml = '';
+                    if (courseEntries.length > 0) {
+                        coursesHtml = `
+                            <div class="mt-3 pt-3 border-t border-emerald-200">
+                                <p class="text-[11px] font-bold text-emerald-900 mb-1.5 flex items-center">
+                                    <i class="fa-solid fa-layer-group mr-1.5 text-emerald-700"></i>
+                                    Chi tiết học viên theo từng khoá (${courseEntries.length} khoá):
+                                </p>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5 max-h-40 overflow-y-auto pr-1">
+                                    ${courseEntries.map(([c, num]) => `
+                                        <div class="flex items-center justify-between bg-white/80 px-2.5 py-1 rounded-lg border border-emerald-200 text-xs">
+                                            <span class="font-bold text-slate-800 truncate" title="${c}">${c}</span>
+                                            <span class="bg-emerald-600 text-white font-bold text-[10px] px-2 py-0.5 rounded-full ml-1 shrink-0">${num} HV</span>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        `;
+                    }
+
+                    if (resultDiv) {
+                        resultDiv.innerHTML = `
+                            <div class="bg-emerald-50 border border-emerald-300 rounded-2xl p-4 shadow-sm animate-fadeIn">
+                                <div class="flex items-start space-x-3">
+                                    <div class="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center text-lg shadow-sm shrink-0 mt-0.5">
+                                        <i class="fa-solid fa-circle-check"></i>
+                                    </div>
+                                    <div class="flex-1">
+                                        <div class="flex items-center justify-between">
+                                            <p class="text-sm font-bold text-emerald-900">Đã Nhập Thành Công!</p>
+                                            ${data.car ? `<span class="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-full border border-emerald-300">Xe: ${data.car}</span>` : ''}
+                                        </div>
+                                        <p class="text-xs text-emerald-700 mt-0.5">
+                                            Đã nạp <b class="text-emerald-900 text-sm font-black">${count} học viên</b> thuộc giáo viên <b class="text-slate-900">${teacherName}</b> vào hệ thống.
+                                        </p>
+                                        ${coursesHtml}
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        resultDiv.classList.remove('hidden');
+                    }
+
+                    showToast(`✅ ${data.message || `Đã nhập ${count} học viên từ Google Sheet!`}`);
+
+                    // Cập nhật lại toàn bộ bảng và chỉ số
+                    await loadStudents();
+                    await loadRoster();
+                    await loadRosterBadge();
+                    await loadStats();
+
+                    // Tự động đóng modal sau 4 giây để người dùng kịp đọc kết quả
+                    setTimeout(() => closeModal('unified-roster-modal'), 4000);
+                } else {
+                    if (resultDiv) {
+                        resultDiv.innerHTML = `
+                            <div class="bg-red-50 border border-red-300 rounded-2xl p-4 shadow-sm animate-fadeIn">
+                                <div class="flex items-start space-x-3">
+                                    <div class="w-9 h-9 rounded-xl bg-red-600 text-white flex items-center justify-center text-sm shadow-sm shrink-0 mt-0.5">
+                                        <i class="fa-solid fa-triangle-exclamation"></i>
+                                    </div>
+                                    <div class="flex-1">
+                                        <p class="text-sm font-bold text-red-800">Không tìm thấy học viên</p>
+                                        <p class="text-xs text-red-600 mt-0.5 leading-relaxed">${data.error || 'Vui lòng kiểm tra lại họ tên giáo viên.'}</p>
+                                        <p class="text-[11px] text-slate-500 mt-2">
+                                            <i class="fa-solid fa-lightbulb text-amber-500 mr-1"></i>
+                                            Mẹo: Bạn có thể gõ vài ký tự đầu của họ tên giáo viên để chọn từ danh sách gợi ý tự động.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>`;
+                        resultDiv.classList.remove('hidden');
+                    }
+                    showToast(data.error || 'Không tìm thấy học viên!', false);
+                }
+            } catch (e) {
+                if (resultDiv) {
+                    resultDiv.innerHTML = `
+                        <div class="bg-red-50 border border-red-300 rounded-2xl p-4">
+                            <p class="text-sm font-bold text-red-700"><i class="fa-solid fa-wifi-slash mr-2"></i>Lỗi kết nối máy chủ</p>
+                            <p class="text-xs text-red-500 mt-1">${e.message}</p>
+                        </div>`;
+                    resultDiv.classList.remove('hidden');
+                }
+                showToast('Lỗi kết nối máy chủ: ' + e.message, false);
+            } finally {
+                if (btn) { btn.disabled = false; btn.classList.remove('opacity-60', 'cursor-not-allowed'); }
+                if (loading) loading.classList.add('hidden');
+                if (btnIcon) btnIcon.className = 'fa-brands fa-google text-sm';
+                if (btnText) btnText.textContent = 'Tự Động Nạp Danh Sách Học Viên Từ Google Sheet';
+            }
         }
+        // ======= END GOOGLE SHEET IMPORT =======
+
+        // ======= TEACHER SYNC MODAL LOGIC =======
+        async function openTeacherSyncModal() {
+            const modal = document.getElementById('teacher-sync-modal');
+            if (!modal) return;
+            modal.classList.remove('hidden');
+
+            const inp = document.getElementById('teacher-sync-name-input');
+            const drop = document.getElementById('teacher-sync-dropdown');
+            const badge = document.getElementById('teacher-sync-car-badge');
+            const resDiv = document.getElementById('teacher-sync-result');
+            const loading = document.getElementById('teacher-sync-loading');
+            const btn = document.getElementById('teacher-sync-btn');
+
+            if (drop) drop.classList.add('hidden');
+            if (resDiv) { resDiv.classList.add('hidden'); resDiv.innerHTML = ''; }
+            if (loading) loading.classList.add('hidden');
+            if (btn) { btn.disabled = false; btn.classList.remove('opacity-60', 'cursor-not-allowed'); }
+
+            if (inp && !inp.value.trim()) {
+                inp.value = 'Trần Thái Trung Thắng';
+                if (badge) badge.innerText = 'Xe: 77A24156';
+            }
+
+            await loadTeacherSyncMetadata();
+        }
+
+        async function loadTeacherSyncMetadata() {
+            await loadGSheetMetadata();
+            const courseSel = document.getElementById('teacher-sync-course-select');
+            if (courseSel && cachedGSheetCourses.length > 0) {
+                let html = '<option value="all">🌟 Tất cả các khoá học (Quét toàn bộ trường ~25s)</option>';
+                cachedGSheetCourses.forEach(c => {
+                    html += `<option value="${c}">Khoá: ${c}</option>`;
+                });
+                courseSel.innerHTML = html;
+            }
+        }
+
+        function handleTeacherSyncInput(val) {
+            const drop = document.getElementById('teacher-sync-dropdown');
+            const badge = document.getElementById('teacher-sync-car-badge');
+            if (!drop) return;
+            if (badge) badge.innerText = '';
+            if (!val || val.trim().length === 0) {
+                drop.classList.add('hidden');
+                drop.innerHTML = '';
+                return;
+            }
+
+            const q = val.trim().toLowerCase();
+            const removeAccents = (str) => (str || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D').toLowerCase();
+            const qNorm = removeAccents(q);
+
+            const matched = cachedGSheetTeachers.filter(t => {
+                const nameNorm = removeAccents(t.name);
+                const shortNorm = removeAccents(t.short);
+                const carNorm = (t.car || '').toLowerCase();
+                return nameNorm.includes(qNorm) || shortNorm.includes(qNorm) || carNorm.includes(q);
+            }).slice(0, 8);
+
+            if (matched.length === 0) {
+                drop.classList.add('hidden');
+                drop.innerHTML = '';
+                return;
+            }
+
+            drop.innerHTML = '';
+            matched.forEach(t => {
+                const item = document.createElement('div');
+                item.className = 'px-3.5 py-2 hover:bg-blue-50 cursor-pointer flex items-center justify-between text-xs transition';
+                item.innerHTML = `
+                    <div class="flex items-center space-x-2">
+                        <i class="fa-solid fa-user-tie text-blue-600 text-xs"></i>
+                        <span class="font-bold text-slate-800">${t.name}</span>
+                        ${t.short ? `<span class="text-[10px] text-slate-400">(${t.short})</span>` : ''}
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        ${t.car ? `<span class="text-[10px] bg-blue-100 text-blue-800 font-bold px-2 py-0.5 rounded-full">Xe: ${t.car}</span>` : ''}
+                        ${t.code ? `<span class="text-[10px] text-slate-400 font-mono">${t.code}</span>` : ''}
+                    </div>
+                `;
+                item.onclick = () => {
+                    document.getElementById('teacher-sync-name-input').value = t.name;
+                    if (badge) badge.innerText = t.car ? `Xe: ${t.car}` : '';
+                    drop.classList.add('hidden');
+                };
+                drop.appendChild(item);
+            });
+            drop.classList.remove('hidden');
+        }
+
+        function selectQuickTeacher(name, car) {
+            const inp = document.getElementById('teacher-sync-name-input');
+            const badge = document.getElementById('teacher-sync-car-badge');
+            if (inp) inp.value = name;
+            if (badge) badge.innerText = car ? `Xe: ${car}` : '';
+            const drop = document.getElementById('teacher-sync-dropdown');
+            if (drop) drop.classList.add('hidden');
+        }
+
+        async function startTeacherSync() {
+            const inp = document.getElementById('teacher-sync-name-input');
+            const courseSel = document.getElementById('teacher-sync-course-select');
+            const btn = document.getElementById('teacher-sync-btn');
+            const btnIcon = document.getElementById('teacher-sync-btn-icon');
+            const btnText = document.getElementById('teacher-sync-btn-text');
+            const loading = document.getElementById('teacher-sync-loading');
+            const resDiv = document.getElementById('teacher-sync-result');
+
+            const teacherName = inp ? inp.value.trim() : '';
+            const courseFilter = courseSel ? courseSel.value : 'all';
+
+            if (!teacherName) {
+                showToast('Vui lòng nhập họ và tên giáo viên!', false);
+                if (inp) inp.focus();
+                return;
+            }
+
+            const drop = document.getElementById('teacher-sync-dropdown');
+            if (drop) drop.classList.add('hidden');
+
+            if (btn) { btn.disabled = true; btn.classList.add('opacity-60', 'cursor-not-allowed'); }
+            if (loading) loading.classList.remove('hidden');
+            if (resDiv) { resDiv.classList.add('hidden'); resDiv.innerHTML = ''; }
+            if (btnIcon) btnIcon.className = 'fa-solid fa-spinner fa-spin text-sm';
+            if (btnText) btnText.textContent = 'Đang quét toàn bộ các khoá học trên Google Sheet (~25s)...';
+
+            try {
+                const res = await fetch('/api/teacher/import', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        teacher_name: teacherName,
+                        course: courseFilter
+                    })
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    const count = data.imported || 0;
+                    const byCourse = data.by_course || {};
+                    const courseEntries = Object.entries(byCourse);
+
+                    let coursesHtml = '';
+                    if (courseEntries.length > 0) {
+                        coursesHtml = `
+                            <div class="mt-3 pt-3 border-t border-emerald-200">
+                                <p class="text-[11px] font-bold text-emerald-900 mb-1.5 flex items-center">
+                                    <i class="fa-solid fa-layer-group mr-1.5 text-emerald-700"></i>
+                                    Danh sách phân bổ theo khoá (${courseEntries.length} khoá):
+                                </p>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5 max-h-48 overflow-y-auto pr-1">
+                                    ${courseEntries.map(([c, num]) => `
+                                        <div class="flex items-center justify-between bg-white/90 px-3 py-1.5 rounded-xl border border-emerald-200 text-xs shadow-xs">
+                                            <span class="font-bold text-slate-800 truncate" title="${c}">${c}</span>
+                                            <span class="bg-emerald-600 text-white font-bold text-[10px] px-2 py-0.5 rounded-full ml-1 shrink-0">${num} HV</span>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        `;
+                    }
+
+                    if (resDiv) {
+                        resDiv.innerHTML = `
+                            <div class="bg-emerald-50 border border-emerald-300 rounded-2xl p-4 shadow-sm animate-fadeIn">
+                                <div class="flex items-start space-x-3">
+                                    <div class="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center text-lg shadow-sm shrink-0 mt-0.5">
+                                        <i class="fa-solid fa-circle-check"></i>
+                                    </div>
+                                    <div class="flex-1">
+                                        <div class="flex items-center justify-between">
+                                            <p class="text-sm font-bold text-emerald-900">Đã Đẩy Danh Sách Vào App Thành Công!</p>
+                                        </div>
+                                        <p class="text-xs text-emerald-700 mt-1">
+                                            Đã nạp <b class="text-emerald-900 text-sm font-black">${count} học viên</b> của giáo viên <b class="text-slate-900">${teacherName}</b> vào hệ thống theo từng khoá học.
+                                        </p>
+                                        ${coursesHtml}
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        resDiv.classList.remove('hidden');
+                    }
+
+                    showToast(`✨ ${data.message || `Đã nạp thành công ${count} học viên vào App!`}`);
+
+                    await loadStudents();
+                    await loadStats();
+                    await loadRoster();
+                    await loadRosterBadge();
+
+                    setTimeout(() => closeModal('teacher-sync-modal'), 4000);
+                } else {
+                    if (resDiv) {
+                        resDiv.innerHTML = `
+                            <div class="bg-rose-50 border border-rose-300 rounded-2xl p-4 shadow-sm animate-fadeIn">
+                                <div class="flex items-start space-x-3">
+                                    <div class="w-9 h-9 rounded-xl bg-rose-600 text-white flex items-center justify-center text-sm shadow-sm shrink-0 mt-0.5">
+                                        <i class="fa-solid fa-triangle-exclamation"></i>
+                                    </div>
+                                    <div class="flex-1">
+                                        <p class="text-sm font-bold text-rose-800">Không tìm thấy học viên</p>
+                                        <p class="text-xs text-rose-600 mt-0.5 leading-relaxed">${data.error || 'Vui lòng kiểm tra lại họ tên giáo viên.'}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        resDiv.classList.remove('hidden');
+                    }
+                    showToast(data.error || 'Không tìm thấy học viên', false);
+                }
+            } catch (err) {
+                if (resDiv) {
+                    resDiv.innerHTML = `
+                        <div class="bg-rose-50 border border-rose-300 rounded-2xl p-4">
+                            <p class="text-sm font-bold text-rose-700"><i class="fa-solid fa-wifi-slash mr-2"></i>Lỗi kết nối máy chủ</p>
+                            <p class="text-xs text-rose-500 mt-1">${err.message}</p>
+                        </div>
+                    `;
+                    resDiv.classList.remove('hidden');
+                }
+                showToast('Lỗi kết nối máy chủ: ' + err.message, false);
+            } finally {
+                if (btn) { btn.disabled = false; btn.classList.remove('opacity-60', 'cursor-not-allowed'); }
+                if (loading) loading.classList.add('hidden');
+                if (btnIcon) btnIcon.className = 'fa-solid fa-cloud-arrow-down text-sm';
+                if (btnText) btnText.textContent = '🚀 Tự Động Quét & Đẩy Danh Sách Vào App';
+            }
+        }
+        // ======= END TEACHER SYNC MODAL LOGIC =======
 
 
 
