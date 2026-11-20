@@ -1033,16 +1033,26 @@ _P2 = 'EKYONCnFqg'
 _P3 = 'H9lQqcfonbCgritMCc631kCqQh'
 GITHUB_TOKEN = os.environ.get('GITHUB_TOKEN', _P1 + _P2 + _P3)
 
-@app.route('/api/cloud/sync_github', methods=['POST', 'GET'])
-def cloud_sync_github():
+_cloud_dirty = False
+_last_dirty_time = 0
+_cloud_sync_lock = threading.Lock()
+
+def on_database_change():
+    global _cloud_dirty, _last_dirty_time
+    _cloud_dirty = True
+    _last_dirty_time = time.time()
+
+database.register_on_change_callback(on_database_change)
+
+def sync_database_to_github():
     """
     Lưu vĩnh viễn dữ liệu học viên (students.json & roster.json) lên GitHub.
     Giúp Render ghi nhớ vĩnh viễn mọi học viên đã tra cứu và mọi học viên đã xóa,
     kể cả khi máy chủ khởi động lại hoặc sau khi ngủ đông.
     """
-    token = request.headers.get('X-GitHub-Token') or GITHUB_TOKEN
+    token = GITHUB_TOKEN
     if not token:
-        return jsonify({'success': False, 'error': 'Chưa cấu hình GitHub Token'})
+        return {'success': False, 'error': 'Chưa cấu hình GitHub Token'}
 
     headers = {
         'Authorization': f'token {token}',
@@ -1086,17 +1096,55 @@ def cloud_sync_github():
             errors.append(f"{repo_path}: {str(e)}")
 
     if success_count == len(files_to_sync):
-        return jsonify({
+        return {
             'success': True,
-            'message': 'Đã lưu vĩnh viễn dữ liệu học viên lên GitHub Cloud thành công! Dữ liệu sẽ được bảo toàn 100% kể cả khi Render khởi động lại.',
+            'message': 'Đã tự động lưu vĩnh viễn dữ liệu học viên lên GitHub Cloud thành công!',
             'students_count': len(db.students),
             'roster_count': len(db.roster)
-        })
+        }
     else:
-        return jsonify({
+        return {
             'success': False,
             'error': f"Đồng bộ chưa hoàn tất: {', '.join(errors)}"
-        })
+        }
+
+def start_auto_cloud_sync_worker():
+    """
+    Luồng tự động lưu dữ liệu lên GitHub Cloud trong nền (Auto Background Cloud Sync):
+    - Tự động phát hiện khi có thay đổi (tra cứu xong, xóa học viên, cập nhật điểm, v.v.).
+    - Đợi 15 giây nhàn rỗi (Debounce 15s) sau thao tác cuối cùng để gom các thao tác liên tiếp lại thành 1 lần lưu.
+    - Đẩy trực tiếp students.json và roster.json lên GitHub Cloud mà không làm phiền người dùng.
+    """
+    def _worker():
+        global _cloud_dirty, _last_dirty_time
+        time.sleep(15)
+        while True:
+            try:
+                time.sleep(5)
+                if _cloud_dirty and (time.time() - _last_dirty_time >= 15):
+                    with _cloud_sync_lock:
+                        if _cloud_dirty and (time.time() - _last_dirty_time >= 15):
+                            print("☁️ [AutoCloudSync] Tự động lưu dữ liệu lên GitHub Cloud...")
+                            res = sync_database_to_github()
+                            if res.get('success'):
+                                _cloud_dirty = False
+                                print("✅ [AutoCloudSync] Đã tự động lưu dữ liệu lên GitHub Cloud thành công!")
+                            else:
+                                print(f"⚠️ [AutoCloudSync] Lưu đám mây chưa hoàn tất: {res.get('error')}")
+                                _last_dirty_time = time.time() - 5
+            except Exception as e:
+                print(f"⚠️ [AutoCloudSync] Lỗi worker tự động lưu đám mây: {e}")
+                time.sleep(10)
+
+    t = threading.Thread(target=_worker, daemon=True)
+    t.start()
+
+start_auto_cloud_sync_worker()
+
+@app.route('/api/cloud/sync_github', methods=['POST', 'GET'])
+def cloud_sync_github():
+    res = sync_database_to_github()
+    return jsonify(res)
 
 @app.route('/api/clear', methods=['POST'])
 def clear_all():
