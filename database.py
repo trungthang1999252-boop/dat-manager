@@ -15,6 +15,19 @@ CONFIG_FILE = os.path.join(DATA_DIR, 'config.json')
 os.makedirs(DATA_DIR, exist_ok=True)
 os.makedirs(BACKUP_DIR, exist_ok=True)
 
+_on_change_callbacks = []
+
+def register_on_change_callback(cb):
+    if cb not in _on_change_callbacks:
+        _on_change_callbacks.append(cb)
+
+def notify_data_changed():
+    for cb in list(_on_change_callbacks):
+        try:
+            cb()
+        except Exception as e:
+            pass
+
 def strip_vietnamese_accents(s):
     """Xóa bỏ toàn bộ dấu tiếng Việt và chuẩn hóa chữ thường để tìm kiếm thông minh."""
     if not s: return ''
@@ -267,6 +280,7 @@ class StudentDatabase:
                 with open(tmp_file, 'w', encoding='utf-8') as f:
                     json.dump(self.roster, f, ensure_ascii=False, indent=2)
                 os.replace(tmp_file, ROSTER_FILE)
+                notify_data_changed()
             except Exception as e:
                 print("Lỗi lưu danh sách gốc:", e)
 
@@ -286,6 +300,7 @@ class StudentDatabase:
                 with open(tmp_file, 'w', encoding='utf-8') as f:
                     json.dump(self.students, f, ensure_ascii=False, indent=2)
                 os.replace(tmp_file, STUDENTS_FILE)
+                notify_data_changed()
                 
                 # Backup định kỳ theo ngày
                 today_str = datetime.now().strftime('%Y%m%d')
