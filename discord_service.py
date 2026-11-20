@@ -23,30 +23,30 @@ GUILD_ID = "1100763300180017182"       # Trường CĐ Cơ điện - Xây dựng
 CHANNEL_ID = "1100763300180017185"     # Kênh tra cứu điều kiện DAT
 APP_ID = "1376099961212502016"         # NLTB_Bot (BOT_KhaVy)
 
-# Command Schemas
-CMD_DAT_ID = "1382298230137688106"
-CMD_DAT_VER = "1382298230137688107"
+# Command Schemas (Đã đồng bộ trực tiếp từ Discord Application Command Index mới nhất)
+CMD_DAT_ID = "1573173094867275821"
+CMD_DAT_VER = "1573173098302152811"
 
-CMD_PHIEN_ID = "1380109102822330369"
-CMD_PHIEN_VER = "1380115566928592976"
+CMD_PHIEN_ID = "1573173095735500833"
+CMD_PHIEN_VER = "1573173098528768012"
 
-CMD_LYTHUYET_ID = "1380110945749172235"
-CMD_LYTHUYET_VER = "1380115362783166514"
+CMD_LYTHUYET_ID = "1573173095735500832"
+CMD_LYTHUYET_VER = "1573173098528768011"
 
-CMD_CAPNHATKHOA_ID = "1380114233689374722"
-CMD_CAPNHATKHOA_VER = "1380114233689374723"
+CMD_CAPNHATKHOA_ID = "1573173094867275820"
+CMD_CAPNHATKHOA_VER = "1573173098302152810"
 
-CMD_XEONLINE_ID = "1546784031235121262"
-CMD_XEONLINE_VER = "1546784031235121263"
+CMD_XEONLINE_ID = "1573173096603713538"
+CMD_XEONLINE_VER = "1573173098528768014"
 
-CMD_DONGBO_ID = "1380115187264258149"
-CMD_DONGBO_VER = "1546353627944325140"
+CMD_DONGBO_ID = "1573173097115156596"
+CMD_DONGBO_VER = "1573173098612662294"
 
-CMD_DONGBOTC_ID = "1539191665036886039"
-CMD_DONGBOTC_VER = "1539191665036886041"
+CMD_DONGBOTC_ID = "1573173097115156598"
+CMD_DONGBOTC_VER = "1573173098612662295"
 
-CMD_CABIN_ID = "1381560391770964121"
-CMD_CABIN_VER = "1381560391770964122"
+CMD_CABIN_ID = "1573173094867275819"
+CMD_CABIN_VER = "1573173098302152809"
 
 # Windows DPAPI decrypt (chỉ hỗ trợ trên Windows)
 if sys.platform == 'win32':
@@ -203,6 +203,9 @@ class DiscordDATService:
         self._channel_cache = None
         self._channel_cache_ts = 0.0
         self._channel_cache_lock = threading.Lock()
+        self._command_registry = {}
+        self._last_cmd_refresh = 0.0
+        self._registry_lock = threading.Lock()
 
     def set_token(self, token):
         self.token = token
@@ -237,6 +240,54 @@ class DiscordDATService:
             pass
         with self._channel_cache_lock:
             return self._channel_cache[:limit] if self._channel_cache else []
+
+    
+    def refresh_command_index(self):
+        """Tự động fetch danh mục lệnh mới nhất từ Discord API (application-command-index)."""
+        with self._registry_lock:
+            try:
+                url = f"https://discord.com/api/v9/guilds/{GUILD_ID}/application-command-index"
+                r = self.session.get(url, timeout=5)
+                if r.status_code == 200:
+                    d = r.json()
+                    cmds = d.get('application_commands', [])
+                    for c in cmds:
+                        name = c.get('name')
+                        if name:
+                            self._command_registry[name] = {
+                                'id': str(c.get('id')),
+                                'version': str(c.get('version')),
+                                'options': c.get('options', [])
+                            }
+                    self._last_cmd_refresh = time.time()
+                    print(f"[DiscordService] Đã tự động nạp {len(self._command_registry)} lệnh từ application-command-index!")
+                    return True
+            except Exception as e:
+                print(f"[DiscordService] Lỗi khi refresh_command_index: {e}")
+        return False
+
+    def get_command_info(self, cmd_name):
+        """Lấy ID và Version của lệnh (ưu tiên bộ đệm động, fallback về constants)."""
+        with self._registry_lock:
+            if not self._command_registry or (time.time() - self._last_cmd_refresh > 1800):
+                threading.Thread(target=self.refresh_command_index, daemon=True).start()
+
+            info = self._command_registry.get(cmd_name)
+            if info:
+                return info['id'], info['version']
+
+        # Fallback constants
+        defaults = {
+            'dat': (CMD_DAT_ID, CMD_DAT_VER),
+            'phien': (CMD_PHIEN_ID, CMD_PHIEN_VER),
+            'lythuyet': (CMD_LYTHUYET_ID, CMD_LYTHUYET_VER),
+            'capnhatkhoa': (CMD_CAPNHATKHOA_ID, CMD_CAPNHATKHOA_VER),
+            'cabin': (CMD_CABIN_ID, CMD_CABIN_VER),
+            'xeonline': (CMD_XEONLINE_ID, CMD_XEONLINE_VER),
+            'dongbo': (CMD_DONGBO_ID, CMD_DONGBO_VER),
+            'dongbotc': (CMD_DONGBOTC_ID, CMD_DONGBOTC_VER),
+        }
+        return defaults.get(cmd_name, (CMD_DAT_ID, CMD_DAT_VER))
 
     def is_connected(self):
         if not self.token:
@@ -616,14 +667,7 @@ class DiscordDATService:
         3. Nhận diện thông minh phản hồi: Hỗ trợ cả trường hợp trùng tên nhiều khóa và tự động
            bắt tiếp thông tin khi chọn khóa trên Discord.
         """
-        if command == 'dat':
-            cmd_id, cmd_ver = CMD_DAT_ID, CMD_DAT_VER
-        elif command == 'phien':
-            cmd_id, cmd_ver = CMD_PHIEN_ID, CMD_PHIEN_VER
-        elif command == 'lythuyet':
-            cmd_id, cmd_ver = CMD_LYTHUYET_ID, CMD_LYTHUYET_VER
-        else:
-            cmd_id, cmd_ver = CMD_DAT_ID, CMD_DAT_VER
+        cmd_id, cmd_ver = self.get_command_info(command)
 
         q_clean = str(query_text).strip()
         q_lower = q_clean.lower()
@@ -719,6 +763,9 @@ class DiscordDATService:
 
             if resp.status_code not in (200, 204):
                 print(f"[Discord Error {resp.status_code}] {resp.text}")
+                if '10005' in resp.text:
+                    self.refresh_command_index()
+                    return {'success': False, 'error': 'Hệ thống lệnh Bot Discord trường vừa cập nhật phiên bản mới. Đang tự động kết nối lại, vui lòng thử lại sau giây lát!'}
                 return {'success': False, 'error': f'Lỗi Discord: {resp.status_code} ({resp.text[:100]})'}
         except Exception as e:
             return {'success': False, 'error': f'Không thể gửi lệnh: {str(e)}'}
@@ -822,6 +869,7 @@ class DiscordDATService:
         except Exception:
             pass
 
+        cmd_id, cmd_ver = self.get_command_info('capnhatkhoa')
         interaction_url = 'https://discord.com/api/v9/interactions'
         payload = {
             'type': 2,
@@ -830,8 +878,8 @@ class DiscordDATService:
             'channel_id': CHANNEL_ID,
             'session_id': uuid.uuid4().hex,
             'data': {
-                'version': CMD_CAPNHATKHOA_VER,
-                'id': CMD_CAPNHATKHOA_ID,
+                'version': cmd_ver,
+                'id': cmd_id,
                 'name': 'capnhatkhoa',
                 'type': 1,
                 'options': [
@@ -943,6 +991,7 @@ class DiscordDATService:
         except Exception:
             pass
 
+        cmd_id, cmd_ver = self.get_command_info('xeonline')
         interaction_url = 'https://discord.com/api/v9/interactions'
         payload = {
             'type': 2,
@@ -951,8 +1000,8 @@ class DiscordDATService:
             'channel_id': CHANNEL_ID,
             'session_id': uuid.uuid4().hex,
             'data': {
-                'version': CMD_XEONLINE_VER,
-                'id': CMD_XEONLINE_ID,
+                'version': cmd_ver,
+                'id': cmd_id,
                 'name': 'xeonline',
                 'type': 1,
                 'options': [{'type': 3, 'name': 'biensoxe', 'value': c_plate}]
