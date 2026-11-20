@@ -3887,12 +3887,13 @@
 
 
 
+let _isLoadingStats = false;
         async function loadStats() {
-
+            if (_isLoadingStats) return;
+            _isLoadingStats = true;
             try {
-
                 const res = await fetch('/api/stats');
-
+                if (res.status === 304) return;
                 const data = await res.json();
 
                 document.getElementById('stat-total').innerText = data.total;
@@ -3941,7 +3942,7 @@
 
                 console.error(err);
 
-            }
+            } finally { _isLoadingStats = false; }
 
         }
 
@@ -4039,32 +4040,27 @@
 
 
 
+let _loadStudentsAbortCtrl = null;
         async function loadStudents() {
+            if (_loadStudentsAbortCtrl) {
+                try { _loadStudentsAbortCtrl.abort(); } catch (e) {}
+            }
+            _loadStudentsAbortCtrl = new AbortController();
+            const signal = _loadStudentsAbortCtrl.signal;
 
             const search = document.getElementById('table-search').value;
-
             const courseSelect = document.getElementById('course-filter');
-
             const course = courseSelect.value;
-
             const status = document.getElementById('status-filter').value;
-
             const sort = document.getElementById('sort-filter').value;
 
-
-
             // Đồng bộ trạng thái viền nổi bật của các thẻ KPI
-
             updateKpiActiveState(status);
 
-
-
             try {
-
                 const url = `/api/students?search=${encodeURIComponent(search)}&course=${encodeURIComponent(course)}&status=${encodeURIComponent(status)}&sort=${encodeURIComponent(sort)}`;
-
-                const res = await fetch(url);
-
+                const res = await fetch(url, { signal });
+                if (res.status === 304) return;
                 const data = await res.json();
 
                 currentStudents = data.students || [];
