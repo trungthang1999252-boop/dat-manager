@@ -7,6 +7,9 @@ import re
 import base64
 import requests
 import urllib.request
+import gzip
+
+_init_lock = threading.Lock()
 from flask import Flask, render_template, request, jsonify, send_file, send_from_directory, Response
 
 import discord_service
@@ -128,7 +131,9 @@ def backup_upload():
 @app.after_request
 def add_cache_headers(response):
     """Ngăn chặn trình duyệt điện thoại lưu cache cũ và nén Gzip siêu tốc."""
-    if request.path in ('/', '/service-worker.js', '/manifest.json') or request.path.startswith('/api/'):
+    if request.path in ('/api/stats', '/api/students'):
+        response.headers['Cache-Control'] = 'no-cache'
+    elif request.path in ('/', '/service-worker.js', '/manifest.json') or request.path.startswith('/api/'):
         response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate, max-age=0'
         response.headers['Pragma'] = 'no-cache'
         response.headers['Expires'] = '0'
@@ -270,7 +275,7 @@ def fetch_pdf_file(pdf_url, fname, student_key=None, url_field=None, force_downl
 
     return (dest_path, None) if os.path.exists(dest_path) else (None, "Không thể tải tệp")
 
-def ensure_lythuyet_evaluated(student_obj, exempt_all_cabin=False, force_download=False):
+def ensure_lythuyet_evaluated(student_obj, exempt_all_cabin=False, force_download=False, auto_save=True):
     """Tự động tải file PDF lý thuyết về máy và chấm điểm điều kiện thi tốt nghiệp."""
     if not student_obj:
         return student_obj
@@ -287,13 +292,13 @@ def ensure_lythuyet_evaluated(student_obj, exempt_all_cabin=False, force_downloa
                 student_obj['has_lythuyet'] = True
                 import totnghiep_service
                 student_obj = totnghiep_service.evaluate_student(student_obj, DOWNLOADS_DIR, exempt_all_cabin=exempt_all_cabin)
-                db.upsert_student(student_obj, auto_save=True)
+                db.upsert_student(student_obj, auto_save=auto_save)
                 return student_obj
 
         # Nếu đã có file sẵn trên ổ đĩa
         import totnghiep_service
         student_obj = totnghiep_service.evaluate_student(student_obj, DOWNLOADS_DIR, exempt_all_cabin=exempt_all_cabin)
-        db.upsert_student(student_obj, auto_save=True)
+        db.upsert_student(student_obj, auto_save=auto_save)
     except Exception as e:
         print(f"Lỗi evaluate totnghiep: {e}")
 
@@ -301,37 +306,57 @@ def ensure_lythuyet_evaluated(student_obj, exempt_all_cabin=False, force_downloa
 
 @app.route('/api/stats', methods=['GET'])
 def get_stats():
-    return jsonify(db.get_statistics())
+    """Lấy số liệu KPI tổng quan với ETag 304 Not Modified siêu tốc khi có nhiều người truy cập."""
+    etag = f"stats-{db.version}"
+    if request.if_none_match and request.if_none_match.contains_weak(etag):
+        return Response(status=304)
+
+    resp = jsonify(db.get_statistics())
+    resp.set_etag(etag, weak=True)
+    return resp
 
 @app.route('/api/students', methods=['GET'])
 def get_students():
+    """Lấy danh sách học viên kèm ETag 304 Not Modified và tối ưu hóa khởi động lạnh đa luồng."""
+    # 1. Khởi tạo kiểm tra tốt nghiệp một lần khi khởi động (bảo vệ chống race condition đa luồng)
+    global _has_initialized_totnghiep
+    if not _has_initialized_totnghiep:
+        with _init_lock:
+            if not _has_initialized_totnghiep:
+                for s in list(db.students.values()):
+                    if not s.get('totnghiep_has_pdf') or 'dat_quangduong' not in s.get('totnghiep_details', {}):
+                        fname = s.get('lythuyet_pdf_filename') or (f"{s.get('mahv')}_lythuyet.pdf" if s.get('mahv') else '')
+                        p = os.path.join(DOWNLOADS_DIR, fname) if fname else ''
+                        if p and os.path.exists(p):
+                            ensure_lythuyet_evaluated(s, auto_save=False)
+                        else:
+                            db.calculate_progress(s)
+                            db.upsert_student(s, auto_save=False)
+                db._save()
+                _has_initialized_totnghiep = True
+
+    # 2. Kiểm tra ETag 304 Not Modified
     keyword = request.args.get('search', '')
     status_filter = request.args.get('status', 'all')
     course_filter = request.args.get('course', 'all')
     sort_by = request.args.get('sort', 'updated')
 
-    # Khởi tạo kiểm tra tốt nghiệp một lần khi khởi động (chỉ chạy lần đầu, không lặp lại mỗi lần tìm kiếm)
-    global _has_initialized_totnghiep
-    if not _has_initialized_totnghiep:
-        for s in list(db.students.values()):
-            if not s.get('totnghiep_has_pdf') or 'dat_quangduong' not in s.get('totnghiep_details', {}):
-                fname = s.get('lythuyet_pdf_filename') or (f"{s.get('mahv')}_lythuyet.pdf" if s.get('mahv') else '')
-                p = os.path.join(DOWNLOADS_DIR, fname) if fname else ''
-                if p and os.path.exists(p):
-                    ensure_lythuyet_evaluated(s)
-                else:
-                    db.calculate_progress(s)
-                    db.upsert_student(s, auto_save=False)
-        _has_initialized_totnghiep = True
-    
+    import hashlib
+    param_hash = hashlib.md5(f"{keyword}:{status_filter}:{course_filter}:{sort_by}".encode('utf-8')).hexdigest()[:8]
+    etag = f"st-{db.version}-{param_hash}"
+    if request.if_none_match and request.if_none_match.contains_weak(etag):
+        return Response(status=304)
+
     students = db.get_all(keyword=keyword, status_filter=status_filter, course_filter=course_filter, sort_by=sort_by)
-    courses = sorted(list(set(s.get('khoa') for s in db.students.values() if s.get('khoa'))))
-    return jsonify({
+    courses = sorted(list(set(s.get('khoa') for s in list(db.students.values()) if s.get('khoa'))))
+    resp = jsonify({
         'success': True,
         'count': len(students),
         'students': students,
         'courses': courses
     })
+    resp.set_etag(etag, weak=True)
+    return resp
 
 @app.route('/api/query', methods=['POST'])
 def query_student():
