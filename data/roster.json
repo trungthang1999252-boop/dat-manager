@@ -1,4 +1,16 @@
 {
+  "PHẠM VĂN TRÍ": {
+    "hoten": "PHẠM VĂN TRÍ",
+    "cccd": "",
+    "mahv": "",
+    "ngaysinh": "20/01/1998",
+    "hang": "",
+    "khoa": "",
+    "sdt": "",
+    "ghichu": "",
+    "created_at": "16/11/2026 20:17:40",
+    "updated_at": "16/11/2026 20:17:40"
+  },
   "PHẠM ĐĂNG KHÔI": {
     "hoten": "PHẠM ĐĂNG KHÔI",
     "cccd": "051205004748",
