@@ -320,6 +320,10 @@ class StudentDatabase:
             except Exception as e:
                 print("Lỗi lưu cơ sở dữ liệu:", e)
 
+    def save(self):
+        """Lưu cơ sở dữ liệu học viên ra đĩa."""
+        return self._save()
+
     def calculate_progress(self, student):
         """Tính toán tỷ lệ hoàn thành % và các chỉ tiêu chuẩn hóa theo hạng xe."""
         hang = student.get('hang', '').strip().upper()
