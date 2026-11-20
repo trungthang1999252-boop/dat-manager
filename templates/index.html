@@ -2392,7 +2392,7 @@
             loaderText.innerText = type === 'combo'
                 ? `Đang chạy liên hoàn: DAT ➔ Mã HV ➔ Lý thuyết cho "${q}"...`
                 : (type === 'dat' 
-                    ? `Đang kiểm tra DAT & tự động tải Lý thuyết cho "${q}"...`
+                    ? `Đang tra cứu điều kiện DAT (/dat) cho "${q}"...`
                     : (type === 'phien' ? `Đang kiểm tra các phiên học & tạo file PDF (/phien)...` : `Đang kiểm tra điểm lý thuyết & tải PDF (/lythuyet)...`));
             loader.classList.remove('hidden');
             btnDat.disabled = true;
