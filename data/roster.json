@@ -107,14 +107,6 @@
     "created_at": "16/11/2026 20:17:40",
     "updated_at": "16/11/2026 20:17:40"
   },
-  "LÊ THỊ HỒNG DIỄM": {
-    "hoten": "LÊ THỊ HỒNG DIỄM",
-    "cccd": "051187006039",
-    "mahv": "52001-20260916-000013",
-    "khoa": "CD_110B.01",
-    "hang": "B.01",
-    "ngaysinh": "10/01/1987"
-  },
   "PHẠM VĂN BẢO": {
     "hoten": "PHẠM VĂN BẢO",
     "cccd": "051205010920",
@@ -122,22 +114,6 @@
     "khoa": "CD_14C1",
     "hang": "C1",
     "ngaysinh": "15/01/2005"
-  },
-  "NGUYỄN HỒNG PHƯƠNG": {
-    "hoten": "NGUYỄN HỒNG PHƯƠNG",
-    "cccd": "051192000653",
-    "mahv": "52001-20260916-000038",
-    "khoa": "CD_110B.01",
-    "hang": "B.01",
-    "ngaysinh": "03/10/1992"
-  },
-  "LÊ THỊ PHƯỚC BÌNH": {
-    "hoten": "LÊ THỊ PHƯỚC BÌNH",
-    "cccd": "052177005292",
-    "mahv": "52001-20261004-000074",
-    "khoa": "CD_111B.01",
-    "hang": "B.01",
-    "ngaysinh": "22/12/1977"
   },
   "TRẦN THỊ NHUNG": {
     "hoten": "TRẦN THỊ NHUNG",
@@ -163,22 +139,6 @@
     "hang": "C1",
     "ngaysinh": "02/05/2006"
   },
-  "TRẦN MINH NHẬT LỆ": {
-    "hoten": "TRẦN MINH NHẬT LỆ",
-    "cccd": "051197000321",
-    "mahv": "52001-20261004-000028",
-    "khoa": "CD_111B.01",
-    "hang": "B.01",
-    "ngaysinh": "08/08/1997"
-  },
-  "TRẦN THỊ BÍCH THUYÊN": {
-    "hoten": "TRẦN THỊ BÍCH THUYÊN",
-    "cccd": "051186010412",
-    "mahv": "52001-20260916-000036",
-    "khoa": "CD_110B.01",
-    "hang": "B.01",
-    "ngaysinh": "09/08/1986"
-  },
   "NGUYỄN THỊ YẾN LÀNH": {
     "hoten": "NGUYỄN THỊ YẾN LÀNH",
     "cccd": "052195013174",
@@ -194,5 +154,180 @@
     "khoa": "CD_22CE",
     "hang": "Cm-CE",
     "ngaysinh": "15/10/1981"
+  },
+  "027080001971": {
+    "hoten": "NGUYỄN HỮU HẠNH",
+    "cccd": "027080001971",
+    "mahv": "52001-20250304-201648",
+    "ngaysinh": "",
+    "hang": "B.01",
+    "khoa": "CD_218B-CD_91B.01",
+    "sdt": "",
+    "ghichu": "GV: Cừ-QSon",
+    "created_at": "20/11/2026 20:30:26",
+    "updated_at": "20/11/2026 20:30:26"
+  },
+  "052077017750": {
+    "hoten": "NGUYỄN VĂN HIỀN",
+    "cccd": "052077017750",
+    "mahv": "52001-20250304-201945",
+    "ngaysinh": "",
+    "hang": "B.01",
+    "khoa": "CD_218B-CD_91B.01",
+    "sdt": "",
+    "ghichu": "GV: Cừ-QSon",
+    "created_at": "20/11/2026 20:30:27",
+    "updated_at": "20/11/2026 20:30:27"
+  },
+  "054087001005": {
+    "hoten": "NGUYỄN VĂN LÂM",
+    "cccd": "054087001005",
+    "mahv": "52001-20250304-201727",
+    "ngaysinh": "",
+    "hang": "B.01",
+    "khoa": "CD_218B-CD_91B.01",
+    "sdt": "",
+    "ghichu": "GV: Cừ-QSon",
+    "created_at": "20/11/2026 20:30:28",
+    "updated_at": "20/11/2026 20:30:28"
+  },
+  "066094009013": {
+    "hoten": "NGUYỄN QUANG TRƯỜNG",
+    "cccd": "066094009013",
+    "mahv": "52001-20250304-201810",
+    "ngaysinh": "",
+    "hang": "B.01",
+    "khoa": "CD_218B-CD_91B.01",
+    "sdt": "",
+    "ghichu": "GV: Cừ-QSon",
+    "created_at": "20/11/2026 20:30:29",
+    "updated_at": "20/11/2026 20:30:29"
+  },
+  "054187012231": {
+    "hoten": "PHAN THỊ BẢO YẾN",
+    "cccd": "054187012231",
+    "mahv": "52001-20250304-201846",
+    "ngaysinh": "",
+    "hang": "B.01",
+    "khoa": "CD_218B-CD_91B.01",
+    "sdt": "",
+    "ghichu": "GV: Cừ-QSon",
+    "created_at": "20/11/2026 20:30:30",
+    "updated_at": "20/11/2026 20:30:30"
+  },
+  "051187006039": {
+    "hoten": "LÊ THỊ HỒNG DIỄM",
+    "cccd": "051187006039",
+    "mahv": "52001-20260916-000013",
+    "khoa": "CD_110B.01",
+    "hang": "B.01",
+    "ngaysinh": "10/01/1987",
+    "sdt": "",
+    "ghichu": "GV: Trần Thái Trung Thắng",
+    "updated_at": "20/11/2026 22:01:17"
+  },
+  "051179010365": {
+    "hoten": "ĐẶNG THỊ KIM DUNG",
+    "cccd": "051179010365",
+    "mahv": "52001-20260916-000012",
+    "ngaysinh": "15/12/1979",
+    "hang": "B.01",
+    "khoa": "CD_110B.01",
+    "sdt": "",
+    "ghichu": "GV: Trần Thái Trung Thắng",
+    "created_at": "20/11/2026 21:50:23",
+    "updated_at": "20/11/2026 22:01:17"
+  },
+  "064198010731": {
+    "hoten": "VÕ THỊ THU LAN",
+    "cccd": "064198010731",
+    "mahv": "52001-20260916-000009",
+    "ngaysinh": "06/01/1998",
+    "hang": "B.01",
+    "khoa": "CD_110B.01",
+    "sdt": "",
+    "ghichu": "GV: Trần Thái Trung Thắng",
+    "created_at": "20/11/2026 21:50:23",
+    "updated_at": "20/11/2026 22:01:17"
+  },
+  "051192000653": {
+    "hoten": "NGUYỄN HỒNG PHƯƠNG",
+    "cccd": "051192000653",
+    "mahv": "52001-20260916-000038",
+    "khoa": "CD_110B.01",
+    "hang": "B.01",
+    "ngaysinh": "03/10/1992",
+    "sdt": "",
+    "ghichu": "GV: Trần Thái Trung Thắng",
+    "updated_at": "20/11/2026 22:01:17"
+  },
+  "051186010412": {
+    "hoten": "TRẦN THỊ BÍCH THUYÊN",
+    "cccd": "051186010412",
+    "mahv": "52001-20260916-000036",
+    "khoa": "CD_110B.01",
+    "hang": "B.01",
+    "ngaysinh": "09/08/1986",
+    "sdt": "",
+    "ghichu": "GV: Trần Thái Trung Thắng",
+    "updated_at": "20/11/2026 22:01:17"
+  },
+  "052177005292": {
+    "hoten": "LÊ THỊ PHƯỚC BÌNH",
+    "cccd": "052177005292",
+    "mahv": "52001-20261004-000074",
+    "khoa": "CD_111B.01",
+    "hang": "B.01",
+    "ngaysinh": "22/12/1977",
+    "sdt": "",
+    "ghichu": "GV: Trần Thái Trung Thắng",
+    "updated_at": "20/11/2026 22:01:17"
+  },
+  "034173009075": {
+    "hoten": "NGUYỄN THỊ PHƯƠNG ĐÔNG",
+    "cccd": "034173009075",
+    "mahv": "52001-20261004-000018",
+    "ngaysinh": "10/10/1973",
+    "hang": "B.01",
+    "khoa": "CD_111B.01",
+    "sdt": "",
+    "ghichu": "GV: Trần Thái Trung Thắng",
+    "created_at": "20/11/2026 21:50:23",
+    "updated_at": "20/11/2026 22:01:17"
+  },
+  "051194014004": {
+    "hoten": "NGUYỄN HÀ MINH HOÀNG",
+    "cccd": "051194014004",
+    "mahv": "52001-20261004-000073",
+    "ngaysinh": "02/09/1994",
+    "hang": "B.01",
+    "khoa": "CD_111B.01",
+    "sdt": "",
+    "ghichu": "GV: Trần Thái Trung Thắng",
+    "created_at": "20/11/2026 21:50:23",
+    "updated_at": "20/11/2026 22:01:17"
+  },
+  "036169008165": {
+    "hoten": "VŨ THỊ TUYẾT LAN",
+    "cccd": "036169008165",
+    "mahv": "52001-20261004-000017",
+    "ngaysinh": "12/09/1969",
+    "hang": "B.01",
+    "khoa": "CD_111B.01",
+    "sdt": "",
+    "ghichu": "GV: Trần Thái Trung Thắng",
+    "created_at": "20/11/2026 21:50:23",
+    "updated_at": "20/11/2026 22:01:17"
+  },
+  "051197000321": {
+    "hoten": "TRẦN MINH NHẬT LỆ",
+    "cccd": "051197000321",
+    "mahv": "52001-20261004-000028",
+    "khoa": "CD_111B.01",
+    "hang": "B.01",
+    "ngaysinh": "08/08/1997",
+    "sdt": "",
+    "ghichu": "GV: Trần Thái Trung Thắng",
+    "updated_at": "20/11/2026 22:01:17"
   }
 }
