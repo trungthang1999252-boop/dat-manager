@@ -10,6 +10,7 @@ import unicodedata
 import urllib.request
 import urllib.parse
 import requests
+import threading
 
 def strip_vietnamese_accents(s):
     if not s: return ''
@@ -195,6 +196,13 @@ class DiscordDATService:
         self._cached_conn_status = None
         self._cached_user_info = None
         self._last_conn_check = 0
+        self._interaction_lock = threading.Lock()
+        self._last_interaction_time = 0.0
+        self._in_flight_queries = {}
+        self._in_flight_lock = threading.Lock()
+        self._channel_cache = None
+        self._channel_cache_ts = 0.0
+        self._channel_cache_lock = threading.Lock()
 
     def set_token(self, token):
         self.token = token
@@ -209,6 +217,26 @@ class DiscordDATService:
         os.makedirs(os.path.join(base_dir, 'data'), exist_ok=True)
         with open(config_file, 'w', encoding='utf-8') as cf:
             json.dump({'discord_token': token}, cf)
+
+    def get_recent_messages_cached(self, limit=10, max_age=1.5):
+        """Cache các tin nhắn gần nhất trong 1.5s để nhiều luồng tra cứu cùng lúc không làm ngập Discord."""
+        now = time.time()
+        with self._channel_cache_lock:
+            if self._channel_cache and (now - self._channel_cache_ts < max_age) and len(self._channel_cache) >= limit:
+                return self._channel_cache[:limit]
+        try:
+            r = self.session.get(f"https://discord.com/api/v9/channels/{CHANNEL_ID}/messages?limit={limit}", timeout=3.5)
+            if r.status_code == 200:
+                msgs = r.json()
+                if isinstance(msgs, list):
+                    with self._channel_cache_lock:
+                        self._channel_cache = msgs
+                        self._channel_cache_ts = time.time()
+                    return msgs
+        except Exception:
+            pass
+        with self._channel_cache_lock:
+            return self._channel_cache[:limit] if self._channel_cache else []
 
     def is_connected(self):
         if not self.token:
@@ -541,6 +569,45 @@ class DiscordDATService:
         return found, remaining
 
     def query_student(self, query_text, command='dat', timeout_sec=16, force=False):
+        """Tra cứu học viên với tính năng chống trùng lặp luồng (In-Flight Concurrency Deduplication)."""
+        q_clean = str(query_text).strip()
+        q_lower = q_clean.lower()
+        if not q_clean:
+            return {'success': False, 'error': 'Vui lòng cung cấp thông tin tra cứu.'}
+
+        cache_key = f"{command}:{q_lower}"
+        is_waiter = False
+        with self._in_flight_lock:
+            if cache_key in self._in_flight_queries:
+                ev, holder = self._in_flight_queries[cache_key]
+                is_waiter = True
+            else:
+                ev = threading.Event()
+                holder = [None]
+                self._in_flight_queries[cache_key] = (ev, holder)
+
+        if is_waiter:
+            # Có người đang tra cứu cùng lúc học viên này -> Đợi kết quả dùng chung, không gửi trùng lệnh Discord
+            ev.wait(timeout=timeout_sec + 2)
+            if holder[0] is not None:
+                return holder[0]
+
+        try:
+            res = self._do_query_student(query_text, command=command, timeout_sec=timeout_sec, force=force)
+            with self._in_flight_lock:
+                holder[0] = res
+                ev.set()
+                self._in_flight_queries.pop(cache_key, None)
+            return res
+        except Exception as e:
+            err_res = {'success': False, 'error': str(e)}
+            with self._in_flight_lock:
+                holder[0] = err_res
+                ev.set()
+                self._in_flight_queries.pop(cache_key, None)
+            return err_res
+
+    def _do_query_student(self, query_text, command='dat', timeout_sec=16, force=False):
         """
         Gửi lệnh tra cứu (/dat, /phien, /lythuyet) với tốc độ tối ưu cao:
         1. Quét nhanh kênh Discord (Fast Cache): Nếu bot vừa mới trả lời học viên này gần đây và không yêu cầu force,
@@ -630,7 +697,26 @@ class DiscordDATService:
 
         t_start = time.time()
         try:
-            resp = self.session.post(interaction_url, json=payload, timeout=5)
+            # Điều tiết nhịp gửi lệnh Discord (ít nhất 0.5s giữa các lần gọi để chống 429 Rate Limit)
+            with self._interaction_lock:
+                now_ts = time.time()
+                gap = now_ts - self._last_interaction_time
+                if gap < 0.5:
+                    time.sleep(0.5 - gap)
+                self._last_interaction_time = time.time()
+                resp = self.session.post(interaction_url, json=payload, timeout=5)
+
+            # Tự động đợi và thử lại nếu Discord phản hồi 429 Too Many Requests
+            if resp.status_code == 429:
+                try:
+                    r_429 = resp.json()
+                    retry_wait = min(float(r_429.get('retry_after', 1.5)) + 0.2, 4.0)
+                    time.sleep(retry_wait)
+                    with self._interaction_lock:
+                        resp = self.session.post(interaction_url, json=payload, timeout=5)
+                except Exception:
+                    pass
+
             if resp.status_code not in (200, 204):
                 print(f"[Discord Error {resp.status_code}] {resp.text}")
                 return {'success': False, 'error': f'Lỗi Discord: {resp.status_code} ({resp.text[:100]})'}
@@ -760,7 +846,23 @@ class DiscordDATService:
 
         t_start = time.time()
         try:
-            resp = self.session.post(interaction_url, json=payload, timeout=5)
+            with self._interaction_lock:
+                now_ts = time.time()
+                gap = now_ts - self._last_interaction_time
+                if gap < 0.5:
+                    time.sleep(0.5 - gap)
+                self._last_interaction_time = time.time()
+                resp = self.session.post(interaction_url, json=payload, timeout=5)
+
+            if resp.status_code == 429:
+                try:
+                    r_429 = resp.json()
+                    time.sleep(min(float(r_429.get('retry_after', 1.5)) + 0.2, 4.0))
+                    with self._interaction_lock:
+                        resp = self.session.post(interaction_url, json=payload, timeout=5)
+                except Exception:
+                    pass
+
             if resp.status_code not in (200, 204):
                 return {'success': False, 'error': f'Lỗi Discord: {resp.status_code}'}
         except Exception as e:
