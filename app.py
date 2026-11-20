@@ -368,8 +368,44 @@ def query_student():
         else:
             return jsonify({'success': False, 'error': 'Chưa kết nối được với Discord. Hãy kiểm tra phần mềm Discord.'})
 
-    # 1. KHI BẤM /DAT HOẶC COMBO: Tra cứu DAT ➔ Tự động lấy Mã HV ➔ Tra cứu Lý thuyết (/lythuyet) ➔ Tự động tải PDF & Chấm điểm
-    if cmd_type in ('dat', 'combo'):
+    # 1. KHI BẤM /DAT: Chỉ tra cứu điều kiện DAT (km, giờ, đêm, tự động, số ngày) - KHÔNG tra cứu lý thuyết
+    if cmd_type == 'dat':
+        res_dat = ds.query_student(target_query, command='dat', timeout_sec=16, force=force)
+        if not res_dat.get('success'):
+            return jsonify({'success': False, 'error': res_dat.get('error', 'Lỗi tra cứu DAT.')})
+
+        raw_dat = res_dat.get('data')
+        st_dat = raw_dat[0] if isinstance(raw_dat, list) and raw_dat else (raw_dat or {})
+        st_dat['is_my_query'] = True
+        st_dat['interaction_username'] = 'tranthang252'
+        st_dat['interaction_user_id'] = '1380376964304474173'
+        saved_st = db.upsert_student(st_dat, auto_save=True)
+
+        mahv = (saved_st or {}).get('mahv') or st_dat.get('mahv')
+        final_st = db.find_student(mahv or target_query) or saved_st or st_dat
+
+        return jsonify({
+            'success': True,
+            'student': final_st,
+            'students': [final_st],
+            'count': 1,
+            'mahv': mahv,
+            'hoten': (final_st or {}).get('hoten'),
+            'quangduong': (final_st or {}).get('quangduong', 0),
+            'thoigian': (final_st or {}).get('thoigian', 0),
+            'thoigian_dem': (final_st or {}).get('thoigian_dem', 0),
+            'thoigian_tudong': (final_st or {}).get('thoigian_tudong', 0),
+            'songay_str': (final_st or {}).get('songay_str', ''),
+            'songay_dat': (final_st or {}).get('songay_dat', False),
+            'has_lythuyet': bool((final_st or {}).get('has_lythuyet') or (final_st or {}).get('lythuyet_pdf_url')),
+            'lythuyet_dat': (final_st or {}).get('lythuyet_dat', False),
+            'dieukien_totnghiep': (final_st or {}).get('dieukien_totnghiep', 'Chưa tra LT'),
+            'ketqua': (final_st or {}).get('ketqua', 'Chưa Đạt'),
+            'resolved': resolved_info
+        })
+
+    # 1b. KHI BẤM COMBO: Tra cứu liên hoàn DAT ➔ Tự động lấy Mã HV ➔ Tra cứu Lý thuyết (/lythuyet) ➔ Tự động tải PDF & Chấm điểm
+    if cmd_type == 'combo':
         res_dat = ds.query_student(target_query, command='dat', timeout_sec=16, force=force)
         if not res_dat.get('success'):
             return jsonify({'success': False, 'error': res_dat.get('error', 'Lỗi tra cứu DAT.')})
@@ -397,7 +433,7 @@ def query_student():
                     st_lt['interaction_user_id'] = '1380376964304474173'
                     saved_st = db.upsert_student(st_lt, auto_save=True)
             except Exception as e_lt:
-                print("Lỗi tự động tra cứu lý thuyết sau /dat:", e_lt)
+                print("Lỗi tự động tra cứu lý thuyết sau combo:", e_lt)
 
         final_st = db.find_student(mahv or target_query) or saved_st or st_dat
         # TỰ ĐỘNG TẢI FILE PDF LÝ THUYẾT VỀ MÁY VÀ ĐÁNH GIÁ ĐIỀU KIỆN TỐT NGHIỆP
@@ -563,7 +599,7 @@ def query_batch():
     for item_str in pending_items:
         t_id = resolved_queries[item_str]['target']
         hoten_match = resolved_queries[item_str]['hoten']
-        if cmd_type in ('combo', 'dat'):
+        if cmd_type == 'combo':
             res_dat = ds.query_student(t_id, command='dat', timeout_sec=16)
             if res_dat.get('success'):
                 raw_dat = res_dat.get('data')
