@@ -18,6 +18,7 @@ import export_excel
 import image_extractor
 import sync_service
 import phien_service
+import teacher_sync_service
 
 app = Flask(__name__, template_folder='templates', static_folder='static')
 app.config['JSON_AS_ASCII'] = False
@@ -387,6 +388,22 @@ def query_student():
                 'match_type': match_type
             }
             target_query = best_id
+    elif len(query_text) >= 3:
+        # Nếu không tìm thấy học viên, kiểm tra xem có phải tên giáo viên không
+        try:
+            q_norm = _normalize_vietnamese(query_text)
+            teachers = get_gsheet_teachers()
+            matched_t = next((t for t in teachers if q_norm == _normalize_vietnamese(t['name']) or (len(q_norm) >= 4 and (q_norm in _normalize_vietnamese(t['name']) or _normalize_vietnamese(t['name']) in q_norm))), None)
+            if matched_t:
+                return jsonify({
+                    'success': True,
+                    'is_teacher': True,
+                    'teacher_name': matched_t['name'],
+                    'car': matched_t.get('car', ''),
+                    'message': f"Phát hiện giáo viên {matched_t['name']}. Hệ thống đang tự động nạp học viên từ Google Sheet..."
+                })
+        except Exception:
+            pass
 
     if not ds.is_connected():
         token = discord_service.auto_detect_discord_token()
@@ -733,6 +750,29 @@ def get_autocomplete():
     q = request.args.get('q', '').strip()
     limit = int(request.args.get('limit', 8))
     suggestions = db.get_autocomplete_suggestions(q, limit=limit)
+
+    # Nếu người dùng gõ tên trùng khớp với giáo viên, hiển thị gợi ý nạp danh sách từ Google Sheet
+    if q and len(q) >= 2:
+        try:
+            q_norm = _normalize_vietnamese(q)
+            teachers = get_gsheet_teachers()
+            matched_gvs = []
+            for t in teachers:
+                t_norm = _normalize_vietnamese(t['name'])
+                if q_norm == t_norm or (len(q_norm) >= 3 and q_norm in t_norm) or all(w in t_norm.split() for w in q_norm.split() if len(w) > 1):
+                    matched_gvs.append(t)
+                    if len(matched_gvs) >= 2:
+                        break
+            for t in matched_gvs:
+                suggestions.insert(0, {
+                    'hoten': f"👨‍🏫 Giáo Viên: {t['name']}",
+                    'source': f"Xe {t['car']} • Nhấn để nạp học viên Google Sheet",
+                    'is_teacher_gsheet': True,
+                    'teacher_name': t['name']
+                })
+        except Exception:
+            pass
+
     return jsonify({'success': True, 'suggestions': suggestions})
 
 @app.route('/api/resolve', methods=['POST'])
@@ -792,6 +832,295 @@ def import_roster_text():
     raw_text = data.get('text', '')
     res = db.import_roster_from_text(raw_text)
     return jsonify(res)
+
+# ==============================================================================
+# QUẢN LÝ DỮ LIỆU TỰ ĐỘNG TỪ GOOGLE SHEET THEO GIÁO VIÊN & KHOÁ
+# ==============================================================================
+INDEX_SHEET_ID = '1FRC_xHYy36NntmKyRhXlXL0csqybXqE64FQUA7NcTVI'
+TEACHER_SHEET_ID = '1ow-dU4w7UmoCpzP6w0lDBhk5kAorIK8x72jdNcO19_Y'
+
+_gsheet_teachers_cache = {'data': None, 'time': 0}
+_gsheet_courses_cache = {'data': None, 'time': 0}
+_gsheet_lock = threading.Lock()
+
+def _normalize_vietnamese(s):
+    if not s:
+        return ''
+    s = str(s).strip().replace('Đ', 'D').replace('đ', 'd')
+    import unicodedata
+    nfkd = unicodedata.normalize('NFKD', s)
+    return ''.join(c for c in nfkd if not unicodedata.combining(c)).upper().strip()
+
+def _detect_hang_from_course(course_str):
+    if not course_str:
+        return ''
+    c_up = course_str.upper()
+    if 'CE' in c_up:
+        return 'Cm-CE'
+    if 'C1' in c_up:
+        return 'C1'
+    if 'B.01' in c_up:
+        return 'B.01'
+    if 'B1' in c_up or 'TD' in c_up or 'TĐ' in c_up:
+        return 'B1'
+    if re.search(r'\d+C\b', c_up) or c_up.endswith('C'):
+        return 'C'
+    if re.search(r'\d+B\b', c_up) or c_up.endswith('B'):
+        return 'B'
+    if 'B2' in c_up:
+        return 'B2'
+    return ''
+
+def _fetch_gsheet_csv(sheet_id, gid=None, timeout=10):
+    import csv, io, urllib.request
+    headers_req = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+        'Accept': 'text/csv,*/*'
+    }
+    if gid is not None:
+        url = f'https://docs.google.com/spreadsheets/d/{sheet_id}/export?format=csv&gid={gid}'
+    else:
+        url = f'https://docs.google.com/spreadsheets/d/{sheet_id}/export?format=csv'
+    req = urllib.request.Request(url, headers=headers_req)
+    with urllib.request.urlopen(req, timeout=timeout) as resp:
+        raw = resp.read().decode('utf-8-sig', errors='replace')
+    return list(csv.reader(io.StringIO(raw)))
+
+def get_gsheet_teachers():
+    """Lấy danh sách giáo viên từ bảng Thông Tin Chi Tiết Giáo Viên - Xe (qua teacher_sync_service)."""
+    return teacher_sync_service.get_teachers_list()
+
+def get_gsheet_courses():
+    """Lấy danh sách các khoá học từ sheet mục lục (qua teacher_sync_service)."""
+    return teacher_sync_service.get_courses_catalog()
+
+def _teacher_matches(query_full_name, gv_cell_val, teacher_obj=None):
+    """Khớp tên giáo viên thông minh: họ tên đầy đủ, tên gọi, cặp giáo viên ghép (-), tiền tố Thầy/Cô/GV."""
+    q_norm = _normalize_vietnamese(query_full_name)
+    gv_norm = _normalize_vietnamese(gv_cell_val)
+    if not q_norm or not gv_norm:
+        return False
+    if q_norm == gv_norm:
+        return True
+
+    # Tách các giáo viên dạy cặp (Chương-Hai, Thừa-Phước, Thắng-Sang...)
+    parts = re.split(r'[-/+,&]', gv_norm)
+    parts = [p.strip() for p in parts if p.strip()]
+
+    q_words = q_norm.split()
+    q_first = q_words[-1] if q_words else ''
+    alias_first = _normalize_vietnamese(teacher_obj.get('short', '')) if teacher_obj else ''
+
+    for part in parts:
+        clean_part = re.sub(r'^(THAY|CO|GV)\s+', '', part).strip()
+        if clean_part == q_norm:
+            return True
+        if q_first and clean_part == q_first:
+            return True
+        if alias_first and clean_part == alias_first:
+            return True
+        if len(q_words) >= 2:
+            two_words = f'{q_words[-2]} {q_words[-1]}'
+            if clean_part == two_words:
+                return True
+            cp_words = clean_part.split()
+            if len(cp_words) >= 2 and all(w in q_words for w in cp_words):
+                return True
+    return False
+
+def _search_students_in_course(course_info, teacher_name, teacher_obj):
+    """Quét 1 sheet khoá học và lấy danh sách học viên của giáo viên."""
+    cname = course_info['course']
+    sid = course_info['sheet_id']
+    try:
+        rows = _fetch_gsheet_csv(sid, gid=None, timeout=8)
+        if not rows:
+            return []
+
+        header_idx = None
+        for ri, row in enumerate(rows[:8]):
+            rn = [_normalize_vietnamese(c) for c in row]
+            if any('HO VA TEN' in c or 'HO TEN' in c for c in rn):
+                header_idx = ri
+                break
+        if header_idx is None:
+            return []
+
+        header = [_normalize_vietnamese(c) for c in rows[header_idx]]
+
+        def fc(*kws):
+            for ki, h in enumerate(header):
+                for kw in kws:
+                    if kw in h:
+                        return ki
+            return None
+
+        col_hoten = fc('HO VA TEN', 'HO TEN', 'HOTEN')
+        col_gv = fc('TEN GV', 'GIAO VIEN', 'GV')
+        col_mshv = fc('MSHV', 'MAHV', 'MA HOC VIEN', 'MA HV')
+        col_cccd = fc('CMND', 'CCCD', 'SO CMND', 'SO CCCD')
+        col_ngay = fc('NGAY THANG NAM SINH', 'NGAY SINH', 'NGAYSINH')
+
+        if col_hoten is None or col_gv is None:
+            return []
+
+        detected_hang = _detect_hang_from_course(cname)
+        results = []
+        for row in rows[header_idx + 1:]:
+            try:
+                hoten = row[col_hoten].strip() if col_hoten < len(row) else ''
+                gv = row[col_gv].strip() if col_gv < len(row) else ''
+                if not hoten or not gv:
+                    continue
+                if _teacher_matches(teacher_name, gv, teacher_obj):
+                    results.append({
+                        'hoten': hoten.upper(),
+                        'cccd': (row[col_cccd].strip() if col_cccd and col_cccd < len(row) else ''),
+                        'mahv': (row[col_mshv].strip() if col_mshv and col_mshv < len(row) else ''),
+                        'ngaysinh': (row[col_ngay].strip() if col_ngay and col_ngay < len(row) else ''),
+                        'hang': detected_hang,
+                        'khoa': cname,
+                        'sdt': '',
+                        'ghichu': f'GV: {gv}'
+                    })
+            except Exception:
+                pass
+        return results
+    except Exception:
+        return []
+
+@app.route('/api/gsheet/teachers', methods=['GET'])
+@app.route('/api/teacher/list', methods=['GET'])
+def get_gsheet_teachers_api():
+    """Lấy danh sách giáo viên có sẵn để hỗ trợ gợi ý autocomplete."""
+    teachers = teacher_sync_service.get_teachers_list()
+    return jsonify({'success': True, 'teachers': teachers})
+
+@app.route('/api/gsheet/courses', methods=['GET'])
+@app.route('/api/teacher/courses', methods=['GET'])
+def get_gsheet_courses_api():
+    """Lấy danh sách các khoá học có trên Google Sheet."""
+    courses = teacher_sync_service.get_courses_catalog()
+    return jsonify({
+        'success': True,
+        'courses': [c['course'] for c in courses if c['course']]
+    })
+
+@app.route('/api/teacher/scan', methods=['POST'])
+def scan_teacher_students_api():
+    """
+    Quét danh sách học viên theo giáo viên trên Google Sheet mà chưa nạp vào CSDL.
+    Cho phép xem trước số lượng và danh sách theo từng khoá.
+    """
+    data_in = request.get_json() or {}
+    teacher_name = data_in.get('teacher_name', '').strip()
+    course_filter = data_in.get('course', 'all')
+
+    if not teacher_name:
+        return jsonify({'success': False, 'error': 'Vui lòng nhập họ và tên giáo viên!'}), 400
+
+    try:
+        res = teacher_sync_service.scan_teacher_students(teacher_name, selected_courses=course_filter)
+        return jsonify(res)
+    except Exception as e:
+        return jsonify({'success': False, 'error': f'Lỗi quét dữ liệu: {str(e)}'}), 500
+
+@app.route('/api/teacher/import', methods=['POST'])
+def import_teacher_students_api():
+    """
+    Nạp danh sách học viên của giáo viên vào App theo từng khoá:
+    - Nếu danh sách học viên đã được quét từ trước thì nạp trực tiếp.
+    - Nếu chưa, tự động quét từ Google Sheet rồi đẩy vào CSDL và Roster.
+    """
+    data_in = request.get_json() or {}
+    teacher_name = data_in.get('teacher_name', '').strip()
+    students = data_in.get('students')
+    course_filter = data_in.get('course', 'all')
+
+    if not teacher_name and not students:
+        return jsonify({'success': False, 'error': 'Vui lòng chọn hoặc nhập họ tên giáo viên!'}), 400
+
+    try:
+        if not students:
+            scan_res = teacher_sync_service.scan_teacher_students(teacher_name, selected_courses=course_filter)
+            students = scan_res.get('students', [])
+
+        if not students:
+            return jsonify({
+                'success': False,
+                'error': f'Không tìm thấy học viên nào của giáo viên "{teacher_name}" để đẩy vào App.'
+            })
+
+        import_res = teacher_sync_service.import_students_to_database(students, db)
+
+        # Đếm số học viên theo khoá
+        by_course = {}
+        for s in students:
+            ck = s.get('khoa') or 'Chưa phân khoá'
+            by_course[ck] = by_course.get(ck, 0) + 1
+
+        msg = f"✅ Đã nạp thành công {import_res['imported_count']} học viên của giáo viên \"{teacher_name}\" vào {len(by_course)} khoá học!"
+
+        return jsonify({
+            'success': True,
+            'imported': import_res['imported_count'],
+            'teacher': teacher_name,
+            'courses_found': len(by_course),
+            'by_course': by_course,
+            'courses_affected': import_res['courses_affected'],
+            'message': msg
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': f'Lỗi nạp dữ liệu vào App: {str(e)}'}), 500
+
+@app.route('/api/roster/import_gsheet', methods=['POST'])
+def import_roster_gsheet():
+    """
+    Tự động lấy danh sách học viên từ Google Sheet theo tên giáo viên và khoá:
+    - Tương thích ngược với các lệnh gọi cũ và hỗ trợ đồng bộ tốc độ cao.
+    """
+    data_in = request.get_json() or {}
+    teacher_name = data_in.get('teacher_name', '').strip()
+    course_filter = data_in.get('course', 'all').strip()
+
+    if not teacher_name:
+        return jsonify({'success': False, 'error': 'Vui lòng nhập họ và tên giáo viên!'})
+
+    try:
+        scan_res = teacher_sync_service.scan_teacher_students(teacher_name, selected_courses=course_filter)
+        students = scan_res.get('students', [])
+
+        if not students:
+            return jsonify({
+                'success': False,
+                'error': (
+                    f'Không tìm thấy học viên nào thuộc giáo viên "{teacher_name}". '
+                    f'Vui lòng kiểm tra lại họ tên giáo viên (đúng chính tả tiếng Việt).'
+                )
+            })
+
+        import_res = teacher_sync_service.import_students_to_database(students, db)
+        by_course = {k: len(v) for k, v in scan_res.get('by_course', {}).items()}
+        t_obj = scan_res.get('teacher_obj') or {}
+
+        msg = (
+            f'✅ Đã nạp thành công {import_res["imported_count"]} học viên của giáo viên "{teacher_name}" '
+            f'thuộc {len(by_course)} khoá học vào hệ thống!'
+        )
+
+        return jsonify({
+            'success': True,
+            'imported': import_res['imported_count'],
+            'teacher': teacher_name,
+            'car': t_obj.get('car', ''),
+            'courses_found': len(by_course),
+            'by_course': by_course,
+            'total_scanned': scan_res.get('total_scanned_courses', 0),
+            'message': msg
+        })
+
+    except Exception as e:
+        return jsonify({'success': False, 'error': f'Lỗi kết nối Google Sheet: {str(e)}'})
 
 @app.route('/api/roster/import_ocr', methods=['POST'])
 def import_roster_ocr():
