@@ -1,4 +1,4 @@
-const CACHE_NAME = 'dat-manager-v6.0';
+const CACHE_NAME = 'dat-manager-v7.0';
 const ASSETS_TO_CACHE = [
   '/manifest.json',
   '/static/icons/apple-touch-icon.png',
