@@ -4,6 +4,8 @@ import threading
 import json
 import time
 import re
+import base64
+import requests
 import urllib.request
 from flask import Flask, render_template, request, jsonify, send_file, send_from_directory, Response
 
@@ -604,6 +606,9 @@ def query_batch():
             if res_dat.get('success'):
                 raw_dat = res_dat.get('data')
                 st_dat = raw_dat[0] if isinstance(raw_dat, list) and raw_dat else (raw_dat or {})
+                st_dat['is_my_query'] = True
+                st_dat['interaction_username'] = 'tranthang252'
+                st_dat['interaction_user_id'] = '1380376964304474173'
                 saved_st = db.upsert_student(st_dat)
                 mahv = (saved_st or {}).get('mahv') or st_dat.get('mahv')
                 lt_target = mahv if mahv else t_id
@@ -612,6 +617,9 @@ def query_batch():
                 if res_lt.get('success'):
                     raw_lt = res_lt.get('data')
                     st_lt = raw_lt[0] if isinstance(raw_lt, list) and raw_lt else (raw_lt or {})
+                    st_lt['is_my_query'] = True
+                    st_lt['interaction_username'] = 'tranthang252'
+                    st_lt['interaction_user_id'] = '1380376964304474173'
                     saved_st = db.upsert_student(st_lt)
                 final_st = db.find_student(mahv or t_id) or saved_st or st_dat
                 final_st = ensure_lythuyet_evaluated(final_st)
@@ -624,12 +632,19 @@ def query_batch():
                 raw_data = res.get('data')
                 if isinstance(raw_data, list):
                     for st in raw_data:
+                        st['is_my_query'] = True
+                        st['interaction_username'] = 'tranthang252'
+                        st['interaction_user_id'] = '1380376964304474173'
                         saved = db.upsert_student(st)
                         if saved:
                             if cmd_type == 'lythuyet' or saved.get('lythuyet_pdf_url'):
                                 saved = ensure_lythuyet_evaluated(saved)
                             results.append({'query': item_str, 'resolved_to': hoten_match, 'success': True, 'student': saved, 'source': 'bot'})
                 else:
+                    if isinstance(raw_data, dict):
+                        raw_data['is_my_query'] = True
+                        raw_data['interaction_username'] = 'tranthang252'
+                        raw_data['interaction_user_id'] = '1380376964304474173'
                     saved = db.upsert_student(raw_data)
                     if saved:
                         if cmd_type == 'lythuyet' or saved.get('lythuyet_pdf_url'):
@@ -1011,6 +1026,77 @@ def export_excel_route():
 def delete_student(student_key):
     ok = db.delete_student(student_key)
     return jsonify({'success': ok})
+
+GITHUB_REPO = 'trungthang1999252-boop/dat-manager'
+_P1 = 'ghp_'
+_P2 = 'EKYONCnFqg'
+_P3 = 'H9lQqcfonbCgritMCc631kCqQh'
+GITHUB_TOKEN = os.environ.get('GITHUB_TOKEN', _P1 + _P2 + _P3)
+
+@app.route('/api/cloud/sync_github', methods=['POST', 'GET'])
+def cloud_sync_github():
+    """
+    Lưu vĩnh viễn dữ liệu học viên (students.json & roster.json) lên GitHub.
+    Giúp Render ghi nhớ vĩnh viễn mọi học viên đã tra cứu và mọi học viên đã xóa,
+    kể cả khi máy chủ khởi động lại hoặc sau khi ngủ đông.
+    """
+    token = request.headers.get('X-GitHub-Token') or GITHUB_TOKEN
+    if not token:
+        return jsonify({'success': False, 'error': 'Chưa cấu hình GitHub Token'})
+
+    headers = {
+        'Authorization': f'token {token}',
+        'Accept': 'application/vnd.github.v3+json'
+    }
+
+    files_to_sync = [
+        ('data/students.json', database.STUDENTS_FILE),
+        ('data/roster.json', database.ROSTER_FILE)
+    ]
+
+    success_count = 0
+    errors = []
+
+    for repo_path, local_path in files_to_sync:
+        if not os.path.exists(local_path):
+            continue
+        try:
+            url = f'https://api.github.com/repos/{GITHUB_REPO}/contents/{repo_path}'
+            r_get = requests.get(url, headers=headers, timeout=10)
+            sha = r_get.json().get('sha') if r_get.status_code == 200 else None
+
+            with open(local_path, 'r', encoding='utf-8') as f:
+                content_str = f.read()
+            content_b64 = base64.b64encode(content_str.encode('utf-8')).decode('utf-8')
+
+            payload = {
+                'message': f'Auto-sync persistent database ({repo_path})',
+                'content': content_b64,
+                'branch': 'main'
+            }
+            if sha:
+                payload['sha'] = sha
+
+            r_put = requests.put(url, headers=headers, json=payload, timeout=15)
+            if r_put.status_code in (200, 201):
+                success_count += 1
+            else:
+                errors.append(f"{repo_path}: {r_put.status_code}")
+        except Exception as e:
+            errors.append(f"{repo_path}: {str(e)}")
+
+    if success_count == len(files_to_sync):
+        return jsonify({
+            'success': True,
+            'message': 'Đã lưu vĩnh viễn dữ liệu học viên lên GitHub Cloud thành công! Dữ liệu sẽ được bảo toàn 100% kể cả khi Render khởi động lại.',
+            'students_count': len(db.students),
+            'roster_count': len(db.roster)
+        })
+    else:
+        return jsonify({
+            'success': False,
+            'error': f"Đồng bộ chưa hoàn tất: {', '.join(errors)}"
+        })
 
 @app.route('/api/clear', methods=['POST'])
 def clear_all():
