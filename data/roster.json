@@ -186,5 +186,21 @@
     "khoa": "CD_14C1",
     "hang": "C1",
     "ngaysinh": "02/05/2006"
+  },
+  "TRẦN MINH NHẬT LỆ": {
+    "hoten": "TRẦN MINH NHẬT LỆ",
+    "cccd": "051197000321",
+    "mahv": "52001-20261004-000028",
+    "khoa": "CD_111B.01",
+    "hang": "B.01",
+    "ngaysinh": "08/08/1997"
+  },
+  "TRẦN THỊ BÍCH THUYÊN": {
+    "hoten": "TRẦN THỊ BÍCH THUYÊN",
+    "cccd": "051186010412",
+    "mahv": "52001-20260916-000036",
+    "khoa": "CD_110B.01",
+    "hang": "B.01",
+    "ngaysinh": "09/08/1986"
   }
 }
