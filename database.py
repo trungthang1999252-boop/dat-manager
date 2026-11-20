@@ -713,77 +713,93 @@ class StudentDatabase:
             return True
         return False
 
-    def delete_course(self, course_name):
+    def delete_courses(self, course_names):
         """
-        Xóa toàn bộ học viên thuộc một khóa học (khi khóa đã thi xong):
-        Xóa triệt để cả ở self.students và self.roster.
+        Xóa toàn bộ học viên thuộc một hoặc nhiều khóa học đã thi xong.
+        Hỗ trợ: chuỗi 1 khóa, chuỗi ngăn cách dấu phẩy, hoặc danh sách list/tuple/set.
         """
-        if not course_name:
+        if not course_names:
             return 0
-        c_clean = str(course_name).strip().lower()
-        
-        # 1. Thu thập danh sách học viên thuộc khóa
-        target_keys = set()
-        for k, s in list(self.students.items()):
-            s_khoa = str(s.get('khoa') or '').strip().lower()
-            if s_khoa == c_clean:
-                target_keys.add(str(k).strip().lower())
-                if s.get('mahv'): target_keys.add(str(s['mahv']).strip().lower())
-                if s.get('cccd'): target_keys.add(str(s['cccd']).strip().lower())
-                if s.get('hoten'):
-                    target_keys.add(str(s['hoten']).strip().lower())
-                    target_keys.add(strip_vietnamese_accents(s['hoten']).lower())
-                    
-        for rk, r in list(self.roster.items()):
-            r_khoa = str(r.get('khoa') or '').strip().lower()
-            if r_khoa == c_clean:
-                target_keys.add(str(rk).strip().lower())
-                if r.get('mahv'): target_keys.add(str(r['mahv']).strip().lower())
-                if r.get('cccd'): target_keys.add(str(r['cccd']).strip().lower())
-                if r.get('hoten'):
-                    target_keys.add(str(r['hoten']).strip().lower())
-                    target_keys.add(strip_vietnamese_accents(r['hoten']).lower())
+        if isinstance(course_names, str):
+            c_list = [c.strip().lower() for c in course_names.split(',') if c.strip()]
+        elif isinstance(course_names, (list, tuple, set)):
+            c_list = [str(c).strip().lower() for c in course_names if str(c).strip()]
+        else:
+            c_list = [str(course_names).strip().lower()]
 
-        count = 0
-        # 2. Xóa khỏi self.students
-        for k, s in list(self.students.items()):
-            k_low = str(k).strip().lower()
-            k_norm = strip_vietnamese_accents(k_low)
-            s_mahv = str(s.get('mahv') or '').strip().lower()
-            s_cccd = str(s.get('cccd') or '').strip().lower()
-            s_hoten = str(s.get('hoten') or '').strip().lower()
-            s_norm = strip_vietnamese_accents(s_hoten)
-            s_khoa = str(s.get('khoa') or '').strip().lower()
+        if not c_list:
+            return 0
 
-            if (s_khoa == c_clean or k_low in target_keys or k_norm in target_keys or
-                s_mahv in target_keys or s_cccd in target_keys or
-                s_hoten in target_keys or s_norm in target_keys):
-                del self.students[k]
-                count += 1
+        target_courses = set(c_list)
+        with self._lock:
+            # 1. Thu thập danh sách học viên thuộc các khóa cần xóa
+            target_keys = set()
+            for k, s in list(self.students.items()):
+                s_khoa = str(s.get('khoa') or '').strip().lower()
+                if s_khoa in target_courses:
+                    target_keys.add(str(k).strip().lower())
+                    if s.get('mahv'): target_keys.add(str(s['mahv']).strip().lower())
+                    if s.get('cccd'): target_keys.add(str(s['cccd']).strip().lower())
+                    if s.get('hoten'):
+                        target_keys.add(str(s['hoten']).strip().lower())
+                        target_keys.add(strip_vietnamese_accents(s['hoten']).lower())
 
-        # 3. Xóa khỏi self.roster
-        roster_count = 0
-        for rk, r in list(self.roster.items()):
-            rk_low = str(rk).strip().lower()
-            rk_norm = strip_vietnamese_accents(rk_low)
-            r_mahv = str(r.get('mahv') or '').strip().lower()
-            r_cccd = str(r.get('cccd') or '').strip().lower()
-            r_hoten = str(r.get('hoten') or '').strip().lower()
-            r_norm = strip_vietnamese_accents(r_hoten)
-            r_khoa = str(r.get('khoa') or '').strip().lower()
+            for rk, r in list(self.roster.items()):
+                r_khoa = str(r.get('khoa') or '').strip().lower()
+                if r_khoa in target_courses:
+                    target_keys.add(str(rk).strip().lower())
+                    if r.get('mahv'): target_keys.add(str(r['mahv']).strip().lower())
+                    if r.get('cccd'): target_keys.add(str(r['cccd']).strip().lower())
+                    if r.get('hoten'):
+                        target_keys.add(str(r['hoten']).strip().lower())
+                        target_keys.add(strip_vietnamese_accents(r['hoten']).lower())
 
-            if (r_khoa == c_clean or rk_low in target_keys or rk_norm in target_keys or
-                r_mahv in target_keys or r_cccd in target_keys or
-                r_hoten in target_keys or r_norm in target_keys):
-                del self.roster[rk]
-                roster_count += 1
+            count = 0
+            # 2. Xóa khỏi self.students
+            for k, s in list(self.students.items()):
+                k_low = str(k).strip().lower()
+                k_norm = strip_vietnamese_accents(k_low)
+                s_mahv = str(s.get('mahv') or '').strip().lower()
+                s_cccd = str(s.get('cccd') or '').strip().lower()
+                s_hoten = str(s.get('hoten') or '').strip().lower()
+                s_norm = strip_vietnamese_accents(s_hoten)
+                s_khoa = str(s.get('khoa') or '').strip().lower()
 
-        if count > 0 or roster_count > 0:
-            self._save()
-            self._save_roster()
-            notify_data_changed()
-            
-        return count if count > 0 else roster_count
+                if (s_khoa in target_courses or k_low in target_keys or k_norm in target_keys or
+                    s_mahv in target_keys or s_cccd in target_keys or
+                    s_hoten in target_keys or s_norm in target_keys):
+                    del self.students[k]
+                    count += 1
+
+            # 3. Xóa khỏi self.roster
+            roster_count = 0
+            for rk, r in list(self.roster.items()):
+                rk_low = str(rk).strip().lower()
+                rk_norm = strip_vietnamese_accents(rk_low)
+                r_mahv = str(r.get('mahv') or '').strip().lower()
+                r_cccd = str(r.get('cccd') or '').strip().lower()
+                r_hoten = str(r.get('hoten') or '').strip().lower()
+                r_norm = strip_vietnamese_accents(r_hoten)
+                r_khoa = str(r.get('khoa') or '').strip().lower()
+
+                if (r_khoa in target_courses or rk_low in target_keys or rk_norm in target_keys or
+                    r_mahv in target_keys or r_cccd in target_keys or
+                    r_hoten in target_keys or r_norm in target_keys):
+                    del self.roster[rk]
+                    roster_count += 1
+
+            if count > 0 or roster_count > 0:
+                self._save()
+                self._save_roster()
+                self._stats_cache = None
+                self.version += 1
+                self.last_modified = time.time()
+                notify_data_changed()
+
+            return count if count > 0 else roster_count
+
+    def delete_course(self, course_name):
+        return self.delete_courses(course_name)
 
     def clear_all(self):
         self.students = {}
