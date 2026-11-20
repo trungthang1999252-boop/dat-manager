@@ -178,7 +178,7 @@ class DiscordDATService:
         self.headers = {
             'Authorization': self.token or '',
             'Content-Type': 'application/json',
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36'
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Discord/1.0.9269 Chrome/128.0.6613.186 Electron/32.2.7 Safari/537.36'
         }
         from urllib3.util.retry import Retry
         from requests.adapters import HTTPAdapter
@@ -186,7 +186,7 @@ class DiscordDATService:
         adapter = HTTPAdapter(
             pool_connections=25,
             pool_maxsize=50,
-            max_retries=Retry(total=2, backoff_factor=0.2, status_forcelist=[500, 502, 503, 504], raise_on_status=False)
+            max_retries=Retry(total=2, backoff_factor=0.2, status_forcelist=[500, 502, 503, 504], raise_on_status=False, respect_retry_after_header=False)
         )
         self.session = requests.Session()
         self.session.mount('https://', adapter)
@@ -288,6 +288,40 @@ class DiscordDATService:
             'dongbotc': (CMD_DONGBOTC_ID, CMD_DONGBOTC_VER),
         }
         return defaults.get(cmd_name, (CMD_DAT_ID, CMD_DAT_VER))
+
+    def build_interaction_payload(self, cmd_name, options, extra_data=None):
+        """
+        Xây dựng payload chuẩn xác 100% theo giao thức Discord Client interactions:
+        - Tự động sinh snowflake nonce từ timestamp hiện tại
+        - Bao gồm application_id, guild_id, channel_id, session_id
+        - Bao gồm analytics_location và section_name
+        - QUAN TRỌNG NHẤT: Bắt buộc nhúng 'guild_id' vào bên trong object 'data' (nếu thiếu, Discord trả về lỗi 400 - mã 10005 Tích Hợp Không Xác Định)
+        """
+        cmd_id, cmd_ver = self.get_command_info(cmd_name)
+        nonce = str(int(time.time() * 1000 - 1420070400000) << 22)
+        data = {
+            'version': str(cmd_ver),
+            'id': str(cmd_id),
+            'name': cmd_name,
+            'type': 1,
+            'guild_id': GUILD_ID,
+            'options': options
+        }
+        if extra_data:
+            data.update(extra_data)
+
+        payload = {
+            'type': 2,
+            'application_id': APP_ID,
+            'guild_id': GUILD_ID,
+            'channel_id': CHANNEL_ID,
+            'session_id': uuid.uuid4().hex,
+            'nonce': nonce,
+            'analytics_location': 'slash_ui',
+            'section_name': 'NLTB_Bot',
+            'data': data
+        }
+        return payload
 
     def is_connected(self):
         if not self.token:
@@ -718,26 +752,7 @@ class DiscordDATService:
 
         # BƯỚC 2: Gửi Slash Command Interaction tới Discord Bot
         interaction_url = 'https://discord.com/api/v9/interactions'
-        payload = {
-            'type': 2,
-            'application_id': APP_ID,
-            'guild_id': GUILD_ID,
-            'channel_id': CHANNEL_ID,
-            'session_id': uuid.uuid4().hex,
-            'data': {
-                'version': cmd_ver,
-                'id': cmd_id,
-                'name': command,
-                'type': 1,
-                'options': [
-                    {
-                        'type': 3,
-                        'name': 'mhv',
-                        'value': q_clean
-                    }
-                ]
-            }
-        }
+        payload = self.build_interaction_payload(command, [{'type': 3, 'name': 'mhv', 'value': q_clean}])
 
         t_start = time.time()
         try:
@@ -824,7 +839,9 @@ class DiscordDATService:
                                 (q_lower and q_lower in st_cccd) or
                                 (st_hoten and q_lower and strip_vietnamese_accents(q_lower) in strip_vietnamese_accents(st_hoten))
                             )
-                            is_my_interaction = (i_uid in ('1380376964304474173', '1380096710386384937'))
+                            my_info = self.get_user_info()
+                            my_uid = my_info.get('id') if my_info else None
+                            is_my_interaction = bool(i_uid and (i_uid == my_uid or i_uid in ('1380376964304474173', '1380096710386384937')))
 
                             if is_query_match or is_my_interaction:
                                 matched = True
@@ -869,28 +886,8 @@ class DiscordDATService:
         except Exception:
             pass
 
-        cmd_id, cmd_ver = self.get_command_info('capnhatkhoa')
         interaction_url = 'https://discord.com/api/v9/interactions'
-        payload = {
-            'type': 2,
-            'application_id': APP_ID,
-            'guild_id': GUILD_ID,
-            'channel_id': CHANNEL_ID,
-            'session_id': uuid.uuid4().hex,
-            'data': {
-                'version': cmd_ver,
-                'id': cmd_id,
-                'name': 'capnhatkhoa',
-                'type': 1,
-                'options': [
-                    {
-                        'type': 3,
-                        'name': 'khoa',
-                        'value': c_name
-                    }
-                ]
-            }
-        }
+        payload = self.build_interaction_payload('capnhatkhoa', [{'type': 3, 'name': 'khoa', 'value': c_name}])
 
         t_start = time.time()
         try:
@@ -991,22 +988,8 @@ class DiscordDATService:
         except Exception:
             pass
 
-        cmd_id, cmd_ver = self.get_command_info('xeonline')
         interaction_url = 'https://discord.com/api/v9/interactions'
-        payload = {
-            'type': 2,
-            'application_id': APP_ID,
-            'guild_id': GUILD_ID,
-            'channel_id': CHANNEL_ID,
-            'session_id': uuid.uuid4().hex,
-            'data': {
-                'version': cmd_ver,
-                'id': cmd_id,
-                'name': 'xeonline',
-                'type': 1,
-                'options': [{'type': 3, 'name': 'biensoxe', 'value': c_plate}]
-            }
-        }
+        payload = self.build_interaction_payload('xeonline', [{'type': 3, 'name': 'biensoxe', 'value': c_plate}])
 
         t_start = time.time()
         try:
@@ -1073,23 +1056,10 @@ class DiscordDATService:
         interaction_url = 'https://discord.com/api/v9/interactions'
 
         # Bước 1: Gửi /dongbo
-        payload_dongbo = {
-            'type': 2,
-            'application_id': APP_ID,
-            'guild_id': GUILD_ID,
-            'channel_id': CHANNEL_ID,
-            'session_id': uuid.uuid4().hex,
-            'data': {
-                'version': CMD_DONGBO_VER,
-                'id': CMD_DONGBO_ID,
-                'name': 'dongbo',
-                'type': 1,
-                'options': [
-                    {'type': 3, 'name': 'mhv', 'value': c_mhv},
-                    {'type': 3, 'name': 'biensoxe', 'value': c_plate}
-                ]
-            }
-        }
+        payload_dongbo = self.build_interaction_payload('dongbo', [
+            {'type': 3, 'name': 'mhv', 'value': c_mhv},
+            {'type': 3, 'name': 'biensoxe', 'value': c_plate}
+        ])
 
         t_start = time.time()
         try:
@@ -1201,24 +1171,14 @@ class DiscordDATService:
             pass
 
         boundary = f"----WebKitFormBoundary{uuid.uuid4().hex}"
-        payload_json = {
-            'type': 2,
-            'application_id': APP_ID,
-            'guild_id': GUILD_ID,
-            'channel_id': CHANNEL_ID,
-            'session_id': uuid.uuid4().hex,
-            'data': {
-                'version': CMD_CABIN_VER,
-                'id': CMD_CABIN_ID,
-                'name': 'cabin',
-                'type': 1,
-                'options': [
-                    {'type': 3, 'name': 'mhv', 'value': c_mhv},
-                    {'type': 11, 'name': 'image', 'value': '0'}
-                ],
-                'attachments': [{'id': '0', 'filename': filename}]
-            }
-        }
+        payload_json = self.build_interaction_payload(
+            'cabin',
+            [
+                {'type': 3, 'name': 'mhv', 'value': c_mhv},
+                {'type': 11, 'name': 'image', 'value': '0'}
+            ],
+            extra_data={'attachments': [{'id': '0', 'filename': filename}]}
+        )
 
         import io
         body = io.BytesIO()
@@ -1238,7 +1198,7 @@ class DiscordDATService:
         post_data = body.getvalue()
         headers = {
             'Authorization': self.token,
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Discord/1.0.9269 Chrome/128.0.6613.186 Electron/32.2.7 Safari/537.36',
             'Content-Type': f'multipart/form-data; boundary={boundary}'
         }
 
