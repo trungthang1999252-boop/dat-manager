@@ -178,5 +178,21 @@
     "khoa": "CD_110B.01",
     "hang": "B.01",
     "ngaysinh": "09/08/1986"
+  },
+  "NGUYỄN THỊ YẾN LÀNH": {
+    "hoten": "NGUYỄN THỊ YẾN LÀNH",
+    "cccd": "052195013174",
+    "mahv": "52001-20260908-000016",
+    "khoa": "CD_13C1",
+    "hang": "C1",
+    "ngaysinh": "13/10/1995"
+  },
+  "PHAN VĂN THỌ": {
+    "hoten": "PHAN VĂN THỌ",
+    "cccd": "052081002885",
+    "mahv": "52001-20260903-000019",
+    "khoa": "CD_22CE",
+    "hang": "Cm-CE",
+    "ngaysinh": "15/10/1981"
   }
 }
