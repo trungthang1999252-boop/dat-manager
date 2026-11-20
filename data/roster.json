@@ -107,22 +107,6 @@
     "created_at": "16/11/2026 20:17:40",
     "updated_at": "16/11/2026 20:17:40"
   },
-  "ĐÀO HUỲNH ANH KHOA": {
-    "hoten": "ĐÀO HUỲNH ANH KHOA",
-    "cccd": "051207000248",
-    "mahv": "52001-20260920-000092",
-    "khoa": "CD_238B",
-    "hang": "B",
-    "ngaysinh": "12/11/2007"
-  },
-  "NGUYỄN NGỌC TÂN": {
-    "hoten": "NGUYỄN NGỌC TÂN",
-    "cccd": "091092018244",
-    "mahv": "52001-20261022-000155",
-    "khoa": "CD_27CE",
-    "hang": "Cm-CE",
-    "ngaysinh": "01/06/1992"
-  },
   "LÊ THỊ HỒNG DIỄM": {
     "hoten": "LÊ THỊ HỒNG DIỄM",
     "cccd": "051187006039",
