@@ -891,10 +891,18 @@ def filter_my_students():
 
 @app.route('/api/sync_course', methods=['POST'])
 def sync_course():
+    """Cập nhật dữ liệu từ trường về Discord Bot cho một hoặc nhiều khóa học cùng lúc."""
     data = request.get_json() or {}
-    course = data.get('course', '').strip()
-    if not course:
-        return jsonify({'success': False, 'error': 'Vui lòng cung cấp mã khóa học cần cập nhật!'}), 400
+    raw_courses = data.get('courses')
+    if not raw_courses:
+        single = (data.get('course') or data.get('khoa') or '').strip()
+        raw_courses = [single] if single else []
+    elif isinstance(raw_courses, str):
+        raw_courses = [c.strip() for c in raw_courses.split(',') if c.strip()]
+
+    courses = [str(c).strip() for c in raw_courses if str(c).strip()]
+    if not courses:
+        return jsonify({'success': False, 'error': 'Vui lòng chọn hoặc nhập ít nhất một mã khóa học cần cập nhật!'}), 400
 
     if not ds.is_connected():
         token = discord_service.auto_detect_discord_token()
@@ -903,69 +911,95 @@ def sync_course():
         else:
             return jsonify({'success': False, 'error': 'Chưa kết nối được với Discord trên máy tính.'})
 
-    res = ds.sync_course(course, timeout_sec=20)
-    if not res.get('success'):
-        return jsonify(res)
+    total_updated = 0
+    total_students_matched = 0
+    course_results = []
 
-    # 1. Tìm tất cả học viên thuộc khóa này
-    c_norm = course.lower().strip()
-    course_students = [
-        s for s in list(db.students.values())
-        if c_norm in (s.get('khoa') or '').lower()
-    ]
+    for course in courses:
+        # 1. Gửi lệnh /capnhatkhoa tới Bot
+        res = ds.sync_course(course, timeout_sec=20)
 
-    # 2. Xóa sạch file PDF cache cũ của khóa này trong downloads
-    for s in course_students:
-        for f_name in [s.get('lythuyet_pdf_filename'), f"{s.get('mahv')}_lythuyet.pdf", f"{s.get('cccd')}_lythuyet.pdf"]:
-            if f_name:
-                p = os.path.join(DOWNLOADS_DIR, f_name)
-                if os.path.exists(p):
-                    try:
-                        os.remove(p)
-                    except Exception:
-                        pass
+        # 2. Tìm tất cả học viên thuộc khóa này
+        c_norm = course.lower().strip()
+        course_students = [
+            s for s in list(db.students.values())
+            if c_norm == (s.get('khoa') or '').lower().strip() or c_norm in (s.get('khoa') or '').lower()
+        ]
+        total_students_matched += len(course_students)
 
-    # 3. Tự động tra cứu lại lý thuyết (/lythuyet) để cập nhật dữ liệu mới nhất từ Bot
-    updated_count = 0
-    for s in course_students:
-        target = s.get('mahv') or s.get('cccd') or s.get('hoten')
-        if not target:
-            continue
-        try:
-            q_res = ds.query_student(target, command='lythuyet', timeout_sec=16, force=True)
-            if q_res.get('success'):
-                raw = q_res.get('data')
-                it = raw[0] if isinstance(raw, list) and raw else (raw or {})
-                it['is_my_query'] = True
-                it['interaction_username'] = 'tranthang252'
-                it['interaction_user_id'] = '1380376964304474173'
-                saved = db.upsert_student(it, auto_save=True)
-                if saved:
-                    ensure_lythuyet_evaluated(saved, force_download=True)
-                    updated_count += 1
-            time.sleep(0.3)
-        except Exception as e_s:
-            print(f"Lỗi cập nhật học viên {target} sau sync_course: {e_s}")
+        # 3. Xóa sạch file PDF cache cũ của khóa này trong downloads
+        for s in course_students:
+            for f_name in [s.get('lythuyet_pdf_filename'), f"{s.get('mahv')}_lythuyet.pdf", f"{s.get('cccd')}_lythuyet.pdf"]:
+                if f_name:
+                    p = os.path.join(DOWNLOADS_DIR, f_name)
+                    if os.path.exists(p):
+                        try:
+                            os.remove(p)
+                        except Exception:
+                            pass
+
+        # 4. Tự động tra cứu lại lý thuyết (/lythuyet) để cập nhật dữ liệu mới nhất từ Bot
+        c_updated = 0
+        for s in course_students:
+            target = s.get('mahv') or s.get('cccd') or s.get('hoten')
+            if not target:
+                continue
+            try:
+                q_res = ds.query_student(target, command='lythuyet', timeout_sec=16, force=True)
+                if q_res.get('success'):
+                    raw = q_res.get('data')
+                    it = raw[0] if isinstance(raw, list) and raw else (raw or {})
+                    it['is_my_query'] = True
+                    it['interaction_username'] = 'tranthang252'
+                    it['interaction_user_id'] = '1380376964304474173'
+                    saved = db.upsert_student(it, auto_save=False)
+                    if saved:
+                        ensure_lythuyet_evaluated(saved, force_download=True, auto_save=False)
+                        c_updated += 1
+                time.sleep(0.3)
+            except Exception as e_s:
+                print(f"Lỗi cập nhật học viên {target} sau sync_course: {e_s}")
+
+        total_updated += c_updated
+        course_results.append({
+            'course': course,
+            'success': res.get('success', False),
+            'updated_count': c_updated,
+            'total_students': len(course_students)
+        })
 
     db._save()
-    res['message'] = f"Đã cập nhật khóa {course} và đồng bộ báo cáo lý thuyết mới nhất cho {updated_count}/{len(course_students)} học viên!"
-    res['updated_count'] = updated_count
-    return jsonify(res)
+    courses_str = ', '.join(courses)
+    return jsonify({
+        'success': True,
+        'courses': courses,
+        'results': course_results,
+        'total_updated': total_updated,
+        'message': f"Đã cập nhật xong {len(courses)} khóa ({courses_str})! Đồng bộ lý thuyết mới cho {total_updated}/{total_students_matched} học viên."
+    })
 
 @app.route('/api/course/delete', methods=['POST'])
 def delete_course_api():
-    """Xóa toàn bộ học viên thuộc một khóa học khi khóa đã thi xong."""
+    """Xóa toàn bộ học viên thuộc một hoặc nhiều khóa học khi khóa đã thi xong."""
     data = request.get_json(silent=True) or {}
-    course_name = (data.get('course') or data.get('khoa') or '').strip()
-    if not course_name:
-        return jsonify({'success': False, 'error': 'Vui lòng chọn hoặc nhập tên khóa cần xóa!'})
+    raw_courses = data.get('courses')
+    if not raw_courses:
+        single = (data.get('course') or data.get('khoa') or '').strip()
+        raw_courses = [single] if single else []
+    elif isinstance(raw_courses, str):
+        raw_courses = [c.strip() for c in raw_courses.split(',') if c.strip()]
 
-    deleted_count = db.delete_course(course_name)
+    courses = [str(c).strip() for c in raw_courses if str(c).strip()]
+    if not courses:
+        return jsonify({'success': False, 'error': 'Vui lòng chọn hoặc nhập ít nhất một khóa cần xóa!'})
+
+    deleted_count = db.delete_courses(courses)
+    course_display = ', '.join(courses)
     return jsonify({
         'success': True,
         'deleted_count': deleted_count,
-        'course': course_name,
-        'message': f'Đã xóa toàn bộ {deleted_count} học viên thuộc khóa {course_name} thành công!'
+        'courses': courses,
+        'message': f'Đã xóa toàn bộ {deleted_count} học viên thuộc các khóa: {course_display} thành công!'
     })
 
 @app.route('/api/reset_app', methods=['POST'])
