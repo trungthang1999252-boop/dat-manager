@@ -237,11 +237,11 @@ def get_status():
         'app_id': discord_service.APP_ID
     })
 
-def fetch_pdf_file(pdf_url, fname, student_key=None, url_field=None):
+def fetch_pdf_file(pdf_url, fname, student_key=None, url_field=None, force_download=False):
     clean_fname = "".join([c if c.isalnum() or c in '._-' else '_' for c in fname])
     dest_path = os.path.join(DOWNLOADS_DIR, clean_fname)
 
-    if os.path.exists(dest_path) and os.path.getsize(dest_path) > 1000:
+    if not force_download and os.path.exists(dest_path) and os.path.getsize(dest_path) > 1000:
         return dest_path, None
 
     target_url = pdf_url
@@ -270,7 +270,7 @@ def fetch_pdf_file(pdf_url, fname, student_key=None, url_field=None):
 
     return (dest_path, None) if os.path.exists(dest_path) else (None, "Không thể tải tệp")
 
-def ensure_lythuyet_evaluated(student_obj, exempt_all_cabin=False):
+def ensure_lythuyet_evaluated(student_obj, exempt_all_cabin=False, force_download=False):
     """Tự động tải file PDF lý thuyết về máy và chấm điểm điều kiện thi tốt nghiệp."""
     if not student_obj:
         return student_obj
@@ -281,7 +281,7 @@ def ensure_lythuyet_evaluated(student_obj, exempt_all_cabin=False):
     try:
         if pdf_url:
             st_key = student_obj.get('mahv') or student_obj.get('cccd')
-            dest_path, err = fetch_pdf_file(pdf_url, fname, student_key=st_key, url_field='lythuyet_pdf_url')
+            dest_path, err = fetch_pdf_file(pdf_url, fname, student_key=st_key, url_field='lythuyet_pdf_url', force_download=force_download)
             if dest_path and os.path.exists(dest_path):
                 student_obj['lythuyet_pdf_filename'] = os.path.basename(dest_path)
                 student_obj['has_lythuyet'] = True
@@ -439,7 +439,7 @@ def query_student():
 
         final_st = db.find_student(mahv or target_query) or saved_st or st_dat
         # TỰ ĐỘNG TẢI FILE PDF LÝ THUYẾT VỀ MÁY VÀ ĐÁNH GIÁ ĐIỀU KIỆN TỐT NGHIỆP
-        final_st = ensure_lythuyet_evaluated(final_st)
+        final_st = ensure_lythuyet_evaluated(final_st, force_download=True)
 
         return jsonify({
             'success': True,
@@ -476,7 +476,7 @@ def query_student():
             it['interaction_user_id'] = '1380376964304474173'
             saved = db.upsert_student(it, auto_save=True)
             if saved:
-                saved = ensure_lythuyet_evaluated(saved)
+                saved = ensure_lythuyet_evaluated(saved, force_download=True)
                 saved_list.append(saved)
 
         final_st = saved_list[0] if saved_list else db.find_student(target_query)
@@ -505,7 +505,7 @@ def query_student():
                 saved = db.upsert_student(st)
                 if saved:
                     if cmd_type == 'lythuyet' or saved.get('lythuyet_pdf_url'):
-                        saved = ensure_lythuyet_evaluated(saved)
+                        saved = ensure_lythuyet_evaluated(saved, force_download=True)
                     saved_list.append(saved)
         else:
             if isinstance(raw_data, dict):
@@ -515,7 +515,7 @@ def query_student():
             saved = db.upsert_student(raw_data)
             if saved:
                 if cmd_type == 'lythuyet' or saved.get('lythuyet_pdf_url'):
-                    saved = ensure_lythuyet_evaluated(saved)
+                    saved = ensure_lythuyet_evaluated(saved, force_download=True)
                 saved_list.append(saved)
 
         return jsonify({'success': True, 'students': saved_list, 'count': len(saved_list), 'resolved': resolved_info})
@@ -622,7 +622,7 @@ def query_batch():
                     st_lt['interaction_user_id'] = '1380376964304474173'
                     saved_st = db.upsert_student(st_lt)
                 final_st = db.find_student(mahv or t_id) or saved_st or st_dat
-                final_st = ensure_lythuyet_evaluated(final_st)
+                final_st = ensure_lythuyet_evaluated(final_st, force_download=True)
                 results.append({'query': item_str, 'resolved_to': hoten_match, 'success': True, 'student': final_st, 'source': 'bot_combo'})
             else:
                 results.append({'query': item_str, 'resolved_to': hoten_match, 'success': False, 'error': res_dat.get('error'), 'source': 'bot'})
@@ -638,7 +638,7 @@ def query_batch():
                         saved = db.upsert_student(st)
                         if saved:
                             if cmd_type == 'lythuyet' or saved.get('lythuyet_pdf_url'):
-                                saved = ensure_lythuyet_evaluated(saved)
+                                saved = ensure_lythuyet_evaluated(saved, force_download=True)
                             results.append({'query': item_str, 'resolved_to': hoten_match, 'success': True, 'student': saved, 'source': 'bot'})
                 else:
                     if isinstance(raw_data, dict):
@@ -648,7 +648,7 @@ def query_batch():
                     saved = db.upsert_student(raw_data)
                     if saved:
                         if cmd_type == 'lythuyet' or saved.get('lythuyet_pdf_url'):
-                            saved = ensure_lythuyet_evaluated(saved)
+                            saved = ensure_lythuyet_evaluated(saved, force_download=True)
                         results.append({'query': item_str, 'resolved_to': hoten_match, 'success': True, 'student': saved, 'source': 'bot'})
             else:
                 results.append({'query': item_str, 'resolved_to': hoten_match, 'success': False, 'error': res.get('error'), 'source': 'bot'})
@@ -879,7 +879,69 @@ def sync_course():
             return jsonify({'success': False, 'error': 'Chưa kết nối được với Discord trên máy tính.'})
 
     res = ds.sync_course(course, timeout_sec=20)
+    if not res.get('success'):
+        return jsonify(res)
+
+    # 1. Tìm tất cả học viên thuộc khóa này
+    c_norm = course.lower().strip()
+    course_students = [
+        s for s in list(db.students.values())
+        if c_norm in (s.get('khoa') or '').lower()
+    ]
+
+    # 2. Xóa sạch file PDF cache cũ của khóa này trong downloads
+    for s in course_students:
+        for f_name in [s.get('lythuyet_pdf_filename'), f"{s.get('mahv')}_lythuyet.pdf", f"{s.get('cccd')}_lythuyet.pdf"]:
+            if f_name:
+                p = os.path.join(DOWNLOADS_DIR, f_name)
+                if os.path.exists(p):
+                    try:
+                        os.remove(p)
+                    except Exception:
+                        pass
+
+    # 3. Tự động tra cứu lại lý thuyết (/lythuyet) để cập nhật dữ liệu mới nhất từ Bot
+    updated_count = 0
+    for s in course_students:
+        target = s.get('mahv') or s.get('cccd') or s.get('hoten')
+        if not target:
+            continue
+        try:
+            q_res = ds.query_student(target, command='lythuyet', timeout_sec=16, force=True)
+            if q_res.get('success'):
+                raw = q_res.get('data')
+                it = raw[0] if isinstance(raw, list) and raw else (raw or {})
+                it['is_my_query'] = True
+                it['interaction_username'] = 'tranthang252'
+                it['interaction_user_id'] = '1380376964304474173'
+                saved = db.upsert_student(it, auto_save=True)
+                if saved:
+                    ensure_lythuyet_evaluated(saved, force_download=True)
+                    updated_count += 1
+            time.sleep(0.3)
+        except Exception as e_s:
+            print(f"Lỗi cập nhật học viên {target} sau sync_course: {e_s}")
+
+    db._save()
+    res['message'] = f"Đã cập nhật khóa {course} và đồng bộ báo cáo lý thuyết mới nhất cho {updated_count}/{len(course_students)} học viên!"
+    res['updated_count'] = updated_count
     return jsonify(res)
+
+@app.route('/api/course/delete', methods=['POST'])
+def delete_course_api():
+    """Xóa toàn bộ học viên thuộc một khóa học khi khóa đã thi xong."""
+    data = request.get_json(silent=True) or {}
+    course_name = (data.get('course') or data.get('khoa') or '').strip()
+    if not course_name:
+        return jsonify({'success': False, 'error': 'Vui lòng chọn hoặc nhập tên khóa cần xóa!'})
+
+    deleted_count = db.delete_course(course_name)
+    return jsonify({
+        'success': True,
+        'deleted_count': deleted_count,
+        'course': course_name,
+        'message': f'Đã xóa toàn bộ {deleted_count} học viên thuộc khóa {course_name} thành công!'
+    })
 
 @app.route('/api/reset_app', methods=['POST'])
 def reset_app():
@@ -934,9 +996,10 @@ def get_totnghiep_details(student_key):
     if not st:
         return jsonify({'success': False, 'error': 'Không tìm thấy học viên!'})
 
+    force_refresh = request.args.get('refresh', '0') == '1' or request.args.get('force', '0') == '1'
     st = db.calculate_progress(st)
     exempt_cabin = request.args.get('exempt_cabin', '0') == '1'
-    st = ensure_lythuyet_evaluated(st, exempt_all_cabin=exempt_cabin)
+    st = ensure_lythuyet_evaluated(st, exempt_all_cabin=exempt_cabin, force_download=force_refresh)
     return jsonify({
         'success': True,
         'student': {
@@ -989,9 +1052,10 @@ def download_lythuyet_pdf(student_key):
     if not st or not st.get('lythuyet_pdf_url'):
         return jsonify({'success': False, 'error': 'Chưa có file PDF báo cáo lý thuyết. Hãy dùng chức năng Tra Cứu Lý Thuyết!'})
 
+    force_refresh = request.args.get('refresh', '0') == '1' or request.args.get('force', '0') == '1'
     pdf_url = st.get('lythuyet_pdf_url')
     fname = st.get('lythuyet_pdf_filename') or f"{st.get('hoten', 'HocVien')}_lythuyet.pdf"
-    dest_path, err = fetch_pdf_file(pdf_url, fname, student_key=student_key, url_field='lythuyet_pdf_url')
+    dest_path, err = fetch_pdf_file(pdf_url, fname, student_key=student_key, url_field='lythuyet_pdf_url', force_download=force_refresh)
     if err or not dest_path:
         return jsonify({'success': False, 'error': f'Lỗi tải file từ Discord: {err}'})
 
@@ -1003,11 +1067,17 @@ def view_lythuyet_pdf(student_key):
     if not st or not st.get('lythuyet_pdf_url'):
         return "Học viên này chưa có file PDF báo cáo lý thuyết.", 404
 
+    force_refresh = request.args.get('refresh', '0') == '1' or request.args.get('force', '0') == '1'
     pdf_url = st.get('lythuyet_pdf_url')
     fname = st.get('lythuyet_pdf_filename') or f"{st.get('hoten', 'HocVien')}_lythuyet.pdf"
-    dest_path, err = fetch_pdf_file(pdf_url, fname, student_key=student_key, url_field='lythuyet_pdf_url')
+    dest_path, err = fetch_pdf_file(pdf_url, fname, student_key=student_key, url_field='lythuyet_pdf_url', force_download=force_refresh)
     if err or not dest_path:
         return f"Lỗi tải PDF lý thuyết: {err}", 500
+
+    if force_refresh:
+        import totnghiep_service
+        st = totnghiep_service.evaluate_student(st, DOWNLOADS_DIR)
+        db.upsert_student(st, auto_save=True)
 
     return send_file(dest_path, mimetype='application/pdf')
 
