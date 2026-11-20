@@ -55,8 +55,7 @@ class StudentDatabase:
         Xóa bỏ toàn bộ học viên lạ khác của trung tâm, đồng thời giữ nguyên kết quả đã tra cứu.
         """
         if not self.roster:
-            self.students = {}
-            self._save()
+            # Tuyệt đối không xóa trắng self.students nếu roster rỗng để bảo vệ dữ liệu
             return
 
         roster_keys = set()
@@ -82,6 +81,9 @@ class StudentDatabase:
                        (s_mahv and s_mahv in roster_keys) or 
                        (s_hoten and s_hoten in roster_keys) or
                        s_st.get('is_my_query') or
+                       s_st.get('quangduong', 0) > 0 or
+                       s_st.get('thoigian', 0) > 0 or
+                       s_st.get('has_lythuyet') or
                        s_st.get('interaction_username') == 'tranthang252' or
                        s_st.get('interaction_user_id') in ('1380376964304474173', '1380096710386384937'))
             if is_mine:
@@ -233,6 +235,9 @@ class StudentDatabase:
             )
             is_queried_by_me = (
                 s.get('is_my_query') or
+                s.get('quangduong', 0) > 0 or
+                s.get('thoigian', 0) > 0 or
+                s.get('has_lythuyet') or
                 s.get('interaction_username') == 'tranthang252' or
                 s.get('interaction_user_id') in ('1380376964304474173', '1380096710386384937')
             )
@@ -398,6 +403,8 @@ class StudentDatabase:
         mahv = student_data.get('mahv', '').strip()
         cccd = student_data.get('cccd', '').strip()
         hoten = student_data.get('hoten', '').strip()
+        if student_data.get('is_my_query') is None:
+            student_data['is_my_query'] = True
 
         # 1. Tìm key hiện có qua MAHV, CCCD hoặc Họ tên
         existing_key = None
@@ -601,24 +608,83 @@ class StudentDatabase:
         return None
 
     def delete_student(self, student_id):
+        """
+        Xóa triệt để học viên khỏi cả CSDL kết quả (students) VÀ Danh sách gốc (roster).
+        Đảm bảo học viên đã xóa không bao giờ bị tự động nạp lại khi khởi động hay đồng bộ.
+        """
         if not student_id:
             return False
         sid = str(student_id).strip()
+        deleted = False
+        target_student = None
+
+        # 1. Tìm thông tin học viên trước khi xóa để gom đủ cccd, mahv, hoten
         if sid in self.students:
-            del self.students[sid]
-            self._save()
-            return True
-        sid_norm = strip_vietnamese_accents(sid)
+            target_student = self.students[sid]
+        else:
+            sid_norm = strip_vietnamese_accents(sid)
+            for k, s in list(self.students.items()):
+                if str(s.get('mahv', '')).strip() == sid or str(s.get('cccd', '')).strip() == sid:
+                    target_student = s
+                    break
+                name_raw = str(s.get('hoten', '')).strip()
+                if name_raw.lower() == sid.lower() or strip_vietnamese_accents(name_raw) == sid_norm:
+                    target_student = s
+                    break
+
+        keys_to_purge = {sid.lower()}
+        sid_norm = strip_vietnamese_accents(sid).lower()
+        if sid_norm:
+            keys_to_purge.add(sid_norm)
+
+        if target_student:
+            if target_student.get('mahv'):
+                keys_to_purge.add(str(target_student['mahv']).strip().lower())
+            if target_student.get('cccd'):
+                keys_to_purge.add(str(target_student['cccd']).strip().lower())
+            if target_student.get('hoten'):
+                h = str(target_student['hoten']).strip().lower()
+                keys_to_purge.add(h)
+                keys_to_purge.add(strip_vietnamese_accents(h))
+
+        # 2. Xóa khỏi self.students
         for k, s in list(self.students.items()):
-            if str(s.get('mahv', '')).strip() == sid or str(s.get('cccd', '')).strip() == sid:
+            k_low = str(k).strip().lower()
+            k_norm = strip_vietnamese_accents(k_low)
+            s_mahv = str(s.get('mahv', '')).strip().lower()
+            s_cccd = str(s.get('cccd', '')).strip().lower()
+            s_hoten = str(s.get('hoten', '')).strip().lower()
+            s_norm = strip_vietnamese_accents(s_hoten)
+            if (k_low in keys_to_purge or k_norm in keys_to_purge or
+                (s_mahv and s_mahv in keys_to_purge) or 
+                (s_cccd and s_cccd in keys_to_purge) or
+                (s_hoten and s_hoten in keys_to_purge) or 
+                (s_norm and s_norm in keys_to_purge)):
                 del self.students[k]
-                self._save()
-                return True
-            name_raw = str(s.get('hoten', '')).strip()
-            if name_raw.lower() == sid.lower() or strip_vietnamese_accents(name_raw) == sid_norm:
-                del self.students[k]
-                self._save()
-                return True
+                deleted = True
+
+        # 3. XÓA TRIỆT ĐỂ KHỎI self.roster (DANH SÁCH GỐC) để không bao giờ bị tự động nạp lại
+        roster_deleted = False
+        for rk, r in list(self.roster.items()):
+            rk_low = str(rk).strip().lower()
+            rk_norm = strip_vietnamese_accents(rk_low)
+            r_mahv = str(r.get('mahv', '')).strip().lower()
+            r_cccd = str(r.get('cccd', '')).strip().lower()
+            r_hoten = str(r.get('hoten', '')).strip().lower()
+            r_norm = strip_vietnamese_accents(r_hoten)
+            if (rk_low in keys_to_purge or rk_norm in keys_to_purge or
+                (r_mahv and r_mahv in keys_to_purge) or 
+                (r_cccd and r_cccd in keys_to_purge) or
+                (r_hoten and r_hoten in keys_to_purge) or 
+                (r_norm and r_norm in keys_to_purge)):
+                del self.roster[rk]
+                roster_deleted = True
+
+        if deleted or roster_deleted:
+            self._save()
+            if roster_deleted:
+                self._save_roster()
+            return True
         return False
 
     def clear_all(self):
@@ -956,18 +1022,8 @@ class StudentDatabase:
         return self.roster.get(key)
 
     def delete_from_roster(self, key):
-        deleted = False
-        if key in self.roster:
-            del self.roster[key]
-            deleted = True
-        for k, s in list(self.roster.items()):
-            if s.get('cccd') == key or s.get('mahv') == key or s.get('hoten') == key:
-                del self.roster[k]
-                deleted = True
-        if deleted:
-            self._save_roster()
-            self._sync_students_from_roster()
-        return deleted
+        """Xóa học viên khỏi danh sách gốc và CSDL một cách đồng bộ."""
+        return self.delete_student(key)
 
     def clear_roster(self):
         self.roster = {}
