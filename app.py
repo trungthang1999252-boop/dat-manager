@@ -353,15 +353,15 @@ def handle_live_discord_student(st, cmd):
     # 1. Nếu là báo cáo lý thuyết hoặc có file PDF lý thuyết
     if cmd == 'lythuyet' or st.get('lythuyet_pdf_url'):
         try:
-            st = ensure_lythuyet_evaluated(st, force_download=True, auto_save=False)
+            st = ensure_lythuyet_evaluated(st, force_download=False, auto_save=False)
         except Exception as e_lt:
-            print("[Discord Live Sync] Lỗi chấm điểm lý thuyết:", e_lt)
+            print("[Discord Live Sync] Cảnh báo chấm điểm lý thuyết:", e_lt)
 
     # 2. Nếu là phiên học có file PDF báo cáo phiên
     if (cmd == 'phien' or st.get('pdf_url')) and st.get('pdf_url'):
         fname = st.get('pdf_filename') or f"{mahv or 'HV'}_phienhoc.pdf"
         try:
-            fetch_pdf_file(st['pdf_url'], fname, student_key=mahv, url_field='pdf_url')
+            fetch_pdf_file(st['pdf_url'], fname, student_key=mahv, url_field='pdf_url', force_download=False)
         except Exception:
             pass
 
@@ -371,11 +371,15 @@ def handle_live_discord_student(st, cmd):
         print(f"[Discord Live Sync] ⚡ Cập nhật tức thì: {saved_st.get('hoten')} ({saved_st.get('mahv')}) [{cmd}]")
         broadcast_live_event('student_updated', saved_st)
 
-# Khởi chạy Discord Live Watcher ngầm
-try:
-    ds.start_live_watcher(on_student_parsed_cb=handle_live_discord_student, interval_sec=1.5)
-except Exception as _e_watcher:
-    print("⚠️ Lỗi khởi chạy Discord Live Watcher:", _e_watcher)
+# Khởi chạy Discord Live Watcher ngầm (trì hoãn 2s để Gunicorn bind cổng siêu tốc)
+def _start_watcher_bg():
+    time.sleep(2.0)
+    try:
+        ds.start_live_watcher(on_student_parsed_cb=handle_live_discord_student, interval_sec=1.5)
+    except Exception as _e_watcher:
+        print("⚠️ Lỗi khởi chạy Discord Live Watcher:", _e_watcher)
+
+threading.Thread(target=_start_watcher_bg, daemon=True, name="DiscordWatcherStarter").start()
 
 @app.route('/api/events')
 def sse_events():
@@ -384,11 +388,12 @@ def sse_events():
         q = queue.Queue(maxsize=100)
         with _sse_subscribers_lock:
             _sse_subscribers.append(q)
+        t_end = time.time() + 15
         try:
             yield ": keepalive\n\n"
-            while True:
+            while time.time() < t_end:
                 try:
-                    data = q.get(timeout=20)
+                    data = q.get(timeout=2.0)
                     yield f"data: {data}\n\n"
                 except queue.Empty:
                     yield ": keepalive\n\n"
