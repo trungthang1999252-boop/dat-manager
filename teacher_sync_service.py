@@ -11,8 +11,71 @@ from collections import defaultdict
 INDEX_SHEET_ID = '1FRC_xHYy36NntmKyRhXlXL0csqybXqE64FQUA7NcTVI'
 TEACHER_SHEET_ID = '1ow-dU4w7UmoCpzP6w0lDBhk5kAorIK8x72jdNcO19_Y'
 
-_courses_cache = {'time': 0, 'data': []}
+_courses_cache = {'time': 0, 'data': [], 'all': [], 'active': []}
 _teachers_cache = {'time': 0, 'data': []}
+
+def is_course_allowed(course_name):
+    """
+    Quy tắc lọc khoá học cho tính năng 'Đẩy danh sách theo giáo viên':
+    1. Bỏ qua khoá Test (CD_TestMayDat...)
+    2. Xoá toàn bộ hạng CE (CD_01CE đến CD_29CE...)
+    3. Xoá toàn bộ nâng hạng C / CM (B LÊN C, B LÊN CM, CM...)
+    4. Xoá toàn bộ hạng C (CD_128C đến CD_144C...) - chú ý không xoá C1
+    5. Xoá những khoá cũ của hạng C1 từ 13 trở về trước (C1 <= 13). Chỉ giữ C1 > 13 (CD_14C1, CD_15C1...)
+    6. Xoá những khoá cũ của hạng B.01 từ 108 trở về trước (B.01 <= 108). Chỉ giữ B.01 > 108 (CD_109B.01, CD_110B.01...)
+    7. Xoá những khoá cũ của hạng B từ 236 trở về trước (B <= 236). Chỉ giữ B > 236 (CD_237B, CD_238B...)
+    """
+    if not course_name:
+        return False, "Tên khoá rỗng"
+
+    c = str(course_name).strip()
+    c_up = c.upper()
+
+    # 1. Bỏ qua khoá Test
+    if 'TEST' in c_up:
+        return False, "Khoá Test"
+
+    # 2. Xoá toàn bộ hạng CE
+    if 'CE' in c_up:
+        return False, "Hạng CE"
+
+    # 3. Xoá toàn bộ nâng hạng C / CM
+    if 'LÊN C' in c_up or 'LÊN CM' in c_up or 'CM' in c_up or 'B2 LÊN' in c_up:
+        return False, "Nâng hạng C / CM"
+
+    # 4. Xoá toàn bộ hạng C (CD_128C đến CD_144C...) - chú ý không xoá C1
+    if re.search(r'\b\d+C\b', c_up) or (re.search(r'C\b', c_up) and 'C1' not in c_up):
+        return False, "Hạng C"
+
+    # 5. Xoá những khoá cũ của hạng C1 từ 13 trở về trước (C1 <= 13)
+    m_c1 = re.search(r'(\d+)C1', c_up)
+    if m_c1:
+        c1_num = int(m_c1.group(1))
+        if c1_num <= 13:
+            return False, f"Hạng C1 cũ <= 13 ({c1_num}C1)"
+        else:
+            return True, f"Hạng C1 mới > 13 ({c1_num}C1)"
+
+    # 6. Kiểm tra khoá B.01 / B1 (CD_102B.01 đến CD_112B.01)
+    # B.01 từ 108 trở về trước tương ứng với B <= 236
+    m_b01 = re.search(r'(\d+)B\.?01', c_up)
+    if m_b01:
+        b01_num = int(m_b01.group(1))
+        if b01_num <= 108:
+            return False, f"Hạng B.01 cũ <= 108 ({b01_num}B.01)"
+        else:
+            return True, f"Hạng B.01 mới > 108 ({b01_num}B.01)"
+
+    # 7. Xoá những khoá cũ của hạng B từ 236 trở về trước (B <= 236)
+    m_b = re.search(r'(\d+)B(?!\.01|\d)', c_up)
+    if m_b:
+        b_num = int(m_b.group(1))
+        if b_num <= 236:
+            return False, f"Hạng B cũ <= 236 ({b_num}B)"
+        else:
+            return True, f"Hạng B mới > 236 ({b_num}B)"
+
+    return False, "Không thuộc danh mục khoá được phép"
 
 def strip_accents(s):
     if not s:
@@ -74,11 +137,20 @@ def get_teachers_list(force=False):
     _teachers_cache = {'time': now, 'data': teachers}
     return teachers
 
-def get_courses_catalog(force=False):
+def get_courses_catalog(force=False, filter_active=True):
+    """
+    Lấy danh mục các khoá học trên Google Sheet.
+    Mặc định filter_active=True: tự động loại bỏ các khoá cũ theo yêu cầu:
+    - B <= 236 và B.01 <= 108
+    - C1 <= 13
+    - Toàn bộ C và CE
+    - Khoá Test
+    """
     global _courses_cache
     now = time.time()
-    if not force and _courses_cache['data'] and (now - _courses_cache['time'] < 1800):
-        return _courses_cache['data']
+    cache_key = 'active' if filter_active else 'all'
+    if not force and _courses_cache.get(cache_key) and (now - _courses_cache['time'] < 1800):
+        return _courses_cache[cache_key]
 
     url = f'https://docs.google.com/spreadsheets/d/{INDEX_SHEET_ID}/export?format=csv'
     try:
@@ -87,7 +159,8 @@ def get_courses_catalog(force=False):
         url_alt = f'https://docs.google.com/spreadsheets/d/{INDEX_SHEET_ID}/gviz/tq?tqx=out:csv'
         rows = fetch_csv(url_alt, timeout=12)
 
-    courses = []
+    all_courses = []
+    active_courses = []
     seen = set()
     for r in rows:
         for ci, cell in enumerate(r):
@@ -97,13 +170,21 @@ def get_courses_catalog(force=False):
                 if sid not in seen and sid not in (INDEX_SHEET_ID, TEACHER_SHEET_ID):
                     seen.add(sid)
                     cname = r[ci-1].strip() if ci > 0 and r[ci-1].strip() else f'Khoa_{len(seen)}'
-                    courses.append({
-                        'course': normalize_name(cname),
+                    c_norm = normalize_name(cname)
+                    item = {
+                        'course': c_norm,
                         'sheet_id': sid
-                    })
+                    }
+                    all_courses.append(item)
+                    if is_course_allowed(c_norm)[0]:
+                        active_courses.append(item)
 
-    _courses_cache = {'time': now, 'data': courses}
-    return courses
+    _courses_cache['time'] = now
+    _courses_cache['all'] = all_courses
+    _courses_cache['active'] = active_courses
+    _courses_cache['data'] = active_courses if filter_active else all_courses
+
+    return active_courses if filter_active else all_courses
 
 def detect_hang_from_course(course_str):
     if not course_str:
@@ -313,7 +394,10 @@ def parse_course_students(course_info, query_teacher_name, teacher_obj=None):
     return matched_students
 
 def scan_teacher_students(query_teacher_name, selected_courses=None, max_workers=25):
-    """Quét toàn bộ các khoá học của trường để tìm học viên của một giáo viên."""
+    """
+    Quét danh sách học viên theo giáo viên trên Google Sheet.
+    Tự động áp dụng quy tắc lọc bỏ khoá cũ (B <= 236, C1 <= 13, toàn bộ C và CE).
+    """
     t0 = time.time()
     teachers = get_teachers_list()
     q_clean = strip_accents(query_teacher_name)
@@ -321,11 +405,12 @@ def scan_teacher_students(query_teacher_name, selected_courses=None, max_workers
     t_obj = next((t for t in teachers if t['clean'] == q_clean or q_clean in t['clean']), None)
     teacher_display_name = t_obj['name'] if t_obj else query_teacher_name
 
-    courses = get_courses_catalog()
+    # Lấy danh mục các khoá học mới đang học
+    courses = get_courses_catalog(filter_active=True)
     if selected_courses and selected_courses != 'all':
         if isinstance(selected_courses, str):
             selected_courses = [selected_courses]
-        target_courses = [c for c in courses if c['course'] in selected_courses or any(sc in c['course'] for sc in selected_courses)]
+        target_courses = [c for c in courses if is_course_allowed(c['course'])[0] and (c['course'] in selected_courses or any(sc in c['course'] for sc in selected_courses))]
         if not target_courses:
             target_courses = courses
     else:
@@ -367,18 +452,53 @@ def scan_teacher_students(query_teacher_name, selected_courses=None, max_workers
         'scan_time_seconds': round(elapsed, 2)
     }
 
+def purge_obsolete_courses(db):
+    """
+    Xoá các khoá học cũ không hợp lệ khỏi CSDL và Roster của App:
+    - Hạng B <= 236 và B.01 <= 108
+    - Hạng C1 <= 13
+    - Toàn bộ hạng C và CE
+    - Khoá Test
+    """
+    obsolete_courses = set()
+    with db._lock:
+        for s in list(db.students.values()):
+            khoa = s.get('khoa')
+            if khoa and not is_course_allowed(khoa)[0]:
+                obsolete_courses.add(khoa)
+        for r in list(db.roster.values()):
+            khoa = r.get('khoa')
+            if khoa and not is_course_allowed(khoa)[0]:
+                obsolete_courses.add(khoa)
+
+    if obsolete_courses:
+        db.delete_courses(list(obsolete_courses))
+        return sorted(list(obsolete_courses))
+    return []
+
 def import_students_to_database(students, db):
     """
     Nạp toàn bộ học viên vừa tìm được vào CSDL và Roster của App.
     Đảm bảo học viên xuất hiện ngay trên giao diện theo từng khoá.
+    Tự động dọn dẹp các khoá cũ không hợp lệ theo yêu cầu của nút 'Đẩy DS theo giáo viên'.
     """
     from datetime import datetime
     now_str = datetime.now().strftime('%d/%m/%Y %H:%M:%S')
 
+    # 1. Tự động dọn dẹp triệt để các khoá cũ khỏi CSDL & Roster
+    purged_courses = purge_obsolete_courses(db)
+
+    # 2. Lọc danh sách nạp: chỉ cho phép các khoá học hợp lệ
+    valid_students = []
+    for s in students:
+        khoa = s.get('khoa', '').strip()
+        if not khoa or is_course_allowed(khoa)[0]:
+            valid_students.append(s)
+
     imported_count = 0
     courses_affected = set()
 
-    for s in students:
+    for s in valid_students:
         hoten = s.get('hoten', '').strip()
         cccd = s.get('cccd', '').strip()
         mahv = s.get('mahv', '').strip()
@@ -478,5 +598,6 @@ def import_students_to_database(students, db):
 
     return {
         'imported_count': imported_count,
-        'courses_affected': sorted(list(courses_affected))
+        'courses_affected': sorted(list(courses_affected)),
+        'purged_courses': purged_courses
     }
