@@ -35,6 +35,29 @@ ROW_DEFINITIONS = [
     ('hinh_cabin', 'Nhận diện Cabin (Hình cabin)', 681, True)  # Luôn miễn trừ theo yêu cầu của thầy
 ]
 
+def extract_car_from_lythuyet_pdf(pdf_path):
+    """
+    Trích xuất biển số xe được phân trong file PDF báo cáo lý thuyết (_lythuyet.pdf).
+    Tìm dòng 'Phân Xe: <biển số xe>' (VD: 81A78293, 77A24156).
+    """
+    if not pdf_path or not os.path.exists(pdf_path):
+        return None
+    try:
+        doc = fitz.open(pdf_path)
+        for page in doc:
+            text = page.get_text()
+            m = re.search(r'Phân\s*Xe:\s*([^\n\r]+)', text, re.IGNORECASE)
+            if not m:
+                m = re.search(r'Biển\s*số\s*xe:\s*([^\n\r]+)', text, re.IGNORECASE)
+            if m:
+                raw_val = m.group(1).strip()
+                clean = re.sub(r'[^A-Za-z0-9]', '', raw_val).upper()
+                if clean:
+                    return clean
+    except Exception as e:
+        print("Lỗi trích xuất xe từ PDF lý thuyết:", e)
+    return None
+
 def evaluate_pdf_file(pdf_path, exempt_all_cabin=False):
     """
     Phân tích file PDF Báo cáo lý thuyết:
@@ -252,6 +275,9 @@ def evaluate_student(student_record, downloads_dir, exempt_all_cabin=False):
     lt_fails = []
     if pdf_path and os.path.exists(pdf_path):
         has_pdf = True
+        car = extract_car_from_lythuyet_pdf(pdf_path)
+        if car:
+            student_record['xe_phan'] = car
         res = evaluate_pdf_file(pdf_path, exempt_all_cabin=exempt_all_cabin)
         pdf_details = res.get('details', {})
         for k, v in pdf_details.items():
