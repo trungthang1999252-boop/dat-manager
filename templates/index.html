@@ -176,6 +176,12 @@
 
                             </button>
 
+                            <!-- Discord Live Sync Pill -->
+                            <span id="discord-live-pill" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-sky-500/20 text-sky-200 border border-sky-400/30 shadow-2xs" title="Tự động bắt và cập nhật tức thì dữ liệu tra cứu từ kênh Discord">
+                                <span id="discord-live-dot" class="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1.5 animate-pulse"></span>
+                                <span id="discord-live-text">⚡ Live Sync: Đang lắng nghe</span>
+                            </span>
+
                             <!-- Nút Cài App PWA -->
 
                             <button id="btn-install-pwa" onclick="installPWA()" class="hidden bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-bold px-2.5 py-0.5 rounded-full transition flex items-center space-x-1 shadow-xs border border-emerald-400/40">
@@ -3289,7 +3295,115 @@
 
         let autocompleteSelectedIdx = -1;
 
+        let _lastServerVersion = 0;
+        let _sseSource = null;
 
+        function initLiveSync() {
+            // 1. Kết nối Server-Sent Events (SSE) để nhận đẩy dữ liệu thời gian thực (0s delay)
+            if (window.EventSource) {
+                try {
+                    if (_sseSource) {
+                        try { _sseSource.close(); } catch (_) {}
+                    }
+                    _sseSource = new EventSource('/api/events');
+
+                    _sseSource.onopen = () => {
+                        const pillText = document.getElementById('discord-live-text');
+                        const pillDot = document.getElementById('discord-live-dot');
+                        if (pillText) pillText.innerText = '⚡ Live Sync: Sẵn sàng';
+                        if (pillDot) pillDot.className = 'w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1.5 animate-pulse';
+                    };
+
+                    _sseSource.onmessage = (event) => {
+                        if (!event.data) return;
+                        try {
+                            const parsed = JSON.parse(event.data);
+                            if (parsed.version) _lastServerVersion = parsed.version;
+                            if (parsed.type === 'student_updated' && parsed.data) {
+                                onLiveStudentUpdated(parsed.data);
+                            }
+                        } catch (e) {
+                            // bỏ qua lỗi parse
+                        }
+                    };
+
+                    _sseSource.onerror = () => {
+                        const pillText = document.getElementById('discord-live-text');
+                        const pillDot = document.getElementById('discord-live-dot');
+                        if (pillText) pillText.innerText = '⚡ Live: Tự động đồng bộ';
+                        if (pillDot) pillDot.className = 'w-1.5 h-1.5 rounded-full bg-sky-400 mr-1.5 animate-pulse';
+                    };
+                } catch (err) {
+                    console.warn('Lỗi mở SSE:', err);
+                }
+            }
+
+            // 2. Cơ chế kiểm tra cập nhật liên tục (Fast Fallback Poll mỗi 2 giây)
+            setInterval(async () => {
+                try {
+                    const res = await fetch(`/api/live_updates?version=${_lastServerVersion}`);
+                    if (res.ok) {
+                        const data = await res.json();
+                        if (data.has_update) {
+                            _lastServerVersion = data.version;
+                            await loadStats();
+                            await loadStudents();
+                        }
+                    }
+                } catch (_) {}
+            }, 2000);
+        }
+
+        function onLiveStudentUpdated(updated) {
+            if (!updated) return;
+            const identifier = updated.mahv || updated.cccd || updated.hoten;
+
+            // Tìm trong mảng currentStudents để cập nhật ngay tại chỗ
+            const idx = currentStudents.findIndex(s => 
+                (s.mahv && updated.mahv && s.mahv === updated.mahv) ||
+                (s.cccd && updated.cccd && s.cccd === updated.cccd) ||
+                (s.hoten && updated.hoten && s.hoten.toLowerCase() === updated.hoten.toLowerCase())
+            );
+
+            if (idx >= 0) {
+                currentStudents[idx] = { ...currentStudents[idx], ...updated };
+            } else {
+                currentStudents.unshift(updated);
+            }
+
+            // Cập nhật lại số lượng học viên
+            const badgeCount = document.getElementById('badge-count');
+            if (badgeCount) badgeCount.innerText = currentStudents.length;
+
+            // Render lại bảng tức thì
+            renderTable(currentStudents);
+            highlightUpdatedRow(identifier);
+            loadStats();
+
+            // Hiển thị hiệu ứng cập nhật trên thanh trạng thái Live Pill
+            const pillText = document.getElementById('discord-live-text');
+            if (pillText) {
+                pillText.innerText = `⚡ Đã cập nhật ${updated.hoten || identifier}!`;
+                setTimeout(() => {
+                    if (pillText) pillText.innerText = '⚡ Live Sync: Sẵn sàng';
+                }, 3500);
+            }
+        }
+
+        function highlightUpdatedRow(identifier) {
+            if (!identifier) return;
+            setTimeout(() => {
+                const rows = document.querySelectorAll('#student-table-body tr');
+                rows.forEach(r => {
+                    if (r.innerText.includes(identifier)) {
+                        r.classList.add('bg-emerald-100', 'transition-colors', 'duration-700');
+                        setTimeout(() => {
+                            r.classList.remove('bg-emerald-100');
+                        }, 2500);
+                    }
+                });
+            }, 80);
+        }
 
         document.addEventListener('DOMContentLoaded', () => {
 
@@ -3306,6 +3420,8 @@
             checkDiscordStatus(); // Kiểm tra trạng thái Bot Discord
 
             loadGSheetMetadata(); // Tự động nạp danh sách giáo viên & khoá học Google Sheet vào bộ nhớ đệm
+
+            initLiveSync(); // Khởi tạo lắng nghe & cập nhật tức thì thời gian thực từ Discord
 
 
 
@@ -5267,9 +5383,13 @@ let _loadStudentsAbortCtrl = null;
 
                     closeAutocomplete();
 
-                    await loadStats();
-
-                    await loadStudents();
+                    if (data.student || (data.students && data.students.length > 0)) {
+                        const updated = data.student || data.students[0];
+                        onLiveStudentUpdated(updated);
+                    } else {
+                        await loadStats();
+                        await loadStudents();
+                    }
 
                 } else {
 
