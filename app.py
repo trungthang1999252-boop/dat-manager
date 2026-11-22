@@ -8,6 +8,7 @@ import base64
 import requests
 import urllib.request
 import gzip
+import queue
 
 _init_lock = threading.Lock()
 from flask import Flask, render_template, request, jsonify, send_file, send_from_directory, Response
@@ -311,6 +312,114 @@ def ensure_lythuyet_evaluated(student_obj, exempt_all_cabin=False, force_downloa
 
     return student_obj
 
+# ==============================================================================
+# HỆ THỐNG LẮNG NGHE & CẬP NHẬT TỨC THÌ TỪ DISCORD (REAL-TIME DISCORD SYNC & SSE)
+# ==============================================================================
+_sse_subscribers_lock = threading.Lock()
+_sse_subscribers = []
+
+def broadcast_live_event(event_type, payload):
+    """Phát sóng sự kiện thời gian thực tới tất cả trình duyệt qua Server-Sent Events (SSE)."""
+    msg_dict = {
+        'type': event_type,
+        'data': payload,
+        'version': db.version,
+        'timestamp': time.time()
+    }
+    msg_str = json.dumps(msg_dict, ensure_ascii=False)
+    with _sse_subscribers_lock:
+        dead = []
+        for q in _sse_subscribers:
+            try:
+                q.put_nowait(msg_str)
+            except Exception:
+                dead.append(q)
+        for d in dead:
+            if d in _sse_subscribers:
+                _sse_subscribers.remove(d)
+
+def handle_live_discord_student(st, cmd):
+    """Xử lý và lưu học viên được phát hiện tức thì từ kênh Discord."""
+    if not st:
+        return
+    mahv = st.get('mahv', '').strip()
+    hoten = st.get('hoten', '').strip()
+    cccd = st.get('cccd', '').strip()
+    if not mahv and not hoten and not cccd:
+        return
+
+    st['is_my_query'] = True
+    
+    # 1. Nếu là báo cáo lý thuyết hoặc có file PDF lý thuyết
+    if cmd == 'lythuyet' or st.get('lythuyet_pdf_url'):
+        try:
+            st = ensure_lythuyet_evaluated(st, force_download=True, auto_save=False)
+        except Exception as e_lt:
+            print("[Discord Live Sync] Lỗi chấm điểm lý thuyết:", e_lt)
+
+    # 2. Nếu là phiên học có file PDF báo cáo phiên
+    if (cmd == 'phien' or st.get('pdf_url')) and st.get('pdf_url'):
+        fname = st.get('pdf_filename') or f"{mahv or 'HV'}_phienhoc.pdf"
+        try:
+            fetch_pdf_file(st['pdf_url'], fname, student_key=mahv, url_field='pdf_url')
+        except Exception:
+            pass
+
+    # 3. Lưu vào CSDL
+    saved_st = db.upsert_student(st, auto_save=True)
+    if saved_st:
+        print(f"[Discord Live Sync] ⚡ Cập nhật tức thì: {saved_st.get('hoten')} ({saved_st.get('mahv')}) [{cmd}]")
+        broadcast_live_event('student_updated', saved_st)
+
+# Khởi chạy Discord Live Watcher ngầm
+try:
+    ds.start_live_watcher(on_student_parsed_cb=handle_live_discord_student, interval_sec=1.5)
+except Exception as _e_watcher:
+    print("⚠️ Lỗi khởi chạy Discord Live Watcher:", _e_watcher)
+
+@app.route('/api/events')
+def sse_events():
+    """Server-Sent Events endpoint: đẩy dữ liệu thời gian thực tới trình duyệt ngay khi có phản hồi từ Discord."""
+    def gen():
+        q = queue.Queue(maxsize=100)
+        with _sse_subscribers_lock:
+            _sse_subscribers.append(q)
+        try:
+            yield ": keepalive\n\n"
+            while True:
+                try:
+                    data = q.get(timeout=20)
+                    yield f"data: {data}\n\n"
+                except queue.Empty:
+                    yield ": keepalive\n\n"
+        except GeneratorExit:
+            pass
+        finally:
+            with _sse_subscribers_lock:
+                if q in _sse_subscribers:
+                    _sse_subscribers.remove(q)
+
+    return Response(gen(), mimetype='text/event-stream', headers={
+        'Cache-Control': 'no-cache',
+        'X-Accel-Buffering': 'no',
+        'Connection': 'keep-alive'
+    })
+
+@app.route('/api/live_updates', methods=['GET'])
+def live_updates():
+    """Kiểm tra cập nhật thời gian thực dạng polling (dự phòng nếu SSE bị gián đoạn)."""
+    client_v = request.args.get('version', type=int, default=0)
+    current_v = db.version
+    if client_v == current_v:
+        return jsonify({'has_update': False, 'version': current_v})
+
+    return jsonify({
+        'has_update': True,
+        'version': current_v,
+        'count': len(db.students)
+    })
+
+
 @app.route('/api/stats', methods=['GET'])
 def get_stats():
     """Lấy số liệu KPI tổng quan với ETag 304 Not Modified siêu tốc khi có nhiều người truy cập."""
@@ -433,6 +542,7 @@ def query_student():
 
         mahv = (saved_st or {}).get('mahv') or st_dat.get('mahv')
         final_st = db.find_student(mahv or target_query) or saved_st or st_dat
+        broadcast_live_event('student_updated', final_st)
 
         return jsonify({
             'success': True,
@@ -488,6 +598,7 @@ def query_student():
         final_st = db.find_student(mahv or target_query) or saved_st or st_dat
         # TỰ ĐỘNG TẢI FILE PDF LÝ THUYẾT VỀ MÁY VÀ ĐÁNH GIÁ ĐIỀU KIỆN TỐT NGHIỆP
         final_st = ensure_lythuyet_evaluated(final_st, force_download=True)
+        broadcast_live_event('student_updated', final_st)
 
         return jsonify({
             'success': True,
@@ -528,6 +639,8 @@ def query_student():
                 saved_list.append(saved)
 
         final_st = saved_list[0] if saved_list else db.find_student(target_query)
+        if final_st:
+            broadcast_live_event('student_updated', final_st)
         mahv = (final_st or {}).get('mahv')
         return jsonify({
             'success': True,
@@ -565,6 +678,7 @@ def query_student():
                 if cmd_type == 'lythuyet' or saved.get('lythuyet_pdf_url'):
                     saved = ensure_lythuyet_evaluated(saved, force_download=True)
                 saved_list.append(saved)
+                broadcast_live_event('student_updated', saved)
 
         return jsonify({'success': True, 'students': saved_list, 'count': len(saved_list), 'resolved': resolved_info})
     else:
