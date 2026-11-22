@@ -1770,12 +1770,12 @@
                         <i class="fa-brands fa-google-drive"></i>
                     </div>
                     <div class="text-xs">
-                        <p class="font-bold text-blue-900">Liên kết Google Sheet Danh Sách Khoá Toàn Trường (127 khoá):</p>
+                        <p class="font-bold text-blue-900">Liên kết Google Sheet Danh Sách Khoá Toàn Trường:</p>
                         <a href="https://docs.google.com/spreadsheets/d/1FRC_xHYy36NntmKyRhXlXL0csqybXqE64FQUA7NcTVI/edit?usp=sharing" target="_blank" class="text-[11px] text-blue-600 hover:text-blue-800 underline truncate block max-w-full font-mono mt-0.5">
                             https://docs.google.com/spreadsheets/d/1FRC_xHYy36NntmKyRhXlXL0csqybXqE64FQUA7NcTVI
                         </a>
                         <p class="text-[10px] text-slate-500 mt-1">
-                            <i class="fa-solid fa-circle-info text-blue-500 mr-1"></i>Hệ thống sẽ quét song song toàn bộ 127 khoá và tự động đẩy học viên thuộc giáo viên vào App, phân theo từng khoá học.
+                            <i class="fa-solid fa-circle-info text-blue-500 mr-1"></i>Hệ thống tự động lọc bỏ các khoá cũ (B ≤ 236, C1 ≤ 13, C, CE) và quét song song các khoá mới đang học để đẩy học viên theo giáo viên về App.
                         </p>
                     </div>
                 </div>
@@ -1840,11 +1840,11 @@
                             <i class="fa-solid fa-graduation-cap text-blue-600"></i>
                             <span>Phạm Vi Khoá Học:</span>
                         </span>
-                        <span class="text-[10px] text-slate-400 font-normal">Mặc định: Toàn bộ 127 khoá</span>
+                        <span class="text-[10px] text-slate-400 font-normal">Mặc định: Toàn bộ khoá mới</span>
                     </label>
                     <select id="teacher-sync-course-select"
                         class="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-xs">
-                        <option value="all">🌟 Tất cả các khoá học (Quét toàn bộ trường ~25s)</option>
+                        <option value="all">🌟 Tất cả các khoá mới đang học (~3-5s)</option>
                     </select>
                 </div>
             </div>
@@ -1860,8 +1860,8 @@
             <!-- Loading Spinner & Progress -->
             <div id="teacher-sync-loading" class="hidden flex flex-col items-center justify-center py-6 space-y-3">
                 <div class="w-10 h-10 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
-                <p class="text-xs font-bold text-slate-700" id="teacher-sync-loading-text">Đang quét 127 khoá học trên Google Sheet...</p>
-                <p class="text-[11px] text-slate-500">Đang quét đa luồng song song, vui lòng đợi trong giây lát (~25 giây)</p>
+                <p class="text-xs font-bold text-slate-700" id="teacher-sync-loading-text">Đang quét các khoá học mới trên Google Sheet...</p>
+                <p class="text-[11px] text-slate-500">Đang quét đa luồng song song các khoá mới, vui lòng đợi (~3-5 giây)</p>
             </div>
 
             <!-- Result Box -->
@@ -7546,7 +7546,7 @@ let _loadStudentsAbortCtrl = null;
             await loadGSheetMetadata();
             const courseSel = document.getElementById('teacher-sync-course-select');
             if (courseSel && cachedGSheetCourses.length > 0) {
-                let html = '<option value="all">🌟 Tất cả các khoá học (Quét toàn bộ trường ~25s)</option>';
+                let html = '<option value="all">🌟 Tất cả các khoá mới đang học (~3-5s)</option>';
                 cachedGSheetCourses.forEach(c => {
                     html += `<option value="${c}">Khoá: ${c}</option>`;
                 });
