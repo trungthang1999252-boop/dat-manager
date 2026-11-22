@@ -432,6 +432,14 @@
 
                         </button>
 
+                        <button onclick="handleQuery('daykhoa')" id="btn-query-daykhoa" class="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-xl font-semibold text-xs transition flex items-center space-x-2 shadow-sm" title="Kiểm tra lý thuyết Đạt ➔ Trích xuất xe từ PDF lý thuyết ➔ Gửi lệnh /daykhoa">
+
+                            <i class="fa-solid fa-car-side"></i>
+
+                            <span>Đẩy Khóa Xe (/daykhoa)</span>
+
+                        </button>
+
                     </div>
 
                 </div>
@@ -4783,6 +4791,12 @@ let _loadStudentsAbortCtrl = null;
 
                                 <div class="flex items-center space-x-2 text-[11px]">
 
+                                    <button onclick="executeDayKhoaCourse('${courseName}')" class="bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-400/40 px-2 py-0.5 rounded-full font-bold transition inline-flex items-center cursor-pointer" title="Đẩy khóa ${courseName} xuống xe các học viên đạt lý thuyết">
+
+                                        <i class="fa-solid fa-car-side mr-1 text-amber-300"></i>/daykhoa
+
+                                    </button>
+
                                     <span class="bg-emerald-500/20 text-emerald-300 border border-emerald-400/40 px-2.5 py-0.5 rounded-full font-bold">
 
                                         <i class="fa-solid fa-check mr-1"></i>${grpPass} Đạt
@@ -5031,6 +5045,10 @@ let _loadStudentsAbortCtrl = null;
                 ltCell = `<button onclick="reQueryStudent('${s.mahv || s.cccd || s.hoten}', 'lythuyet')" class="px-2 py-1 rounded-md text-[11px] font-extrabold bg-rose-100 text-rose-800 border border-rose-300 hover:bg-rose-200 transition inline-flex items-center shadow-2xs whitespace-nowrap" title="Bấm để tự động kiểm tra lý thuyết (/lythuyet)"><i class="fa-solid fa-arrows-rotate text-rose-600 mr-1"></i>Chưa Có (Tra)</button>`;
             }
 
+            if (s.xe_phan) {
+                ltCell = `<div class="inline-flex flex-col items-center">${ltCell}<span class="text-[9px] font-mono text-slate-700 bg-slate-100 px-1.5 py-0.2 rounded border border-slate-300 mt-0.5 inline-flex items-center" title="Xe được phân: ${s.xe_phan}${s.last_daykhoa_time ? ' (Đã /daykhoa: ' + s.last_daykhoa_time + ')' : ''}"><i class="fa-solid fa-car text-[8px] text-amber-600 mr-1"></i>${s.xe_phan}</span></div>`;
+            }
+
 
 
             // 8. Báo cáo phiên học & Tự động đồng bộ phiên (/dongbo)
@@ -5231,6 +5249,8 @@ let _loadStudentsAbortCtrl = null;
 
                         <button onclick="reQueryStudent('${s.mahv || s.cccd || s.hoten}', 'combo')" class="text-purple-600 hover:text-purple-800 p-1.5 rounded hover:bg-purple-100 transition" title="Tra cứu liên hoàn: DAT ➔ Lý thuyết"><i class="fa-solid fa-wand-magic-sparkles text-sm"></i></button>
 
+                        <button onclick="executeDayKhoa('${escapedStId}', '${escapedHoten}')" class="text-amber-600 hover:text-amber-800 p-1.5 rounded hover:bg-amber-100 transition" title="Đẩy khóa xe (/daykhoa): Kiểm tra lý thuyết Đạt ➔ Trích xuất xe ➔ Chạy /daykhoa"><i class="fa-solid fa-car-side text-sm"></i></button>
+
                         <button onclick="openDetailModal(${idx})" class="text-emerald-600 hover:text-emerald-800 p-1.5 rounded hover:bg-emerald-100 transition" title="Xem chi tiết lộ trình"><i class="fa-solid fa-eye text-sm"></i></button>
 
                         <button onclick="deleteStudent('${s.mahv || s.cccd || s.hoten}')" class="text-slate-300 hover:text-rose-600 p-1.5 rounded hover:bg-rose-100 transition" title="Xóa học viên"><i class="fa-solid fa-trash text-sm"></i></button>
@@ -5321,17 +5341,23 @@ let _loadStudentsAbortCtrl = null;
 
             const btnCombo = document.getElementById('btn-query-combo');
 
+            const btnDaykhoa = document.getElementById('btn-query-daykhoa');
 
 
-            loaderText.innerText = type === 'combo'
 
-                ? `Đang chạy liên hoàn: DAT ➔ Mã HV ➔ Lý thuyết cho "${q}"...`
+            loaderText.innerText = type === 'daykhoa'
 
-                : (type === 'dat' 
+                ? `Đang kiểm tra lý thuyết & đẩy khóa xuống xe (/daykhoa) cho "${q}"...`
 
-                    ? `Đang tra cứu điều kiện DAT (/dat) cho "${q}"...`
+                : (type === 'combo'
 
-                    : (type === 'phien' ? `Đang kiểm tra các phiên học & tạo file PDF (/phien)...` : `Đang kiểm tra điểm lý thuyết & tải PDF (/lythuyet)...`));
+                    ? `Đang chạy liên hoàn: DAT ➔ Mã HV ➔ Lý thuyết cho "${q}"...`
+
+                    : (type === 'dat' 
+
+                        ? `Đang tra cứu điều kiện DAT (/dat) cho "${q}"...`
+
+                        : (type === 'phien' ? `Đang kiểm tra các phiên học & tạo file PDF (/phien)...` : `Đang kiểm tra điểm lý thuyết & tải PDF (/lythuyet)...`)));
 
             loader.classList.remove('hidden');
 
@@ -5342,6 +5368,8 @@ let _loadStudentsAbortCtrl = null;
             btnLt.disabled = true;
 
             if (btnCombo) btnCombo.disabled = true;
+
+            if (btnDaykhoa) btnDaykhoa.disabled = true;
 
 
 
@@ -5369,7 +5397,11 @@ let _loadStudentsAbortCtrl = null;
 
                 if (data.success) {
 
-                    if (data.resolved) {
+                    if (type === 'daykhoa') {
+
+                        showToast(data.message || `⚡ Đã đẩy khóa ${data.khoa} xuống xe ${data.biensoxe} cho "${data.hoten || q}" thành công!`);
+
+                    } else if (data.resolved) {
 
                         showToast(`⚡ Nhận diện "${data.resolved.original}" ➔ ${data.resolved.hoten} (Mã: ${data.mahv || data.resolved.mahv || 'Đã lưu'}) - Cập nhật tức thì!`);
 
@@ -5412,6 +5444,146 @@ let _loadStudentsAbortCtrl = null;
                 btnLt.disabled = false;
 
                 if (btnCombo) btnCombo.disabled = false;
+
+                if (btnDaykhoa) btnDaykhoa.disabled = false;
+
+            }
+
+        }
+
+
+
+        async function executeDayKhoa(studentKey, studentName) {
+
+            if (!studentKey && !studentName) {
+
+                showToast('Không xác định được học viên!', false);
+
+                return;
+
+            }
+
+            const stName = studentName || studentKey;
+
+            
+
+            // Kiểm tra cache sơ bộ nếu có
+
+            const st = (currentStudents || []).find(x => (x.mahv === studentKey || x.cccd === studentKey || x.hoten === studentName));
+
+            if (st && st.lythuyet_status && st.lythuyet_status !== 'Đạt' && !st.lythuyet_dat) {
+
+                const reason = st.lythuyet_reason || 'Chưa hoàn thành đủ các môn lý thuyết bắt buộc';
+
+                showToast(`❌ Học viên "${stName}" CHƯA ĐẠT lý thuyết (${reason})! Không được phép chạy lệnh /daykhoa.`, false);
+
+                return;
+
+            }
+
+
+
+            showToast(`🚗 Đang kiểm tra lý thuyết & trích xuất xe gửi /daykhoa cho "${stName}"...`, true);
+
+
+
+            try {
+
+                const res = await fetch('/api/daykhoa', {
+
+                    method: 'POST',
+
+                    headers: { 'Content-Type': 'application/json' },
+
+                    body: JSON.stringify({ student_key: studentKey || studentName })
+
+                });
+
+
+
+                const data = await res.json();
+
+                if (data.success) {
+
+                    showToast(`✅ ${data.message || `Đã đẩy khóa ${data.khoa} xuống xe ${data.biensoxe} cho "${stName}" thành công!`}`);
+
+                    if (data.student) {
+
+                        onLiveStudentUpdated(data.student);
+
+                    }
+
+                } else {
+
+                    const errMsg = data.error || 'Lỗi gửi lệnh /daykhoa';
+
+                    showToast(`❌ ${errMsg}`, false);
+
+                    if (data.student) {
+
+                        onLiveStudentUpdated(data.student);
+
+                    }
+
+                }
+
+            } catch (err) {
+
+                console.error('Lỗi executeDayKhoa:', err);
+
+                showToast('Lỗi đường truyền hoặc máy chủ phản hồi chậm khi thực hiện /daykhoa!', false);
+
+            }
+
+        }
+
+
+
+        async function executeDayKhoaCourse(courseName) {
+
+            if (!courseName) return;
+
+            if (!confirm(`Bạn có chắc muốn đẩy khóa "${courseName}" xuống tất cả các xe của học viên ĐÃ ĐẠT lý thuyết trong khóa này?`)) {
+
+                return;
+
+            }
+
+            showToast(`🚗 Đang quét các học viên đạt lý thuyết trong khóa "${courseName}" và gửi /daykhoa...`, true);
+
+            try {
+
+                const res = await fetch('/api/daykhoa', {
+
+                    method: 'POST',
+
+                    headers: { 'Content-Type': 'application/json' },
+
+                    body: JSON.stringify({ course: courseName })
+
+                });
+
+                const data = await res.json();
+
+                if (data.success) {
+
+                    const carCount = (data.cars_pushed || []).length;
+
+                    showToast(`✅ Khóa "${courseName}": Đã đẩy thành công xuống ${carCount} xe (${data.passed_count} HV đạt lý thuyết, ${data.failed_count} HV chưa đạt bỏ qua)!`);
+
+                    await loadStudents();
+
+                } else {
+
+                    showToast(`❌ ${data.error || 'Lỗi khi đẩy khóa'}`, false);
+
+                }
+
+            } catch (err) {
+
+                console.error('Lỗi executeDayKhoaCourse:', err);
+
+                showToast('Lỗi kết nối khi gửi lệnh đẩy khóa!', false);
 
             }
 
