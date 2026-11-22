@@ -366,6 +366,14 @@
     "hang": "C1",
     "ngaysinh": "02/09/2005"
   },
+  "PHAN THỊ THẢO NGUYÊN": {
+    "hoten": "PHAN THỊ THẢO NGUYÊN",
+    "cccd": "052303013528",
+    "mahv": "52001-20260920-000099",
+    "khoa": "CD_238B",
+    "hang": "B",
+    "ngaysinh": "28/06/2003"
+  },
   "TRẦN THỊ DIỆU": {
     "hoten": "TRẦN THỊ DIỆU",
     "cccd": "064192006500",
@@ -381,13 +389,5 @@
     "khoa": "CD_13C1",
     "hang": "C1",
     "ngaysinh": "13/10/1995"
-  },
-  "PHAN THỊ THẢO NGUYÊN": {
-    "hoten": "PHAN THỊ THẢO NGUYÊN",
-    "cccd": "052303013528",
-    "mahv": "52001-20260920-000099",
-    "khoa": "CD_238B",
-    "hang": "B",
-    "ngaysinh": "28/06/2003"
   }
 }
