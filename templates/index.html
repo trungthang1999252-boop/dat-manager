@@ -201,9 +201,15 @@
                 <div class="flex items-center gap-2 flex-wrap">
 
                     <!-- Nút Cập Nhật Khóa (/capnhatkhoa) -->
-                    <button onclick="openSyncCourseModal()" class="bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold px-3 py-2 rounded-xl transition flex items-center space-x-1.5 shadow-sm border border-amber-400/30 active:scale-95" title="Cập nhật thời lượng học lý thuyết TT14 & Cabin mới nhất từ Google Sheet của trường về Discord Bot (/capnhatkhoa)">
+                    <button onclick="openSyncCourseModal()" class="bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold px-3 py-2 rounded-xl transition flex items-center space-x-1.5 shadow-sm border border-amber-400/30 active:scale-95" title="Cập nhật khóa học mới nhất từ Google Sheet của trường về Discord Bot (/capnhatkhoa)">
                         <i class="fa-solid fa-arrows-rotate"></i>
                         <span>Cập Nhật Khóa</span>
+                    </button>
+
+                    <!-- Nút Cập Nhật PDF Lý Thuyết (/lythuyet) -->
+                    <button onclick="openLyThuyetUpdateModal()" class="bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold px-3 py-2 rounded-xl transition flex items-center space-x-1.5 shadow-sm border border-blue-400/30 active:scale-95" title="Cập nhật lại file PDF trong cột lý thuyết (/lythuyet) cho cả khóa hoặc từng học viên">
+                        <i class="fa-solid fa-file-pdf"></i>
+                        <span>Cập Nhật PDF Lý Thuyết</span>
                     </button>
 
                     <!-- Nút Xóa Khóa (Đã Thi Xong) -->
@@ -1209,9 +1215,14 @@
                 </div>
 
                 <div class="flex items-center space-x-2 shrink-0">
-                    <button onclick="openSyncCourseModal()" class="bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300 font-bold text-xs px-3 py-1.5 rounded-xl transition flex items-center space-x-1.5 shadow-xs shrink-0 active:scale-95" title="Đồng bộ thời lượng lý thuyết TT14 & Cabin mới nhất từ trường về Discord Bot (/capnhatkhoa)">
+                    <button onclick="openSyncCourseModal()" class="bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300 font-bold text-xs px-3 py-1.5 rounded-xl transition flex items-center space-x-1.5 shadow-xs shrink-0 active:scale-95" title="Đồng bộ khóa học mới nhất từ trường về Discord Bot (/capnhatkhoa)">
                         <i class="fa-solid fa-arrows-rotate text-amber-600"></i>
                         <span>Cập Nhật Khóa (/capnhatkhoa)</span>
+                    </button>
+
+                    <button onclick="openLyThuyetUpdateModal()" class="bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-300 font-bold text-xs px-3 py-1.5 rounded-xl transition flex items-center space-x-1.5 shadow-xs shrink-0 active:scale-95" title="Cập nhật lại file PDF trong cột lý thuyết (/lythuyet) cho cả khóa hoặc từng học viên">
+                        <i class="fa-solid fa-file-pdf text-blue-600"></i>
+                        <span>Cập Nhật PDF Lý Thuyết (/lythuyet)</span>
                     </button>
 
                     <button onclick="openDeleteCourseModal()" class="bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-300 font-bold text-xs px-3 py-1.5 rounded-xl transition flex items-center space-x-1.5 shadow-xs shrink-0 active:scale-95" title="Xóa toàn bộ học viên thuộc khóa học đã thi xong">
@@ -1252,7 +1263,14 @@
 
                             <th class="py-3 px-3 text-center min-w-[110px] bg-slate-100/95 text-indigo-700">Ảnh Cabin</th>
 
-                            <th class="py-3 px-3 text-center min-w-[105px] bg-slate-100/95">Lý Thuyết</th>
+                            <th class="py-3 px-3 text-center min-w-[125px] bg-slate-100/95">
+                                <div class="inline-flex items-center space-x-1.5 justify-center">
+                                    <span>Lý Thuyết</span>
+                                    <button type="button" onclick="openLyThuyetUpdateModal()" class="p-1 text-blue-600 hover:text-blue-800 hover:bg-blue-100/70 rounded-md transition" title="Cập nhật lại file PDF Lý Thuyết (/lythuyet) cho cả khóa hoặc từng học viên">
+                                        <i class="fa-solid fa-arrows-rotate text-[11px]"></i>
+                                    </button>
+                                </div>
+                            </th>
 
                             <th class="py-3 px-3 text-center min-w-[125px] bg-slate-100/95">Phiên Học (/dongbo)</th>
 
@@ -2411,6 +2429,144 @@
                 <button type="button" id="btn-do-sync-course" onclick="executeSyncCourse()" class="bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs px-4 py-2 rounded-xl transition flex items-center space-x-1.5 shadow-md active:scale-95">
                     <i class="fa-solid fa-cloud-arrow-down"></i>
                     <span>Cập Nhật Các Khóa Đã Chọn</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Cập Nhật Lại File PDF Lý Thuyết (/lythuyet) - 2 Lựa Chọn -->
+    <div id="lythuyet-update-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3 sm:p-4">
+        <div class="bg-white rounded-3xl max-w-lg w-full p-5 sm:p-6 space-y-4 shadow-2xl border border-slate-100 max-h-[90vh] flex flex-col">
+            <!-- Header -->
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3 shrink-0">
+                <div class="flex items-center space-x-2.5">
+                    <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-rose-500 to-indigo-600 text-white flex items-center justify-center shadow-md">
+                        <i class="fa-solid fa-file-pdf text-lg"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-bold text-slate-800 flex items-center gap-1.5">
+                            <span>Cập Nhật Lại File PDF Lý Thuyết</span>
+                            <span class="bg-rose-100 text-rose-700 text-[10px] font-black px-2 py-0.5 rounded-full">/lythuyet</span>
+                        </h3>
+                        <p class="text-[11px] text-slate-500">Gửi lệnh /lythuyet tới Discord Bot để cập nhật và tải file PDF mới nhất</p>
+                    </div>
+                </div>
+                <button onclick="closeModal('lythuyet-update-modal')" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-100 transition">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <!-- Tab Navigation: 2 Lựa chọn -->
+            <div class="grid grid-cols-2 gap-2 bg-slate-100 p-1.5 rounded-2xl shrink-0">
+                <button type="button" id="tab-btn-lt-course" onclick="switchLyThuyetTab('course')"
+                    class="py-2 px-3 text-xs font-bold rounded-xl transition flex items-center justify-center space-x-1.5 bg-white text-blue-700 shadow-xs">
+                    <i class="fa-solid fa-graduation-cap"></i>
+                    <span>1. Cả Khóa Học</span>
+                </button>
+                <button type="button" id="tab-btn-lt-students" onclick="switchLyThuyetTab('students')"
+                    class="py-2 px-3 text-xs font-bold rounded-xl transition flex items-center justify-center space-x-1.5 text-slate-600 hover:text-slate-800">
+                    <i class="fa-solid fa-user-check"></i>
+                    <span>2. Chọn Từng Học Viên</span>
+                </button>
+            </div>
+
+            <!-- Tab 1: Cập Nhật Cả Khóa Học -->
+            <div id="tab-content-lt-course" class="space-y-3.5 overflow-y-auto pr-1">
+                <div class="bg-blue-50/70 border border-blue-200 text-blue-900 p-3 rounded-2xl text-[11px] space-y-1">
+                    <p class="font-bold flex items-center gap-1.5">
+                        <i class="fa-solid fa-circle-info text-blue-600"></i>
+                        <span>Lựa chọn 1: Cập nhật tất cả học viên của khóa</span>
+                    </p>
+                    <p class="text-slate-600 leading-relaxed">Hệ thống sẽ tự động gửi lệnh <b>/lythuyet</b> tới Discord Bot cho toàn bộ học viên thuộc khóa bạn chọn để tải lại file PDF mới nhất và đánh giá lại điểm số.</p>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1.5">Chọn Khóa Học Cần Cập Nhật PDF:</label>
+                    <select id="lt-sync-course-select" onchange="onLyThuyetCourseChange()"
+                        class="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-xs">
+                        <!-- Populated dynamically -->
+                    </select>
+                </div>
+
+                <!-- Course Stats Card -->
+                <div id="lt-course-stats" class="grid grid-cols-3 gap-2 text-center p-3 bg-slate-50 border border-slate-200 rounded-2xl">
+                    <div class="p-2 bg-white rounded-xl border border-slate-100 shadow-2xs">
+                        <span class="block text-[10px] text-slate-500 font-medium">Tổng học viên</span>
+                        <span class="text-sm font-black text-slate-800" id="lt-stat-total">0</span>
+                    </div>
+                    <div class="p-2 bg-white rounded-xl border border-emerald-100 shadow-2xs">
+                        <span class="block text-[10px] text-emerald-600 font-medium">Đã có PDF</span>
+                        <span class="text-sm font-black text-emerald-700" id="lt-stat-has-pdf">0</span>
+                    </div>
+                    <div class="p-2 bg-white rounded-xl border border-rose-100 shadow-2xs">
+                        <span class="block text-[10px] text-rose-500 font-medium">Chưa có PDF</span>
+                        <span class="text-sm font-black text-rose-700" id="lt-stat-no-pdf">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 2: Chọn Từng Học Viên -->
+            <div id="tab-content-lt-students" class="hidden space-y-3 overflow-y-auto flex-1 flex flex-col min-h-0">
+                <div class="bg-indigo-50/70 border border-indigo-200 text-indigo-900 p-2.5 rounded-2xl text-[11px]">
+                    <p class="font-bold flex items-center gap-1.5">
+                        <i class="fa-solid fa-list-check text-indigo-600"></i>
+                        <span>Lựa chọn 2: Tự chọn các học viên cần cập nhật lại file PDF mới nhất</span>
+                    </p>
+                </div>
+
+                <!-- Filters & Search -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <div class="relative">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                        <input type="text" id="lt-student-search" oninput="filterLyThuyetStudentList()" placeholder="Tìm tên, CCCD, Mã HV..."
+                            class="w-full pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <select id="lt-student-course-filter" onchange="filterLyThuyetStudentList()"
+                        class="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="all">Tất cả các khóa</option>
+                    </select>
+                </div>
+
+                <!-- Select All Bar -->
+                <div class="flex items-center justify-between text-[11px] px-1">
+                    <div class="flex items-center space-x-2">
+                        <button type="button" onclick="selectAllLyThuyetStudents(true)" class="text-blue-600 hover:text-blue-800 font-bold hover:underline">Chọn tất cả</button>
+                        <span class="text-slate-300">|</span>
+                        <button type="button" onclick="selectAllLyThuyetStudents(false)" class="text-slate-500 hover:text-slate-700 hover:underline">Bỏ chọn</button>
+                    </div>
+                    <span id="lt-selected-counter" class="font-bold text-slate-700">Đã chọn: <b class="text-blue-600">0</b> học viên</span>
+                </div>
+
+                <!-- Student List with Checkboxes -->
+                <div id="lt-student-checkbox-list" class="flex-1 max-h-52 overflow-y-auto p-2 bg-slate-50 border border-slate-200 rounded-2xl space-y-1 text-xs shadow-inner divide-y divide-slate-100">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+
+            <!-- Progress Bar & Status (Hidden initially) -->
+            <div id="lt-update-progress-box" class="hidden space-y-2 p-3 bg-blue-50/80 border border-blue-200 rounded-2xl shrink-0">
+                <div class="flex items-center justify-between text-xs font-bold text-blue-900">
+                    <span id="lt-progress-text" class="flex items-center gap-1.5">
+                        <i class="fa-solid fa-spinner fa-spin text-blue-600"></i>
+                        <span>Đang chuẩn bị gửi lệnh /lythuyet...</span>
+                    </span>
+                    <span id="lt-progress-percent">0%</span>
+                </div>
+                <div class="w-full bg-blue-200 rounded-full h-2 overflow-hidden">
+                    <div id="lt-progress-bar" class="bg-gradient-to-r from-blue-600 to-indigo-600 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+                </div>
+                <p id="lt-progress-sub" class="text-[11px] text-slate-500 truncate">Hệ thống đang tải và phân tích file PDF...</p>
+            </div>
+
+            <!-- Modal Footer Actions -->
+            <div class="flex items-center justify-between pt-3 border-t border-slate-100 shrink-0">
+                <button type="button" onclick="closeModal('lythuyet-update-modal')" id="btn-lt-close" class="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl transition">
+                    Đóng
+                </button>
+                <button type="button" id="btn-do-update-lythuyet" onclick="executeLyThuyetUpdate()"
+                    class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 active:scale-95 text-white font-bold text-xs px-5 py-2.5 rounded-xl transition flex items-center space-x-1.5 shadow-md">
+                    <i class="fa-solid fa-cloud-arrow-down"></i>
+                    <span id="btn-do-update-lythuyet-text">🚀 Cập Nhật File PDF (/lythuyet)</span>
                 </button>
             </div>
         </div>
@@ -4756,32 +4912,24 @@ let _loadStudentsAbortCtrl = null;
 
 
             // 7. Báo cáo lý thuyết (Đạt: Xanh | Chưa đạt: Đỏ | Chưa có: Nút tra)
-
-            let ltCell = '';
+            let ltBadge = '';
 
             if (s.totnghiep_has_pdf) {
-
                 if (s.lythuyet_dat) {
-
-                    ltCell = `<button onclick="previewLyThuyetPdf('${s.mahv || s.cccd}', '${s.hoten || ''}')" class="px-2 py-1 rounded-md text-[11px] font-extrabold bg-emerald-100 text-emerald-800 border border-emerald-300 hover:bg-emerald-200 transition inline-flex items-center shadow-2xs whitespace-nowrap" title="Tất cả các môn lý thuyết đều tích xanh (đã miễn trừ cabin)"><i class="fa-solid fa-circle-check text-emerald-600 mr-1"></i>Đạt (PDF)</button>`;
-
+                    ltBadge = `<button onclick="previewLyThuyetPdf('${s.mahv || s.cccd}', '${s.hoten || ''}')" class="px-2 py-1 rounded-md text-[11px] font-extrabold bg-emerald-100 text-emerald-800 border border-emerald-300 hover:bg-emerald-200 transition inline-flex items-center shadow-2xs whitespace-nowrap" title="Tất cả các môn lý thuyết đều tích xanh (đã miễn trừ cabin)"><i class="fa-solid fa-circle-check text-emerald-600 mr-1"></i>Đạt (PDF)</button>`;
                 } else {
-
                     const failReason = s.lythuyet_reason || 'Chưa hoàn thành đủ các môn lý thuyết bắt buộc';
-
-                    ltCell = `<button onclick="previewLyThuyetPdf('${s.mahv || s.cccd}', '${s.hoten || ''}')" class="px-2 py-1 rounded-md text-[11px] font-extrabold bg-rose-100 text-rose-800 border border-rose-300 hover:bg-rose-200 transition inline-flex items-center shadow-2xs whitespace-nowrap" title="${failReason} (Bấm xem PDF)"><i class="fa-solid fa-circle-xmark text-rose-600 mr-1"></i>Chưa Đạt (PDF)</button>`;
-
+                    ltBadge = `<button onclick="previewLyThuyetPdf('${s.mahv || s.cccd}', '${s.hoten || ''}')" class="px-2 py-1 rounded-md text-[11px] font-extrabold bg-rose-100 text-rose-800 border border-rose-300 hover:bg-rose-200 transition inline-flex items-center shadow-2xs whitespace-nowrap" title="${failReason} (Bấm xem PDF)"><i class="fa-solid fa-circle-xmark text-rose-600 mr-1"></i>Chưa Đạt (PDF)</button>`;
                 }
-
             } else if (s.has_lythuyet || s.lythuyet_pdf_url) {
-
-                ltCell = `<button onclick="previewLyThuyetPdf('${s.mahv || s.cccd}', '${s.hoten || ''}')" class="px-2 py-1 rounded-md text-[11px] font-extrabold bg-blue-100 text-blue-800 border border-blue-300 hover:bg-blue-200 transition inline-flex items-center shadow-2xs whitespace-nowrap" title="Đã có link báo cáo lý thuyết (Bấm tải và xem PDF)"><i class="fa-solid fa-file-arrow-down text-blue-600 mr-1"></i>Đã Có (Tải PDF)</button>`;
-
+                ltBadge = `<button onclick="previewLyThuyetPdf('${s.mahv || s.cccd}', '${s.hoten || ''}')" class="px-2 py-1 rounded-md text-[11px] font-extrabold bg-blue-100 text-blue-800 border border-blue-300 hover:bg-blue-200 transition inline-flex items-center shadow-2xs whitespace-nowrap" title="Đã có link báo cáo lý thuyết (Bấm tải và xem PDF)"><i class="fa-solid fa-file-arrow-down text-blue-600 mr-1"></i>Đã Có (Tải PDF)</button>`;
             } else {
-
-                ltCell = `<button onclick="reQueryStudent('${s.mahv || s.cccd || s.hoten}', 'lythuyet')" class="px-2 py-1 rounded-md text-[11px] font-extrabold bg-rose-100 text-rose-800 border border-rose-300 hover:bg-rose-200 transition inline-flex items-center shadow-2xs whitespace-nowrap" title="Bấm để tự động kiểm tra lý thuyết (/lythuyet)"><i class="fa-solid fa-arrows-rotate text-rose-600 mr-1"></i>Chưa Có (Tra)</button>`;
-
+                ltBadge = `<button onclick="reQueryStudent('${s.mahv || s.cccd || s.hoten}', 'lythuyet')" class="px-2 py-1 rounded-md text-[11px] font-extrabold bg-rose-100 text-rose-800 border border-rose-300 hover:bg-rose-200 transition inline-flex items-center shadow-2xs whitespace-nowrap" title="Bấm để tự động kiểm tra lý thuyết (/lythuyet)"><i class="fa-solid fa-arrows-rotate text-rose-600 mr-1"></i>Chưa Có (Tra)</button>`;
             }
+
+            const ltQuickRefresh = `<button type="button" onclick="quickUpdateSingleStudentLyThuyet('${s.mahv || s.cccd || s.hoten}', '${(s.hoten || '').replace(/'/g, "\\'")}', this, event)" class="p-1 text-slate-400 hover:text-blue-600 hover:bg-blue-100/70 rounded transition" title="Cập nhật lại file PDF mới nhất của học viên này qua lệnh /lythuyet"><i class="fa-solid fa-rotate-right text-[10px]"></i></button>`;
+
+            let ltCell = `<div class="inline-flex items-center justify-center space-x-1">${ltBadge}${ltQuickRefresh}</div>`;
 
 
 
@@ -8698,6 +8846,341 @@ let _loadStudentsAbortCtrl = null;
                     btn.innerHTML = origHtml;
                 }
                 if (loading) loading.classList.add('hidden');
+            }
+        }
+
+        // ================= Cập Nhật File PDF Lý Thuyết (/lythuyet) - 2 Lựa Chọn =================
+        let activeLyThuyetTab = 'course'; // 'course' hoặc 'students'
+        let isLyThuyetUpdating = false;
+
+        function openLyThuyetUpdateModal(initialCourse = null, initialStudents = null) {
+            triggerHaptic();
+            const modal = document.getElementById('lythuyet-update-modal');
+            if (!modal) return;
+            modal.classList.remove('hidden');
+
+            const progressBox = document.getElementById('lt-update-progress-box');
+            if (progressBox) progressBox.classList.add('hidden');
+            const btnDo = document.getElementById('btn-do-update-lythuyet');
+            if (btnDo) {
+                btnDo.disabled = false;
+                btnDo.innerHTML = '<i class="fa-solid fa-cloud-arrow-down"></i> <span id="btn-do-update-lythuyet-text">🚀 Cập Nhật File PDF (/lythuyet)</span>';
+            }
+
+            populateLyThuyetModalData(initialCourse, initialStudents);
+
+            if (initialStudents && initialStudents.length > 0) {
+                switchLyThuyetTab('students');
+            } else {
+                switchLyThuyetTab('course');
+            }
+        }
+
+        function switchLyThuyetTab(tab) {
+            activeLyThuyetTab = tab;
+            const tabBtnCourse = document.getElementById('tab-btn-lt-course');
+            const tabBtnStudents = document.getElementById('tab-btn-lt-students');
+            const tabContentCourse = document.getElementById('tab-content-lt-course');
+            const tabContentStudents = document.getElementById('tab-content-lt-students');
+            const btnText = document.getElementById('btn-do-update-lythuyet-text');
+
+            if (tab === 'course') {
+                if (tabBtnCourse) {
+                    tabBtnCourse.className = "py-2 px-3 text-xs font-bold rounded-xl transition flex items-center justify-center space-x-1.5 bg-white text-blue-700 shadow-xs";
+                }
+                if (tabBtnStudents) {
+                    tabBtnStudents.className = "py-2 px-3 text-xs font-bold rounded-xl transition flex items-center justify-center space-x-1.5 text-slate-600 hover:text-slate-800";
+                }
+                if (tabContentCourse) tabContentCourse.classList.remove('hidden');
+                if (tabContentStudents) tabContentStudents.classList.add('hidden');
+                if (btnText) {
+                    const selCourse = document.getElementById('lt-sync-course-select')?.value || '';
+                    btnText.innerText = selCourse ? `🚀 Cập Nhật PDF Cả Khóa: ${selCourse}` : '🚀 Cập Nhật PDF Cả Khóa (/lythuyet)';
+                }
+            } else {
+                if (tabBtnCourse) {
+                    tabBtnCourse.className = "py-2 px-3 text-xs font-bold rounded-xl transition flex items-center justify-center space-x-1.5 text-slate-600 hover:text-slate-800";
+                }
+                if (tabBtnStudents) {
+                    tabBtnStudents.className = "py-2 px-3 text-xs font-bold rounded-xl transition flex items-center justify-center space-x-1.5 bg-white text-indigo-700 shadow-xs";
+                }
+                if (tabContentCourse) tabContentCourse.classList.add('hidden');
+                if (tabContentStudents) tabContentStudents.classList.remove('hidden');
+                updateLyThuyetSelectedCounter();
+            }
+        }
+
+        function populateLyThuyetModalData(initialCourse = null, initialStudents = null) {
+            const list = (typeof currentStudents !== 'undefined' && Array.isArray(currentStudents)) ? currentStudents : [];
+            const courseSelect = document.getElementById('lt-sync-course-select');
+            const filterCourseSelect = document.getElementById('lt-student-course-filter');
+            const checkboxList = document.getElementById('lt-student-checkbox-list');
+
+            // 1. Phân loại theo khóa
+            const coursesMap = {};
+            list.forEach(s => {
+                const c = (s.khoa || 'Chưa phân khóa').trim();
+                if (!coursesMap[c]) coursesMap[c] = [];
+                coursesMap[c].push(s);
+            });
+
+            const sortedCourses = Object.keys(coursesMap).sort();
+
+            // 2. Điền dropdown khóa
+            if (courseSelect) {
+                let html = '';
+                sortedCourses.forEach(c => {
+                    const cnt = coursesMap[c].length;
+                    const isSel = (initialCourse && c === initialCourse) ? 'selected' : '';
+                    html += `<option value="${c}" ${isSel}>Khóa: ${c} (${cnt} học viên)</option>`;
+                });
+                courseSelect.innerHTML = html || '<option value="">(Không có khóa nào)</option>';
+            }
+
+            if (filterCourseSelect) {
+                let html = '<option value="all">Tất cả các khóa</option>';
+                sortedCourses.forEach(c => {
+                    html += `<option value="${c}">Khóa: ${c} (${coursesMap[c].length})</option>`;
+                });
+                filterCourseSelect.innerHTML = html;
+            }
+
+            // 3. Điền danh sách học viên có checkbox
+            if (checkboxList) {
+                let html = '';
+                list.forEach(s => {
+                    const stKey = s.mahv || s.cccd || s.hoten;
+                    const isChecked = (initialStudents && initialStudents.includes(stKey)) ? 'checked' : '';
+                    const hasPdf = Boolean(s.totnghiep_has_pdf || s.has_lythuyet || s.lythuyet_pdf_url);
+                    const isDat = Boolean(s.lythuyet_dat);
+
+                    let statusBadge = '';
+                    if (isDat) {
+                        statusBadge = '<span class="px-1.5 py-0.5 rounded text-[10px] font-black bg-emerald-100 text-emerald-800">Đạt (PDF)</span>';
+                    } else if (hasPdf) {
+                        statusBadge = '<span class="px-1.5 py-0.5 rounded text-[10px] font-black bg-blue-100 text-blue-800">Đã có PDF</span>';
+                    } else {
+                        statusBadge = '<span class="px-1.5 py-0.5 rounded text-[10px] font-black bg-rose-100 text-rose-700">Chưa có PDF</span>';
+                    }
+
+                    html += `
+                        <label class="lt-student-item flex items-center justify-between p-2 rounded-xl hover:bg-white cursor-pointer transition"
+                            data-name="${(s.hoten || '').toLowerCase()}"
+                            data-cccd="${s.cccd || ''}"
+                            data-mahv="${s.mahv || ''}"
+                            data-khoa="${(s.khoa || '').toLowerCase()}">
+                            <div class="flex items-center space-x-2.5">
+                                <input type="checkbox" value="${stKey}" class="lt-student-cb rounded text-blue-600 focus:ring-blue-500 w-4 h-4 cursor-pointer"
+                                    ${isChecked} onchange="updateLyThuyetSelectedCounter()">
+                                <div>
+                                    <div class="font-bold text-slate-800 text-xs">${s.hoten || 'Chưa rõ tên'}</div>
+                                    <div class="text-[11px] text-slate-400 font-mono">${s.khoa || 'Chưa phân khóa'} • ${s.mahv || s.cccd || ''}</div>
+                                </div>
+                            </div>
+                            <div>${statusBadge}</div>
+                        </label>
+                    `;
+                });
+                checkboxList.innerHTML = html || '<div class="text-center py-4 text-slate-400">Không có học viên nào</div>';
+            }
+
+            onLyThuyetCourseChange();
+            updateLyThuyetSelectedCounter();
+        }
+
+        function onLyThuyetCourseChange() {
+            const courseSelect = document.getElementById('lt-sync-course-select');
+            const c = courseSelect?.value;
+            const list = (typeof currentStudents !== 'undefined' && Array.isArray(currentStudents)) ? currentStudents : [];
+            const courseStudents = list.filter(s => (s.khoa || '').trim() === (c || '').trim());
+
+            const total = courseStudents.length;
+            const hasPdf = courseStudents.filter(s => s.totnghiep_has_pdf || s.has_lythuyet || s.lythuyet_pdf_url).length;
+            const noPdf = total - hasPdf;
+
+            const elTotal = document.getElementById('lt-stat-total');
+            const elHasPdf = document.getElementById('lt-stat-has-pdf');
+            const elNoPdf = document.getElementById('lt-stat-no-pdf');
+
+            if (elTotal) elTotal.innerText = total;
+            if (elHasPdf) elHasPdf.innerText = hasPdf;
+            if (elNoPdf) elNoPdf.innerText = noPdf;
+
+            const btnText = document.getElementById('btn-do-update-lythuyet-text');
+            if (activeLyThuyetTab === 'course' && btnText) {
+                btnText.innerText = c ? `🚀 Cập Nhật PDF Cả Khóa: ${c}` : '🚀 Cập Nhật PDF Cả Khóa (/lythuyet)';
+            }
+        }
+
+        function filterLyThuyetStudentList() {
+            const q = (document.getElementById('lt-student-search')?.value || '').trim().toLowerCase();
+            const courseFilter = (document.getElementById('lt-student-course-filter')?.value || 'all').toLowerCase();
+            const items = document.querySelectorAll('.lt-student-item');
+
+            items.forEach(it => {
+                const name = it.dataset.name || '';
+                const cccd = it.dataset.cccd || '';
+                const mahv = it.dataset.mahv || '';
+                const khoa = it.dataset.khoa || '';
+
+                const matchesQ = !q || name.includes(q) || cccd.includes(q) || mahv.toLowerCase().includes(q);
+                const matchesCourse = courseFilter === 'all' || khoa === courseFilter;
+
+                if (matchesQ && matchesCourse) {
+                    it.classList.remove('hidden');
+                } else {
+                    it.classList.add('hidden');
+                }
+            });
+            updateLyThuyetSelectedCounter();
+        }
+
+        function selectAllLyThuyetStudents(select) {
+            const visibleItems = document.querySelectorAll('.lt-student-item:not(.hidden) .lt-student-cb');
+            visibleItems.forEach(cb => cb.checked = select);
+            updateLyThuyetSelectedCounter();
+        }
+
+        function updateLyThuyetSelectedCounter() {
+            const checked = document.querySelectorAll('.lt-student-cb:checked');
+            const cnt = checked.length;
+            const counter = document.getElementById('lt-selected-counter');
+            if (counter) {
+                counter.innerHTML = `Đã chọn: <b class="text-indigo-600">${cnt}</b> học viên`;
+            }
+            if (activeLyThuyetTab === 'students') {
+                const btnText = document.getElementById('btn-do-update-lythuyet-text');
+                if (btnText) {
+                    btnText.innerText = `🚀 Cập Nhật PDF Cho Học Viên Đã Chọn (${cnt})`;
+                }
+            }
+        }
+
+        async function executeLyThuyetUpdate() {
+            if (isLyThuyetUpdating) return;
+            triggerHaptic();
+
+            let targetKeys = [];
+            let displayTargetName = '';
+
+            if (activeLyThuyetTab === 'course') {
+                const course = document.getElementById('lt-sync-course-select')?.value;
+                if (!course) {
+                    showToast('Vui lòng chọn khóa học cần cập nhật!', false);
+                    return;
+                }
+                const list = (typeof currentStudents !== 'undefined' && Array.isArray(currentStudents)) ? currentStudents : [];
+                const courseStudents = list.filter(s => (s.khoa || '').trim() === course.trim());
+                targetKeys = courseStudents.map(s => s.mahv || s.cccd || s.hoten).filter(Boolean);
+                displayTargetName = `Khóa ${course}`;
+            } else {
+                const checked = Array.from(document.querySelectorAll('.lt-student-cb:checked'));
+                targetKeys = checked.map(cb => cb.value.trim()).filter(Boolean);
+                displayTargetName = `${targetKeys.length} học viên`;
+            }
+
+            if (targetKeys.length === 0) {
+                showToast('Chưa chọn học viên nào để cập nhật!', false);
+                return;
+            }
+
+            isLyThuyetUpdating = true;
+            const btnDo = document.getElementById('btn-do-update-lythuyet');
+            const btnClose = document.getElementById('btn-lt-close');
+            const progressBox = document.getElementById('lt-update-progress-box');
+            const progressBar = document.getElementById('lt-progress-bar');
+            const progressPercent = document.getElementById('lt-progress-percent');
+            const progressText = document.getElementById('lt-progress-text');
+            const progressSub = document.getElementById('lt-progress-sub');
+
+            if (btnDo) btnDo.disabled = true;
+            if (btnClose) btnClose.disabled = true;
+            if (progressBox) progressBox.classList.remove('hidden');
+
+            let successCount = 0;
+            const total = targetKeys.length;
+
+            showToast(`🚀 Bắt đầu gửi lệnh /lythuyet cập nhật PDF cho ${displayTargetName}...`);
+
+            for (let i = 0; i < total; i++) {
+                const key = targetKeys[i];
+                const pct = Math.round(((i) / total) * 100);
+                if (progressBar) progressBar.style.width = `${pct}%`;
+                if (progressPercent) progressPercent.innerText = `${pct}%`;
+
+                const st = (typeof currentStudents !== 'undefined' && Array.isArray(currentStudents))
+                    ? currentStudents.find(s => (s.mahv || s.cccd || s.hoten) === key)
+                    : null;
+                const nameDisplay = st?.hoten || key;
+
+                if (progressText) {
+                    progressText.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-blue-600"></i> Đang gửi /lythuyet (${i+1}/${total}): <b>${nameDisplay}</b>`;
+                }
+                if (progressSub) {
+                    progressSub.innerText = `Đang tải file PDF mới nhất từ Discord Bot và chấm điểm...`;
+                }
+
+                try {
+                    const res = await fetch('/api/lythuyet/update_pdf', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ mode: 'students', student_keys: [key] })
+                    });
+                    const data = await res.json();
+                    if (data.success && data.success_count > 0) {
+                        successCount++;
+                    }
+                } catch (e) {
+                    console.error('Lỗi cập nhật /lythuyet học viên:', key, e);
+                }
+            }
+
+            if (progressBar) progressBar.style.width = '100%';
+            if (progressPercent) progressPercent.innerText = '100%';
+            if (progressText) {
+                progressText.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-600"></i> Hoàn tất cập nhật ${successCount}/${total} học viên!`;
+            }
+
+            showToast(`✅ Đã cập nhật xong file PDF lý thuyết mới nhất (/lythuyet) cho ${successCount}/${total} học viên!`);
+
+            setTimeout(async () => {
+                isLyThuyetUpdating = false;
+                if (btnDo) btnDo.disabled = false;
+                if (btnClose) btnClose.disabled = false;
+                closeModal('lythuyet-update-modal');
+                await loadStudents();
+            }, 1200);
+        }
+
+        async function quickUpdateSingleStudentLyThuyet(key, name, btnEl, event) {
+            if (event) event.stopPropagation();
+            triggerHaptic();
+
+            const icon = btnEl ? btnEl.querySelector('i') : null;
+            if (icon) icon.className = 'fa-solid fa-spinner fa-spin text-blue-600 text-[10px]';
+            if (btnEl) btnEl.disabled = true;
+
+            showToast(`Đang gửi lệnh /lythuyet để lấy file PDF mới nhất cho "${name}"...`);
+
+            try {
+                const res = await fetch('/api/lythuyet/update_pdf', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ mode: 'students', student_keys: [key] })
+                });
+                const data = await res.json();
+                if (data.success && data.success_count > 0) {
+                    showToast(`✅ Đã cập nhật thành công file PDF mới nhất cho học viên ${name}!`);
+                    await loadStudents();
+                } else {
+                    showToast(data.error || `Không thể cập nhật lý thuyết cho học viên ${name}`, false);
+                    if (icon) icon.className = 'fa-solid fa-rotate-right text-[10px]';
+                    if (btnEl) btnEl.disabled = false;
+                }
+            } catch (err) {
+                showToast(`Lỗi kết nối máy chủ: ${err.message}`, false);
+                if (icon) icon.className = 'fa-solid fa-rotate-right text-[10px]';
+                if (btnEl) btnEl.disabled = false;
             }
         }
 
