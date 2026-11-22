@@ -124,44 +124,30 @@ def detect_hang_from_course(course_str):
     return 'B'
 
 def match_teacher(query_teacher_name, teacher_obj, cell_value):
-    if not cell_value:
+    """
+    Khớp tên giáo viên theo đúng yêu cầu:
+    Kiểm tra xem ô đó có chứa đúng họ tên đầy đủ của giáo viên mà người dùng nhập hay không
+    (bao gồm tiền tố Thầy/Cô/GV hoặc giáo viên dạy cặp ghép '-').
+    Tuyệt đối không so sánh lỏng lẻo theo 1 từ tên gọi để tránh nhầm với giáo viên khác.
+    """
+    if not cell_value or not query_teacher_name:
         return False
+
     val_clean = strip_accents(cell_value)
     q_clean = strip_accents(query_teacher_name)
 
-    if not val_clean or not q_clean:
+    if not val_clean or not q_clean or len(q_clean) < 3:
         return False
 
-    # Exact full name match
-    if q_clean == val_clean or q_clean in val_clean:
+    # Khớp trực tiếp họ tên đầy đủ
+    if q_clean in val_clean:
         return True
 
-    # Check paired teacher notation (e.g. "Thắng - Sang", "Thắng/Sang", "Thắng-Huy")
+    # Khớp nếu dạy cặp (ví dụ: 'Thắng - Sang', 'Thắng-Huy', 'Trần Thái Trung Thắng - ...')
     parts = re.split(r'[-/+,&]', val_clean)
-    parts = [re.sub(r'^(thay|co|gv)\s+', '', p).strip() for p in parts if p.strip()]
-
-    q_parts = q_clean.split()
-    q_first = q_parts[-1] if q_parts else ''
-    q_two_words = f'{q_parts[-2]} {q_parts[-1]}' if len(q_parts) >= 2 else ''
-    short_clean = teacher_obj.get('short_clean', '') if teacher_obj else ''
-
-    for part in parts:
-        if part == q_clean:
-            return True
-        if q_two_words and part == q_two_words:
-            return True
-        # If part matches short name (e.g. "Thắng"), make sure query teacher is the one
-        if short_clean and part == short_clean:
-            return True
-        if q_first and len(q_first) >= 3 and part == q_first:
-            # Check if there is ambiguity with other teachers with the same first name
-            return True
-
-    # Check car match
-    if teacher_obj and teacher_obj.get('car') and len(teacher_obj['car']) >= 6:
-        car_clean = teacher_obj['car']
-        cell_alphanumeric = re.sub(r'[^A-Za-z0-9]', '', cell_value).upper()
-        if car_clean in cell_alphanumeric:
+    for p in parts:
+        p_clean = re.sub(r'^(thay|co|gv)\s+', '', p).strip()
+        if p_clean == q_clean or q_clean in p_clean:
             return True
 
     return False
@@ -222,49 +208,41 @@ def parse_course_students(course_info, query_teacher_name, teacher_obj=None):
             continue
 
         row_vals = [normalize_name(c) for c in row]
-        row_clean = [strip_accents(c) for c in row_vals]
 
-        # Check teacher match
+        # Kiểm tra xem trên CÙNG HÀNG này có ô nào chứa tên giáo viên được nhập hay không
         matched = False
         matched_gv_val = ''
 
-        if h_idx_gv is not None and h_idx_gv < len(row_vals):
-            gv_val = row_vals[h_idx_gv]
-            if match_teacher(query_teacher_name, teacher_obj, gv_val):
-                matched = True
-                matched_gv_val = gv_val
+        for c_i, val in enumerate(row_vals):
+            if c_i == h_idx_name:
+                continue  # Tuyệt đối không kiểm tra cột họ tên học viên
 
-        if not matched:
-            # Check other columns for teacher name (some sheets have teacher in separate columns or Phân Xe)
-            for c_i, val in enumerate(row_vals):
-                if c_i == h_idx_name:
-                    continue  # Don't match on student name!
-                if match_teacher(query_teacher_name, teacher_obj, val):
-                    matched = True
-                    matched_gv_val = val
-                    break
+            if match_teacher(query_teacher_name, teacher_obj, val):
+                matched = True
+                matched_gv_val = val
+                break
 
         if not matched:
             continue
 
-        # Extract student name
+        # Lấy tên học viên tương ứng trên CÙNG HÀNG đó
         hoten = row_vals[h_idx_name] if h_idx_name < len(row_vals) else (row_vals[1] if len(row_vals) > 1 else '')
         hoten = normalize_name(hoten).upper()
 
-        # Validate student name
+        # Validate tên học viên
         if not hoten or len(hoten) < 3 or re.match(r'^\d+$', hoten):
             continue
-        if any(k in strip_accents(hoten) for k in ['ho va ten', 'danh sach', 'stt', 'nguong', 'he thap phan']):
+        if any(k in strip_accents(hoten) for k in ['ho va ten', 'danh sach', 'stt', 'nguong', 'he thap phan', 'ngay chay']):
             continue
 
-        # Prevent false positive where student's own name is the teacher's name
+        # Không lấy dòng nếu họ tên học viên trùng khớp hoàn toàn với tên giáo viên tìm kiếm (tránh tự khớp nhầm)
         if strip_accents(hoten) == q_clean:
-            # If the student's name itself equals teacher's name, verify teacher column
-            if h_idx_gv is not None and h_idx_gv < len(row_vals):
-                if not match_teacher(query_teacher_name, teacher_obj, row_vals[h_idx_gv]):
-                    continue
+            # Chỉ chấp nhận nếu có cột giáo viên riêng biệt chứa tên giáo viên
+            has_other_teacher_cell = any(c_i != h_idx_name and match_teacher(query_teacher_name, teacher_obj, row_vals[c_i]) for c_i in range(len(row_vals)))
+            if not has_other_teacher_cell:
+                continue
 
-        # Extract CCCD
+        # Extract CCCD trên cùng hàng
         cccd = ''
         if h_idx_cccd is not None and h_idx_cccd < len(row_vals):
             cccd = re.sub(r'\D', '', row_vals[h_idx_cccd])
@@ -275,7 +253,7 @@ def parse_course_students(course_info, query_teacher_name, teacher_obj=None):
                     cccd = digits
                     break
 
-        # Extract MSHV
+        # Extract MSHV trên cùng hàng
         mahv = ''
         if h_idx_mahv is not None and h_idx_mahv < len(row_vals):
             mahv = row_vals[h_idx_mahv].strip()
@@ -287,7 +265,7 @@ def parse_course_students(course_info, query_teacher_name, teacher_obj=None):
                         mahv = m.group(0)
                         break
 
-        # Extract Birthday
+        # Extract Birthday trên cùng hàng
         ngaysinh = ''
         if h_idx_dob is not None and h_idx_dob < len(row_vals):
             ngaysinh = row_vals[h_idx_dob].strip()
@@ -298,7 +276,7 @@ def parse_course_students(course_info, query_teacher_name, teacher_obj=None):
                     ngaysinh = m.group(0)
                     break
 
-        # Extract Car
+        # Extract Car trên cùng hàng
         xe = ''
         if h_idx_xe is not None and h_idx_xe < len(row_vals):
             xe = row_vals[h_idx_xe].strip().upper()
@@ -309,7 +287,7 @@ def parse_course_students(course_info, query_teacher_name, teacher_obj=None):
                     xe = m.group(0).replace(' ', '').replace('-', '').replace('.', '')
                     break
 
-        # Extract Address
+        # Extract Address trên cùng hàng
         noicutru = ''
         if h_idx_addr is not None and h_idx_addr < len(row_vals):
             noicutru = row_vals[h_idx_addr].strip()
