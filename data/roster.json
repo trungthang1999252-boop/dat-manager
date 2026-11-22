@@ -389,5 +389,21 @@
     "khoa": "CD_13C1",
     "hang": "C1",
     "ngaysinh": "13/10/1995"
+  },
+  "PHẠM THỊ THU HIỀN": {
+    "hoten": "PHẠM THỊ THU HIỀN",
+    "cccd": "051191016803",
+    "mahv": "52001-20261004-000075",
+    "khoa": "CD_111B.01",
+    "hang": "B.01",
+    "ngaysinh": "02/02/1991"
+  },
+  "PHẠM VĂN THƯỚC": {
+    "hoten": "PHẠM VĂN THƯỚC",
+    "cccd": "051086002027",
+    "mahv": "52001-20261004-000072",
+    "khoa": "CD_111B.01",
+    "hang": "B.01",
+    "ngaysinh": "12/02/1986"
   }
 }
