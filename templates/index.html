@@ -206,12 +206,6 @@
                         <span>Cập Nhật Khóa</span>
                     </button>
 
-                    <!-- Nút Cập Nhật PDF Lý Thuyết (/lythuyet) -->
-                    <button onclick="openLyThuyetUpdateModal()" class="bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold px-3 py-2 rounded-xl transition flex items-center space-x-1.5 shadow-sm border border-blue-400/30 active:scale-95" title="Cập nhật lại file PDF trong cột lý thuyết (/lythuyet) cho cả khóa hoặc từng học viên">
-                        <i class="fa-solid fa-file-pdf"></i>
-                        <span>Cập Nhật PDF Lý Thuyết</span>
-                    </button>
-
                     <!-- Nút Xóa Khóa (Đã Thi Xong) -->
                     <button onclick="openDeleteCourseModal()" class="bg-rose-600/90 hover:bg-rose-600 text-white text-xs font-bold px-3 py-2 rounded-xl transition flex items-center space-x-1.5 shadow-sm border border-rose-400/30 active:scale-95" title="Xóa toàn bộ học viên thuộc khóa học đã thi xong">
                         <i class="fa-solid fa-folder-minus"></i>
@@ -1220,11 +1214,6 @@
                         <span>Cập Nhật Khóa (/capnhatkhoa)</span>
                     </button>
 
-                    <button onclick="openLyThuyetUpdateModal()" class="bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-300 font-bold text-xs px-3 py-1.5 rounded-xl transition flex items-center space-x-1.5 shadow-xs shrink-0 active:scale-95" title="Cập nhật lại file PDF trong cột lý thuyết (/lythuyet) cho cả khóa hoặc từng học viên">
-                        <i class="fa-solid fa-file-pdf text-blue-600"></i>
-                        <span>Cập Nhật PDF Lý Thuyết (/lythuyet)</span>
-                    </button>
-
                     <button onclick="openDeleteCourseModal()" class="bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-300 font-bold text-xs px-3 py-1.5 rounded-xl transition flex items-center space-x-1.5 shadow-xs shrink-0 active:scale-95" title="Xóa toàn bộ học viên thuộc khóa học đã thi xong">
                         <i class="fa-solid fa-folder-minus text-rose-600"></i>
                         <span>Xóa Khóa Đã Thi Xong</span>
@@ -1264,12 +1253,11 @@
                             <th class="py-3 px-3 text-center min-w-[110px] bg-slate-100/95 text-indigo-700">Ảnh Cabin</th>
 
                             <th class="py-3 px-3 text-center min-w-[125px] bg-slate-100/95">
-                                <div class="inline-flex items-center space-x-1.5 justify-center">
+                                <button type="button" onclick="openLyThuyetUpdateModal()" class="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-lg bg-blue-50/80 hover:bg-blue-100 text-blue-700 border border-blue-200 transition font-bold group cursor-pointer shadow-2xs active:scale-95" title="Bấm để cập nhật lại file PDF trong cột lý thuyết (/lythuyet): Có 2 lựa chọn (Cả khóa hoặc Chọn từng học viên)">
+                                    <i class="fa-solid fa-file-pdf text-blue-600"></i>
                                     <span>Lý Thuyết</span>
-                                    <button type="button" onclick="openLyThuyetUpdateModal()" class="p-1 text-blue-600 hover:text-blue-800 hover:bg-blue-100/70 rounded-md transition" title="Cập nhật lại file PDF Lý Thuyết (/lythuyet) cho cả khóa hoặc từng học viên">
-                                        <i class="fa-solid fa-arrows-rotate text-[11px]"></i>
-                                    </button>
-                                </div>
+                                    <i class="fa-solid fa-arrows-rotate text-blue-500 text-[11px] group-hover:rotate-180 transition-transform duration-300"></i>
+                                </button>
                             </th>
 
                             <th class="py-3 px-3 text-center min-w-[125px] bg-slate-100/95">Phiên Học (/dongbo)</th>
@@ -4912,24 +4900,20 @@ let _loadStudentsAbortCtrl = null;
 
 
             // 7. Báo cáo lý thuyết (Đạt: Xanh | Chưa đạt: Đỏ | Chưa có: Nút tra)
-            let ltBadge = '';
+            let ltCell = '';
 
             if (s.totnghiep_has_pdf) {
                 if (s.lythuyet_dat) {
-                    ltBadge = `<button onclick="previewLyThuyetPdf('${s.mahv || s.cccd}', '${s.hoten || ''}')" class="px-2 py-1 rounded-md text-[11px] font-extrabold bg-emerald-100 text-emerald-800 border border-emerald-300 hover:bg-emerald-200 transition inline-flex items-center shadow-2xs whitespace-nowrap" title="Tất cả các môn lý thuyết đều tích xanh (đã miễn trừ cabin)"><i class="fa-solid fa-circle-check text-emerald-600 mr-1"></i>Đạt (PDF)</button>`;
+                    ltCell = `<button onclick="previewLyThuyetPdf('${s.mahv || s.cccd}', '${s.hoten || ''}')" class="px-2 py-1 rounded-md text-[11px] font-extrabold bg-emerald-100 text-emerald-800 border border-emerald-300 hover:bg-emerald-200 transition inline-flex items-center shadow-2xs whitespace-nowrap" title="Tất cả các môn lý thuyết đều tích xanh (đã miễn trừ cabin)"><i class="fa-solid fa-circle-check text-emerald-600 mr-1"></i>Đạt (PDF)</button>`;
                 } else {
                     const failReason = s.lythuyet_reason || 'Chưa hoàn thành đủ các môn lý thuyết bắt buộc';
-                    ltBadge = `<button onclick="previewLyThuyetPdf('${s.mahv || s.cccd}', '${s.hoten || ''}')" class="px-2 py-1 rounded-md text-[11px] font-extrabold bg-rose-100 text-rose-800 border border-rose-300 hover:bg-rose-200 transition inline-flex items-center shadow-2xs whitespace-nowrap" title="${failReason} (Bấm xem PDF)"><i class="fa-solid fa-circle-xmark text-rose-600 mr-1"></i>Chưa Đạt (PDF)</button>`;
+                    ltCell = `<button onclick="previewLyThuyetPdf('${s.mahv || s.cccd}', '${s.hoten || ''}')" class="px-2 py-1 rounded-md text-[11px] font-extrabold bg-rose-100 text-rose-800 border border-rose-300 hover:bg-rose-200 transition inline-flex items-center shadow-2xs whitespace-nowrap" title="${failReason} (Bấm xem PDF)"><i class="fa-solid fa-circle-xmark text-rose-600 mr-1"></i>Chưa Đạt (PDF)</button>`;
                 }
             } else if (s.has_lythuyet || s.lythuyet_pdf_url) {
-                ltBadge = `<button onclick="previewLyThuyetPdf('${s.mahv || s.cccd}', '${s.hoten || ''}')" class="px-2 py-1 rounded-md text-[11px] font-extrabold bg-blue-100 text-blue-800 border border-blue-300 hover:bg-blue-200 transition inline-flex items-center shadow-2xs whitespace-nowrap" title="Đã có link báo cáo lý thuyết (Bấm tải và xem PDF)"><i class="fa-solid fa-file-arrow-down text-blue-600 mr-1"></i>Đã Có (Tải PDF)</button>`;
+                ltCell = `<button onclick="previewLyThuyetPdf('${s.mahv || s.cccd}', '${s.hoten || ''}')" class="px-2 py-1 rounded-md text-[11px] font-extrabold bg-blue-100 text-blue-800 border border-blue-300 hover:bg-blue-200 transition inline-flex items-center shadow-2xs whitespace-nowrap" title="Đã có link báo cáo lý thuyết (Bấm tải và xem PDF)"><i class="fa-solid fa-file-arrow-down text-blue-600 mr-1"></i>Đã Có (Tải PDF)</button>`;
             } else {
-                ltBadge = `<button onclick="reQueryStudent('${s.mahv || s.cccd || s.hoten}', 'lythuyet')" class="px-2 py-1 rounded-md text-[11px] font-extrabold bg-rose-100 text-rose-800 border border-rose-300 hover:bg-rose-200 transition inline-flex items-center shadow-2xs whitespace-nowrap" title="Bấm để tự động kiểm tra lý thuyết (/lythuyet)"><i class="fa-solid fa-arrows-rotate text-rose-600 mr-1"></i>Chưa Có (Tra)</button>`;
+                ltCell = `<button onclick="reQueryStudent('${s.mahv || s.cccd || s.hoten}', 'lythuyet')" class="px-2 py-1 rounded-md text-[11px] font-extrabold bg-rose-100 text-rose-800 border border-rose-300 hover:bg-rose-200 transition inline-flex items-center shadow-2xs whitespace-nowrap" title="Bấm để tự động kiểm tra lý thuyết (/lythuyet)"><i class="fa-solid fa-arrows-rotate text-rose-600 mr-1"></i>Chưa Có (Tra)</button>`;
             }
-
-            const ltQuickRefresh = `<button type="button" onclick="quickUpdateSingleStudentLyThuyet('${s.mahv || s.cccd || s.hoten}', '${(s.hoten || '').replace(/'/g, "\\'")}', this, event)" class="p-1 text-slate-400 hover:text-blue-600 hover:bg-blue-100/70 rounded transition" title="Cập nhật lại file PDF mới nhất của học viên này qua lệnh /lythuyet"><i class="fa-solid fa-rotate-right text-[10px]"></i></button>`;
-
-            let ltCell = `<div class="inline-flex items-center justify-center space-x-1">${ltBadge}${ltQuickRefresh}</div>`;
 
 
 
