@@ -358,6 +358,14 @@
     "hang": "C1",
     "ngaysinh": "21/02/2004"
   },
+  "ĐINH MỪNG THẮNG": {
+    "hoten": "ĐINH MỪNG THẮNG",
+    "cccd": "051205000967",
+    "mahv": "52001-20261007-000019",
+    "khoa": "CD_14C1",
+    "hang": "C1",
+    "ngaysinh": "02/09/2005"
+  },
   "TRẦN THỊ DIỆU": {
     "hoten": "TRẦN THỊ DIỆU",
     "cccd": "064192006500",
@@ -373,13 +381,5 @@
     "khoa": "CD_13C1",
     "hang": "C1",
     "ngaysinh": "13/10/1995"
-  },
-  "ĐINH MỪNG THẮNG": {
-    "hoten": "ĐINH MỪNG THẮNG",
-    "cccd": "051205000967",
-    "mahv": "52001-20261007-000019",
-    "khoa": "CD_14C1",
-    "hang": "C1",
-    "ngaysinh": "02/09/2005"
   }
 }
