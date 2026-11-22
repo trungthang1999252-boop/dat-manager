@@ -526,7 +526,12 @@ class DiscordDATService:
         - /phien: Embed 'Phiên học viên' + đính kèm file _phienhoc.pdf
         - /lythuyet: Plain text 'Báo cáo lý thuyết học viên...' + đính kèm file _lythuyet.pdf
         """
-        if not msg or msg.get('author', {}).get('id') != APP_ID:
+        if not msg:
+            return []
+        
+        author_id = msg.get('author', {}).get('id')
+        author_name = msg.get('author', {}).get('username', '')
+        if author_id != APP_ID and author_name != 'NLTB_Bot':
             return []
 
         results = []
@@ -563,6 +568,10 @@ class DiscordDATService:
                     parsed['lythuyet_pdf_filename'] = lythuyet_pdf['filename']
                     parsed['lythuyet_pdf_url'] = lythuyet_pdf['url']
                     parsed['has_lythuyet'] = True
+                    if not parsed.get('mahv'):
+                        m_code = re.search(r'([A-Za-z0-9_-]+)_lythuyet\.pdf', lythuyet_pdf['filename'], re.IGNORECASE)
+                        if m_code:
+                            parsed['mahv'] = m_code.group(1).strip()
                 if parsed.get('mahv') or parsed.get('hoten'):
                     parsed['msg_id'] = mid
                     parsed['msg_time'] = mtime
@@ -706,49 +715,44 @@ class DiscordDATService:
         q_clean = str(query_text).strip()
         q_lower = q_clean.lower()
 
-        # BƯỚC 1: FAST SCAN (chỉ dùng khi force=False)
+        # BƯỚC 1: FAST SCAN (Kiểm tra tin nhắn có sẵn trong kênh)
+        # Nếu bot đã trả lời học viên này trên Discord (trong 40 tin gần nhất), lấy ngay trong 0.1s!
         latest_id = self.latest_msg_id
-        if not force:
-            try:
-                r_l = self.session.get(f"https://discord.com/api/v9/channels/{CHANNEL_ID}/messages?limit=12", timeout=3.5)
-                if r_l.status_code == 200:
-                    raw_recent = r_l.json()
-                    if raw_recent and isinstance(raw_recent, list) and len(raw_recent) > 0:
-                        latest_id = raw_recent[0].get('id')
-                        self.latest_msg_id = latest_id
-
-                        for m in raw_recent:
-                            for st in self.parse_discord_message(m):
-                                st_mahv = st.get('mahv', '').lower()
-                                st_cccd = st.get('cccd', '').lower()
-                                st_hoten = st.get('hoten', '').lower()
-
-                                matched = False
-                                if q_lower and (q_lower == st_mahv or q_lower == st_cccd or q_lower == st_hoten):
-                                    matched = True
-                                elif q_lower and (q_lower in st_mahv or q_lower in st_hoten or (len(q_lower) >= 6 and q_lower in st_cccd)):
-                                    matched = True
-
-                                if matched:
-                                    # CHỈ chấp nhận cache DAT nếu đúng là embed DAT (có songay_str hoặc lich_trinh_ngay hoặc is_dat_embed)
-                                    # TUYỆT ĐỐI không lấy nhầm tin nhắn /phien vì /phien không có số ngày!
-                                    if command == 'dat' and not st.get('is_phien_embed') and (st.get('songay_str') or st.get('lich_trinh_ngay') or st.get('is_dat_embed')):
-                                        return {'success': True, 'data': [st], 'source': 'recent_channel_cache'}
-                                    elif command == 'phien' and st.get('pdf_url'):
-                                        return {'success': True, 'data': [st], 'source': 'recent_channel_cache'}
-                                    elif command == 'lythuyet' and st.get('lythuyet_pdf_url'):
-                                        return {'success': True, 'data': [st], 'source': 'recent_channel_cache'}
-            except Exception:
-                pass
-        else:
-            # Khi force=True, lấy mốc tin nhắn mới nhất trước khi gửi lệnh để chờ tin mới
-            try:
-                r_l = self.session.get(f"https://discord.com/api/v9/channels/{CHANNEL_ID}/messages?limit=1", timeout=3.5)
-                if r_l.status_code == 200 and r_l.json():
-                    latest_id = r_l.json()[0]['id']
+        q_no_acc = strip_vietnamese_accents(q_lower)
+        try:
+            scan_limit = 40 if not force else 6
+            r_l = self.session.get(f"https://discord.com/api/v9/channels/{CHANNEL_ID}/messages?limit={scan_limit}", timeout=3.5)
+            if r_l.status_code == 200:
+                raw_recent = r_l.json()
+                if raw_recent and isinstance(raw_recent, list) and len(raw_recent) > 0:
+                    latest_id = raw_recent[0].get('id')
                     self.latest_msg_id = latest_id
-            except Exception:
-                pass
+
+                    for m in raw_recent:
+                        for st in self.parse_discord_message(m):
+                            st_mahv = st.get('mahv', '').lower()
+                            st_cccd = st.get('cccd', '').lower()
+                            st_hoten = st.get('hoten', '').lower()
+                            st_no_acc = strip_vietnamese_accents(st_hoten)
+
+                            matched = False
+                            if q_lower and (q_lower == st_mahv or q_lower == st_cccd or q_lower == st_hoten):
+                                matched = True
+                            elif q_no_acc and (q_no_acc == st_no_acc or (len(q_no_acc) >= 4 and (q_no_acc in st_no_acc or st_no_acc in q_no_acc))):
+                                matched = True
+                            elif q_lower and (q_lower in st_mahv or (len(q_lower) >= 6 and q_lower in st_cccd)):
+                                matched = True
+
+                            if matched:
+                                # CHỈ chấp nhận cache DAT nếu đúng là embed DAT
+                                if command == 'dat' and not st.get('is_phien_embed') and (st.get('songay_str') or st.get('lich_trinh_ngay') or st.get('is_dat_embed') or st.get('quangduong', 0) > 0):
+                                    return {'success': True, 'data': [st], 'source': 'recent_channel_cache'}
+                                elif command == 'phien' and (st.get('is_phien_embed') or st.get('pdf_url')):
+                                    return {'success': True, 'data': [st], 'source': 'recent_channel_cache'}
+                                elif command == 'lythuyet' and (st.get('has_lythuyet') or st.get('lythuyet_pdf_url')):
+                                    return {'success': True, 'data': [st], 'source': 'recent_channel_cache'}
+        except Exception:
+            pass
 
         # BƯỚC 2: Gửi Slash Command Interaction tới Discord Bot
         interaction_url = 'https://discord.com/api/v9/interactions'
@@ -786,13 +790,13 @@ class DiscordDATService:
             return {'success': False, 'error': f'Không thể gửi lệnh: {str(e)}'}
 
         # BƯỚC 3: Chờ và bóc tách phản hồi Bot siêu tốc
-        time.sleep(0.28)
+        time.sleep(0.18)
         poll_url = f"https://discord.com/api/v9/channels/{CHANNEL_ID}/messages?limit=6"
         multi_courses_detected = None
 
         while time.time() - t_start < timeout_sec:
             try:
-                r_poll = self.session.get(poll_url, timeout=3.5)
+                r_poll = self.session.get(poll_url, timeout=3.0)
                 raw_msgs = r_poll.json() if r_poll.status_code == 200 else []
             except Exception:
                 raw_msgs = []
@@ -801,7 +805,9 @@ class DiscordDATService:
                 mid = m.get('id')
                 # Chấp nhận tin nhắn mới hơn latest_id hoặc mới được tạo sau thời điểm gửi lệnh
                 if latest_id is None or int(mid) >= int(latest_id):
-                    if m.get('author', {}).get('id') == APP_ID:
+                    author_id = m.get('author', {}).get('id')
+                    author_name = m.get('author', {}).get('username', '')
+                    if author_id == APP_ID or author_name == 'NLTB_Bot':
                         embeds = m.get('embeds', [])
                         first_embed = embeds[0] if embeds else {}
                         title = first_embed.get('title', '')
@@ -831,13 +837,14 @@ class DiscordDATService:
                             st_mahv = st.get('mahv', '').lower()
                             st_hoten = st.get('hoten', '').lower()
                             st_cccd = st.get('cccd', '').lower()
+                            st_no_acc = strip_vietnamese_accents(st_hoten)
 
-                            # Chỉ chấp nhận nếu khớp với từ khóa tra cứu hoặc do chính tài khoản này gửi lệnh
+                            # Khớp nếu trùng tên, mã học viên, CCCD (có hoặc không dấu) hoặc do chính tài khoản này gửi lệnh
                             is_query_match = (
                                 (q_lower and q_lower in st_mahv) or 
                                 (q_lower and q_lower in st_hoten) or 
                                 (q_lower and q_lower in st_cccd) or
-                                (st_hoten and q_lower and strip_vietnamese_accents(q_lower) in strip_vietnamese_accents(st_hoten))
+                                (q_no_acc and (q_no_acc in st_no_acc or st_no_acc in q_no_acc))
                             )
                             my_info = self.get_user_info()
                             my_uid = my_info.get('id') if my_info else None
@@ -855,11 +862,21 @@ class DiscordDATService:
                                 if dat_matches:
                                     self.latest_msg_id = mid
                                     return {'success': True, 'data': dat_matches}
+                            elif command == 'phien':
+                                phien_matches = [s for s in matches if s.get('is_phien_embed') or s.get('pdf_url')]
+                                if phien_matches:
+                                    self.latest_msg_id = mid
+                                    return {'success': True, 'data': phien_matches}
+                            elif command == 'lythuyet':
+                                lt_matches = [s for s in matches if s.get('has_lythuyet') or s.get('lythuyet_pdf_url')]
+                                if lt_matches:
+                                    self.latest_msg_id = mid
+                                    return {'success': True, 'data': lt_matches}
                             else:
                                 self.latest_msg_id = mid
                                 return {'success': True, 'data': matches}
 
-            time.sleep(0.28)
+            time.sleep(0.20)
 
         if multi_courses_detected:
             c_str = ", ".join(multi_courses_detected)
@@ -1238,3 +1255,109 @@ class DiscordDATService:
             time.sleep(0.5)
 
         return {'success': True, 'message': f'Đã gửi ảnh cabin cho học viên {c_mhv} tới máy chủ thành công'}
+
+    def start_live_watcher(self, on_student_parsed_cb=None, interval_sec=1.5):
+        """
+        Khởi chạy tiến trình ngầm (Daemon Thread) liên tục lắng nghe kênh Discord:
+        Tự động bắt tức thì mọi phản hồi /dat, /lythuyet, /phien của Bot NLTB_Bot
+        để cập nhật ngay vào hệ thống theo thời gian thực mà người dùng không cần đợi F5!
+        """
+        if getattr(self, '_watcher_running', False):
+            return
+
+        self._watcher_running = True
+
+        def _watcher_loop():
+            print("[Discord Live Watcher] 🟢 Bắt đầu lắng nghe tin nhắn Discord thời gian thực...")
+            last_mid = None
+
+            # BƯỚC 1: Quét nhanh 35 tin nhắn gần nhất lúc khởi động để gom ngay kết quả vừa tra cứu
+            try:
+                r_init = self.session.get(f"https://discord.com/api/v9/channels/{CHANNEL_ID}/messages?limit=35", timeout=5)
+                if r_init.status_code == 200:
+                    init_msgs = r_init.json()
+                    if init_msgs and isinstance(init_msgs, list) and len(init_msgs) > 0:
+                        last_mid = init_msgs[0].get('id')
+                        self.latest_msg_id = last_mid
+                        # Duyệt ngược từ cũ đến mới để cập nhật tuần tự
+                        for m in reversed(init_msgs):
+                            parsed_list = self.parse_discord_message(m)
+                            for st in parsed_list:
+                                if on_student_parsed_cb:
+                                    cmd = 'lythuyet' if st.get('has_lythuyet') or st.get('lythuyet_pdf_url') else ('phien' if st.get('is_phien_embed') or st.get('pdf_url') else 'dat')
+                                    try:
+                                        on_student_parsed_cb(st, cmd)
+                                    except Exception as ex_cb:
+                                        print("[Discord Live Watcher] Lỗi callback khởi tạo:", ex_cb)
+            except Exception as e_init:
+                print("[Discord Live Watcher] Cảnh báo quét khởi tạo:", e_init)
+
+            consecutive_errors = 0
+
+            # BƯỚC 2: Vòng lặp lắng nghe thời gian thực (Real-time polling)
+            while self._watcher_running:
+                try:
+                    if not self.token:
+                        self.token = auto_detect_discord_token()
+                        if self.token:
+                            self.set_token(self.token)
+                        else:
+                            time.sleep(5)
+                            continue
+
+                    r = self.session.get(f"https://discord.com/api/v9/channels/{CHANNEL_ID}/messages?limit=8", timeout=3.5)
+                    
+                    if r.status_code == 429:
+                        try:
+                            retry_after = float(r.json().get('retry_after', 2.0))
+                            time.sleep(min(retry_after + 0.2, 5.0))
+                        except Exception:
+                            time.sleep(2)
+                        continue
+
+                    if r.status_code == 200:
+                        consecutive_errors = 0
+                        msgs = r.json()
+                        if msgs and isinstance(msgs, list) and len(msgs) > 0:
+                            newest_id = msgs[0].get('id')
+                            if last_mid is None:
+                                last_mid = newest_id
+                                self.latest_msg_id = newest_id
+                            elif int(newest_id) > int(last_mid):
+                                # Có tin nhắn mới trong kênh!
+                                new_msgs = [m for m in msgs if int(m.get('id', 0)) > int(last_mid)]
+                                last_mid = newest_id
+                                self.latest_msg_id = newest_id
+
+                                for m in reversed(new_msgs):
+                                    parsed_list = self.parse_discord_message(m)
+                                    for st in parsed_list:
+                                        cmd = 'lythuyet' if st.get('has_lythuyet') or st.get('lythuyet_pdf_url') else ('phien' if st.get('is_phien_embed') or st.get('pdf_url') else 'dat')
+                                        if on_student_parsed_cb:
+                                            try:
+                                                on_student_parsed_cb(st, cmd)
+                                            except Exception as ex_cb:
+                                                print("[Discord Live Watcher] Lỗi callback:", ex_cb)
+                    elif r.status_code in (401, 403):
+                        print("[Discord Live Watcher] Token hết hạn, đang tự động làm mới...")
+                        new_t = auto_detect_discord_token()
+                        if new_t:
+                            self.set_token(new_t)
+                        time.sleep(4)
+                    else:
+                        consecutive_errors += 1
+                        time.sleep(min(1.5 * consecutive_errors, 6.0))
+
+                except Exception as e_poll:
+                    consecutive_errors += 1
+                    time.sleep(min(1.5 * consecutive_errors, 5.0))
+
+                time.sleep(interval_sec)
+
+        t = threading.Thread(target=_watcher_loop, daemon=True, name="DiscordLiveWatcher")
+        self._watcher_thread = t
+        t.start()
+
+    def stop_live_watcher(self):
+        self._watcher_running = False
+
