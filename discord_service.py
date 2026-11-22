@@ -957,6 +957,89 @@ class DiscordDATService:
 
         return {'success': True, 'message': f'Đã gửi yêu cầu cập nhật khóa {c_name} tới Bot.'}
 
+    def send_daykhoa(self, course_name, biensoxe, timeout_sec=16):
+        """
+        Gửi lệnh /daykhoa khoa: <course_name> biensoxe: <biensoxe> tới Discord Bot
+        để đẩy dữ liệu khóa học xuống xe tập lái.
+        """
+        c_name = str(course_name).strip()
+        c_plate = self.clean_plate(biensoxe)
+        if not c_name or not c_plate:
+            return {'success': False, 'error': 'Thiếu tên khóa học hoặc biển số xe.'}
+
+        latest_id = self.latest_msg_id
+        try:
+            r_l = self.session.get(f"https://discord.com/api/v9/channels/{CHANNEL_ID}/messages?limit=1", timeout=3.5)
+            if r_l.status_code == 200 and r_l.json():
+                latest_id = r_l.json()[0]['id']
+                self.latest_msg_id = latest_id
+        except Exception:
+            pass
+
+        interaction_url = 'https://discord.com/api/v9/interactions'
+        payload = self.build_interaction_payload('daykhoa', [
+            {'type': 3, 'name': 'khoa', 'value': c_name},
+            {'type': 3, 'name': 'biensoxe', 'value': c_plate}
+        ])
+
+        t_start = time.time()
+        try:
+            with self._interaction_lock:
+                now_ts = time.time()
+                gap = now_ts - self._last_interaction_time
+                if gap < 0.5:
+                    time.sleep(0.5 - gap)
+                self._last_interaction_time = time.time()
+                resp = self.session.post(interaction_url, json=payload, timeout=5)
+
+            if resp.status_code == 429:
+                try:
+                    r_429 = resp.json()
+                    time.sleep(min(float(r_429.get('retry_after', 1.5)) + 0.2, 4.0))
+                    with self._interaction_lock:
+                        resp = self.session.post(interaction_url, json=payload, timeout=5)
+                except Exception:
+                    pass
+
+            if resp.status_code not in (200, 204):
+                return {'success': False, 'error': f'Lỗi Discord: {resp.status_code} ({resp.text[:120]})'}
+        except Exception as e:
+            return {'success': False, 'error': f'Không thể gửi lệnh /daykhoa: {str(e)}'}
+
+        time.sleep(0.4)
+        poll_url = f"https://discord.com/api/v9/channels/{CHANNEL_ID}/messages?limit=5"
+        while time.time() - t_start < timeout_sec:
+            try:
+                r_poll = self.session.get(poll_url, timeout=3.5)
+                raw_msgs = r_poll.json() if r_poll.status_code == 200 else []
+            except Exception:
+                raw_msgs = []
+
+            for m in raw_msgs:
+                mid = m.get('id')
+                if latest_id is None or int(mid) >= int(latest_id):
+                    author_id = m.get('author', {}).get('id')
+                    author_name = m.get('author', {}).get('username', '')
+                    if author_id == APP_ID or author_name == 'NLTB_Bot':
+                        content = m.get('content', '')
+                        embeds = m.get('embeds', [])
+                        e_desc = embeds[0].get('description', '') if embeds else ''
+                        e_title = embeds[0].get('title', '') if embeds else ''
+                        full_txt = f"{content} {e_title} {e_desc}".strip()
+                        inter = m.get('interaction') or {}
+                        iname = inter.get('name')
+
+                        if iname == 'daykhoa' or 'đẩy' in full_txt.lower() or 'khóa' in full_txt.lower() or c_plate.lower() in full_txt.lower():
+                            self.latest_msg_id = mid
+                            if '❌' in full_txt or 'lỗi' in full_txt.lower() or 'không tìm thấy' in full_txt.lower() or '⚠️' in full_txt:
+                                clean_err = re.sub(r'[\*`]', '', full_txt).strip()
+                                return {'success': False, 'error': clean_err}
+                            return {'success': True, 'message': full_txt or f'Đã đẩy khóa {c_name} xuống xe {c_plate} thành công!'}
+
+            time.sleep(0.25)
+
+        return {'success': True, 'message': f'Đã gửi lệnh đẩy khóa {c_name} xuống xe {c_plate} tới Discord!'}
+
     def refresh_attachment_url(self, url):
         """Làm mới link đính kèm Discord khi link cũ bị hết hạn chữ ký CDN."""
         if not url:
