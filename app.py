@@ -1257,70 +1257,158 @@ def sync_course():
             return jsonify({'success': False, 'error': 'Chưa kết nối được với Discord trên máy tính.'})
 
     total_updated = 0
-    total_students_matched = 0
     course_results = []
+    success_count = 0
 
     for course in courses:
-        # 1. Gửi lệnh /capnhatkhoa tới Bot
+        # Gửi lệnh /capnhatkhoa tới Bot (CHỈ CẬP NHẬT KHÓA THEO YÊU CẦU)
         res = ds.sync_course(course, timeout_sec=20)
-
-        # 2. Tìm tất cả học viên thuộc khóa này
-        c_norm = course.lower().strip()
-        course_students = [
-            s for s in list(db.students.values())
-            if c_norm == (s.get('khoa') or '').lower().strip() or c_norm in (s.get('khoa') or '').lower()
-        ]
-        total_students_matched += len(course_students)
-
-        # 3. Xóa sạch file PDF cache cũ của khóa này trong downloads
-        for s in course_students:
-            for f_name in [s.get('lythuyet_pdf_filename'), f"{s.get('mahv')}_lythuyet.pdf", f"{s.get('cccd')}_lythuyet.pdf"]:
-                if f_name:
-                    p = os.path.join(DOWNLOADS_DIR, f_name)
-                    if os.path.exists(p):
-                        try:
-                            os.remove(p)
-                        except Exception:
-                            pass
-
-        # 4. Tự động tra cứu lại lý thuyết (/lythuyet) để cập nhật dữ liệu mới nhất từ Bot
-        c_updated = 0
-        for s in course_students:
-            target = s.get('mahv') or s.get('cccd') or s.get('hoten')
-            if not target:
-                continue
-            try:
-                q_res = ds.query_student(target, command='lythuyet', timeout_sec=16, force=True)
-                if q_res.get('success'):
-                    raw = q_res.get('data')
-                    it = raw[0] if isinstance(raw, list) and raw else (raw or {})
-                    it['is_my_query'] = True
-                    it['interaction_username'] = 'tranthang252'
-                    it['interaction_user_id'] = '1380376964304474173'
-                    saved = db.upsert_student(it, auto_save=False)
-                    if saved:
-                        ensure_lythuyet_evaluated(saved, force_download=True, auto_save=False)
-                        c_updated += 1
-                time.sleep(0.3)
-            except Exception as e_s:
-                print(f"Lỗi cập nhật học viên {target} sau sync_course: {e_s}")
-
-        total_updated += c_updated
+        is_ok = res.get('success', False)
+        if is_ok:
+            success_count += 1
         course_results.append({
             'course': course,
-            'success': res.get('success', False),
-            'updated_count': c_updated,
-            'total_students': len(course_students)
+            'success': is_ok,
+            'message': res.get('message') or res.get('error') or ''
         })
 
-    db._save()
     courses_str = ', '.join(courses)
     return jsonify({
         'success': True,
         'courses': courses,
         'results': course_results,
-        'total_updated': total_updated,
-        'message': f"Đã cập nhật xong {len(courses)} khóa ({courses_str})! Đồng bộ lý thuyết mới cho {total_updated}/{total_students_matched} học viên."
+        'success_count': success_count,
+        'message': f"Đã gửi lệnh /capnhatkhoa thành công cho {success_count}/{len(courses)} khóa ({courses_str}) tới Discord Bot!"
+    })
+
+@app.route('/api/lythuyet/update_pdf', methods=['POST'])
+def update_lythuyet_pdf_api():
+    """
+    Cập nhật lại file PDF trong cột lý thuyết qua lệnh /lythuyet trong Discord:
+    Cung cấp 2 lựa chọn theo yêu cầu người dùng:
+    1. Cập nhật tất cả học viên của một hoặc nhiều khóa (mode == 'course').
+    2. Cập nhật cho từng học viên được chọn (mode == 'students').
+    Hệ thống sẽ gửi lệnh /lythuyet tới Bot, tải file PDF mới nhất và đánh giá lại kết quả.
+    """
+    data = request.get_json(silent=True) or {}
+    mode = data.get('mode', 'students')  # 'course' hoặc 'students'
+
+    if not ds.is_connected():
+        token = discord_service.auto_detect_discord_token()
+        if token:
+            ds.set_token(token)
+        else:
+            return jsonify({'success': False, 'error': 'Chưa kết nối được với Discord trên máy tính.'}), 400
+
+    target_students = []
+
+    if mode == 'course':
+        raw_courses = data.get('courses') or data.get('course')
+        if isinstance(raw_courses, str):
+            c_list = [c.strip().lower() for c in raw_courses.split(',') if c.strip()]
+        elif isinstance(raw_courses, list):
+            c_list = [str(c).strip().lower() for c in raw_courses if str(c).strip()]
+        else:
+            c_list = []
+        if not c_list:
+            return jsonify({'success': False, 'error': 'Vui lòng chọn khóa học cần cập nhật file PDF lý thuyết!'}), 400
+
+        seen_keys = set()
+        for s in list(db.students.values()):
+            skhoa = (s.get('khoa') or '').strip().lower()
+            if any(c == skhoa or c in skhoa for c in c_list):
+                k = s.get('mahv') or s.get('cccd') or s.get('hoten')
+                if k and k not in seen_keys:
+                    seen_keys.add(k)
+                    target_students.append(s)
+
+        if not target_students:
+            return jsonify({'success': False, 'error': f'Không tìm thấy học viên nào thuộc khóa {", ".join(c_list)}!'}), 404
+
+    else:  # mode == 'students'
+        raw_keys = data.get('student_keys') or data.get('students') or []
+        if isinstance(raw_keys, str):
+            raw_keys = [k.strip() for k in raw_keys.split(',') if k.strip()]
+        if not raw_keys:
+            single = (data.get('student_key') or data.get('mahv') or data.get('cccd') or '').strip()
+            if single:
+                raw_keys = [single]
+
+        if not raw_keys:
+            return jsonify({'success': False, 'error': 'Vui lòng chọn ít nhất một học viên cần cập nhật file PDF lý thuyết!'}), 400
+
+        seen_keys = set()
+        for rk in raw_keys:
+            st = db.find_student(rk)
+            if st:
+                k = st.get('mahv') or st.get('cccd') or st.get('hoten')
+                if k and k not in seen_keys:
+                    seen_keys.add(k)
+                    target_students.append(st)
+
+        if not target_students:
+            return jsonify({'success': False, 'error': 'Không tìm thấy học viên tương ứng trong hệ thống!'}), 404
+
+    # Tiến hành gọi lệnh /lythuyet trong Discord cho từng học viên
+    results = []
+    success_count = 0
+
+    for s in target_students:
+        target_query = s.get('mahv') or s.get('cccd') or s.get('hoten')
+        hoten = s.get('hoten') or target_query
+
+        # 1. Xóa file PDF cache cũ của học viên này trong downloads để đảm bảo kéo file PDF mới nhất
+        for f_name in [s.get('lythuyet_pdf_filename'), f"{s.get('mahv')}_lythuyet.pdf", f"{s.get('cccd')}_lythuyet.pdf"]:
+            if f_name:
+                p = os.path.join(DOWNLOADS_DIR, f_name)
+                if os.path.exists(p):
+                    try:
+                        os.remove(p)
+                    except Exception:
+                        pass
+
+        # 2. Gửi lệnh /lythuyet tới Discord Bot
+        try:
+            res_lt = ds.query_student(target_query, command='lythuyet', timeout_sec=16, force=True)
+            if res_lt.get('success'):
+                raw_lt = res_lt.get('data')
+                it = raw_lt[0] if isinstance(raw_lt, list) and raw_lt else (raw_lt or {})
+                it['is_my_query'] = True
+                it['interaction_username'] = 'tranthang252'
+                it['interaction_user_id'] = '1380376964304474173'
+                saved = db.upsert_student(it, auto_save=False)
+                if saved:
+                    saved = ensure_lythuyet_evaluated(saved, force_download=True, auto_save=False)
+                    success_count += 1
+                    results.append({
+                        'hoten': hoten,
+                        'mahv': saved.get('mahv', ''),
+                        'khoa': saved.get('khoa', ''),
+                        'success': True,
+                        'has_lythuyet': bool(saved.get('has_lythuyet') or saved.get('lythuyet_pdf_url')),
+                        'lythuyet_dat': saved.get('lythuyet_dat', False),
+                        'pdf_filename': saved.get('lythuyet_pdf_filename', '')
+                    })
+                else:
+                    results.append({'hoten': hoten, 'success': False, 'error': 'Không thể lưu học viên'})
+            else:
+                results.append({'hoten': hoten, 'success': False, 'error': res_lt.get('error', 'Lỗi tra cứu /lythuyet')})
+            time.sleep(0.4)
+        except Exception as e_proc:
+            results.append({'hoten': hoten, 'success': False, 'error': str(e_proc)})
+
+    db._save()
+    import database
+    database.notify_data_changed()
+
+    msg = f"Đã cập nhật file PDF lý thuyết mới nhất (/lythuyet) thành công cho {success_count}/{len(target_students)} học viên!"
+    return jsonify({
+        'success': True,
+        'mode': mode,
+        'total': len(target_students),
+        'success_count': success_count,
+        'results': results,
+        'message': msg
     })
 
 @app.route('/api/course/delete', methods=['POST'])
