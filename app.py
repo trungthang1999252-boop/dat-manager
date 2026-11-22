@@ -39,6 +39,12 @@ init_token = discord_service.auto_detect_discord_token()
 if init_token:
     ds.set_token(init_token)
 db = database.StudentDatabase()
+try:
+    _purged_startup = teacher_sync_service.purge_obsolete_courses(db)
+    if _purged_startup:
+        print(f"🧹 [Khởi động] Đã tự động dọn sạch các khoá cũ khỏi CSDL: {', '.join(_purged_startup)}")
+except Exception as _e_purge:
+    print(f"⚠️ [Khởi động] Lỗi dọn khoá cũ: {_e_purge}")
 _has_initialized_totnghiep = False
 
 def is_my_queried_student(mahv_or_cccd_or_name):
@@ -1059,7 +1065,11 @@ def import_teacher_students_api():
             ck = s.get('khoa') or 'Chưa phân khoá'
             by_course[ck] = by_course.get(ck, 0) + 1
 
-        msg = f"✅ Đã nạp thành công {import_res['imported_count']} học viên của giáo viên \"{teacher_name}\" vào {len(by_course)} khoá học!"
+        purged_info = ''
+        if import_res.get('purged_courses'):
+            purged_info = f" (Đã tự động dọn sạch các khoá cũ: {', '.join(import_res['purged_courses'])})"
+
+        msg = f"✅ Đã nạp thành công {import_res['imported_count']} học viên của giáo viên \"{teacher_name}\" vào {len(by_course)} khoá học!{purged_info}"
 
         return jsonify({
             'success': True,
@@ -1068,6 +1078,7 @@ def import_teacher_students_api():
             'courses_found': len(by_course),
             'by_course': by_course,
             'courses_affected': import_res['courses_affected'],
+            'purged_courses': import_res.get('purged_courses', []),
             'message': msg
         })
     except Exception as e:
@@ -1103,9 +1114,13 @@ def import_roster_gsheet():
         by_course = {k: len(v) for k, v in scan_res.get('by_course', {}).items()}
         t_obj = scan_res.get('teacher_obj') or {}
 
+        purged_info = ''
+        if import_res.get('purged_courses'):
+            purged_info = f" (Đã loại bỏ các khoá cũ: {', '.join(import_res['purged_courses'])})"
+
         msg = (
             f'✅ Đã nạp thành công {import_res["imported_count"]} học viên của giáo viên "{teacher_name}" '
-            f'thuộc {len(by_course)} khoá học vào hệ thống!'
+            f'thuộc {len(by_course)} khoá học vào hệ thống!{purged_info}'
         )
 
         return jsonify({
@@ -1116,6 +1131,7 @@ def import_roster_gsheet():
             'courses_found': len(by_course),
             'by_course': by_course,
             'total_scanned': scan_res.get('total_scanned_courses', 0),
+            'purged_courses': import_res.get('purged_courses', []),
             'message': msg
         })
 
