@@ -512,6 +512,9 @@ def import_students_to_database(students, db):
         if not hoten and not cccd and not mahv:
             continue
 
+        db.unmark_student_deleted(mahv=mahv, cccd=cccd, hoten=hoten)
+        s['_force_unmark_deleted'] = True
+
         # 1. Thêm vào Roster
         db.add_to_roster({
             'hoten': hoten,

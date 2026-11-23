@@ -11,6 +11,7 @@ DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data')
 BACKUP_DIR = os.path.join(DATA_DIR, 'backups')
 STUDENTS_FILE = os.path.join(DATA_DIR, 'students.json')
 ROSTER_FILE = os.path.join(DATA_DIR, 'roster.json')
+DELETED_FILE = os.path.join(DATA_DIR, 'deleted_students.json')
 CONFIG_FILE = os.path.join(DATA_DIR, 'config.json')
 
 os.makedirs(DATA_DIR, exist_ok=True)
@@ -61,6 +62,7 @@ class StudentDatabase:
         self._stats_cache = None
         self.version = 1
         self.last_modified = time.time()
+        self.deleted_keys = self._load_deleted_keys()
         self.roster = self._load_roster()
         self.students = self._load()
         self._sync_students_from_roster()
@@ -91,12 +93,18 @@ class StudentDatabase:
         for s_key, s_st in self.students.items():
             s_cccd = s_st.get('cccd', '').strip()
             s_mahv = s_st.get('mahv', '').strip()
-            s_hoten = strip_vietnamese_accents(s_st.get('hoten', ''))
+            s_hoten = s_st.get('hoten', '').strip()
+            s_hoten_norm = strip_vietnamese_accents(s_hoten)
+
+            # Nếu học viên này đã bị đánh dấu xóa vĩnh viễn -> BỎ QUA HOÀN TOÀN
+            if self.is_student_deleted(s_mahv, s_cccd, s_hoten):
+                continue
+
             # Giữ lại học viên nếu thuộc danh sách quản lý (Roster) HOẶC do chính tôi tra cứu / đã đẩy vào hệ thống
             is_mine = (s_key in roster_keys or 
                        (s_cccd and s_cccd in roster_keys) or 
                        (s_mahv and s_mahv in roster_keys) or 
-                       (s_hoten and s_hoten in roster_keys) or
+                       (s_hoten_norm and s_hoten_norm in roster_keys) or
                        s_st.get('is_my_query') or
                        bool(s_st.get('khoa')) or
                        s_st.get('quangduong', 0) > 0 or
@@ -114,6 +122,8 @@ class StudentDatabase:
             cccd = r_st.get('cccd', '').strip()
             mahv = r_st.get('mahv', '').strip()
             hoten = r_st.get('hoten', '').strip()
+            if self.is_student_deleted(mahv, cccd, hoten):
+                continue
             target_key = mahv or cccd or hoten
             if not target_key: continue
 
@@ -248,6 +258,10 @@ class StudentDatabase:
             s_hoten = (s.get('hoten') or '').strip().lower()
             s_no_acc = strip_vietnamese_accents(s.get('hoten') or '').lower()
 
+            # Nếu đã bị đánh dấu xóa vĩnh viễn -> loại bỏ ngay
+            if self.is_student_deleted(s_mahv, s_cccd, s.get('hoten')):
+                continue
+
             is_in_roster = (
                 (s_hoten and s_hoten in roster_keys) or
                 (s_no_acc and s_no_acc in roster_keys) or
@@ -255,12 +269,9 @@ class StudentDatabase:
                 (s_mahv and s_mahv in roster_keys)
             )
             is_queried_by_me = (
-                s.get('is_my_query') or
-                s.get('quangduong', 0) > 0 or
-                s.get('thoigian', 0) > 0 or
-                s.get('has_lythuyet') or
                 s.get('interaction_username') == 'tranthang252' or
-                s.get('interaction_user_id') in ('1380376964304474173', '1380096710386384937')
+                str(s.get('interaction_user_id')) in ('1380376964304474173', '1380096710386384937') or
+                ('thắng' in str(s.get('note', '')).lower())
             )
 
             if is_in_roster or is_queried_by_me:
@@ -271,6 +282,75 @@ class StudentDatabase:
         self.students = cleaned
         self._save()
         return len(cleaned)
+
+    def _load_deleted_keys(self):
+        if os.path.exists(DELETED_FILE):
+            try:
+                with open(DELETED_FILE, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                    if isinstance(data, list):
+                        return set(str(x).strip().lower() for x in data if str(x).strip())
+            except Exception:
+                return set()
+        return set()
+
+    def _save_deleted_keys(self):
+        with self._lock:
+            try:
+                tmp = DELETED_FILE + '.tmp'
+                with open(tmp, 'w', encoding='utf-8') as f:
+                    json.dump(sorted(list(self.deleted_keys)), f, ensure_ascii=False, indent=2)
+                os.replace(tmp, DELETED_FILE)
+                notify_data_changed()
+            except Exception as e:
+                print("Lỗi lưu danh sách học viên đã xóa:", e)
+
+    def is_student_deleted(self, mahv=None, cccd=None, hoten=None):
+        """Kiểm tra học viên có thuộc danh sách đã bị xóa vĩnh viễn hay không."""
+        if not self.deleted_keys:
+            return False
+        checks = []
+        if mahv: checks.append(str(mahv).strip().lower())
+        if cccd: checks.append(str(cccd).strip().lower())
+        if hoten:
+            h = str(hoten).strip().lower()
+            checks.append(h)
+            h_norm = strip_vietnamese_accents(h)
+            if h_norm: checks.append(h_norm)
+        return any(c in self.deleted_keys for c in checks if c)
+
+    def mark_student_deleted(self, mahv=None, cccd=None, hoten=None, key=None):
+        """Ghi nhận học viên vào danh sách đã xóa vĩnh viễn (chặn mọi luồng tự nạp)."""
+        with self._lock:
+            added = False
+            for val in (mahv, cccd, hoten, key):
+                if val:
+                    s_val = str(val).strip().lower()
+                    if s_val and len(s_val) >= 2:
+                        self.deleted_keys.add(s_val)
+                        s_norm = strip_vietnamese_accents(s_val)
+                        if s_norm and len(s_norm) >= 2:
+                            self.deleted_keys.add(s_norm)
+                        added = True
+            if added:
+                self._save_deleted_keys()
+
+    def unmark_student_deleted(self, mahv=None, cccd=None, hoten=None, key=None):
+        """Xóa học viên khỏi danh sách đã xóa khi người dùng chủ động nạp lại."""
+        with self._lock:
+            removed = False
+            for val in (mahv, cccd, hoten, key):
+                if val:
+                    s_val = str(val).strip().lower()
+                    if s_val in self.deleted_keys:
+                        self.deleted_keys.remove(s_val)
+                        removed = True
+                    s_norm = strip_vietnamese_accents(s_val)
+                    if s_norm in self.deleted_keys:
+                        self.deleted_keys.remove(s_norm)
+                        removed = True
+            if removed:
+                self._save_deleted_keys()
 
     def _load_roster(self):
         if os.path.exists(ROSTER_FILE):
@@ -436,6 +516,13 @@ class StudentDatabase:
         mahv = student_data.get('mahv', '').strip()
         cccd = student_data.get('cccd', '').strip()
         hoten = student_data.get('hoten', '').strip()
+
+        # Kiểm tra nếu học viên này đã bị người dùng xóa: Tuyệt đối không cho phép tự động nạp lại
+        if self.is_student_deleted(mahv, cccd, hoten) and not student_data.get('_force_unmark_deleted'):
+            return None
+        if student_data.get('_force_unmark_deleted'):
+            self.unmark_student_deleted(mahv, cccd, hoten)
+
         if student_data.get('is_my_query') is None:
             student_data['is_my_query'] = True
 
@@ -714,6 +801,17 @@ class StudentDatabase:
                 del self.roster[rk]
                 roster_deleted = True
 
+        # Ghi nhận vào danh sách xóa vĩnh viễn để chặn mọi luồng Discord hay ngầm tự ý nạp lại
+        if target_student:
+            self.mark_student_deleted(
+                mahv=target_student.get('mahv'),
+                cccd=target_student.get('cccd'),
+                hoten=target_student.get('hoten'),
+                key=sid
+            )
+        else:
+            self.mark_student_deleted(key=sid)
+
         if deleted or roster_deleted:
             self._save()
             if roster_deleted:
@@ -764,6 +862,10 @@ class StudentDatabase:
 
             # Loại bỏ hoàn toàn chuỗi rỗng và chuỗi quá ngắn khỏi target_keys để không bao giờ xóa nhầm học viên khác
             target_keys = {tk for tk in target_keys if tk and len(tk) >= 2}
+
+            # Ghi nhận toàn bộ học viên của các khóa đã xóa vào danh sách xóa vĩnh viễn
+            for tk in target_keys:
+                self.mark_student_deleted(key=tk)
 
             count = 0
             # 2. Xóa khỏi self.students
@@ -913,6 +1015,9 @@ class StudentDatabase:
         # Khóa định danh ưu tiên: CCCD > Mã HV > Họ tên
         key = cccd or mahv or hoten
         now_str = datetime.now().strftime('%d/%m/%Y %H:%M:%S')
+
+        # Khi người dùng chủ động nạp học viên vào danh sách gốc: gỡ bỏ khỏi danh sách đã xóa
+        self.unmark_student_deleted(mahv=mahv, cccd=cccd, hoten=hoten, key=key)
 
         # Kiểm tra xem đã có học viên này trong danh sách gốc chưa
         existing_key = None

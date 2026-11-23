@@ -348,6 +348,29 @@ def handle_live_discord_student(st, cmd):
     if not mahv and not hoten and not cccd:
         return
 
+    # 1. NẾU ĐÃ BỊ XOÁ: Tuyệt đối không bao giờ cho phép nạp lại tự động!
+    if db.is_student_deleted(mahv=mahv, cccd=cccd, hoten=hoten):
+        return
+
+    # 2. KIỂM TRA HỌC VIÊN CÓ THUỘC QUẢN LÝ CỦA TÔI KHÔNG:
+    # - Đang có trong danh sách CSDL hiển thị (db.students)
+    # - HOẶC có trong danh sách gốc được đẩy vào (db.roster)
+    # - HOẶC lệnh tra cứu được phát đi từ chính tài khoản Discord của tôi (tranthang252)
+    i_uid = str(st.get('interaction_user_id') or '')
+    i_uname = str(st.get('interaction_username') or '').lower()
+    is_my_discord = (i_uid in ('1380376964304474173', '1380096710386384937') or i_uname == 'tranthang252')
+    
+    is_in_students = bool(db.find_student(mahv) or db.find_student(cccd) or db.find_student(hoten))
+    is_in_roster = bool(
+        (mahv and any(r.get('mahv') == mahv for r in db.roster.values())) or
+        (cccd and any(r.get('cccd') == cccd for r in db.roster.values())) or
+        (hoten and any(database.strip_vietnamese_accents(r.get('hoten')) == database.strip_vietnamese_accents(hoten) for r in db.roster.values()))
+    )
+
+    if not (is_in_students or is_in_roster or is_my_discord):
+        # Học viên lạ của giáo viên khác trên kênh chung -> BỎ QUA HOÀN TOÀN, KHÔNG TỰ VỀ APP!
+        return
+
     st['is_my_query'] = True
     
     # 1. Nếu là báo cáo lý thuyết hoặc có file PDF lý thuyết
@@ -541,6 +564,7 @@ def query_student():
         raw_dat = res_dat.get('data')
         st_dat = raw_dat[0] if isinstance(raw_dat, list) and raw_dat else (raw_dat or {})
         st_dat['is_my_query'] = True
+        st_dat['_force_unmark_deleted'] = True
         st_dat['interaction_username'] = 'tranthang252'
         st_dat['interaction_user_id'] = '1380376964304474173'
         saved_st = db.upsert_student(st_dat, auto_save=True)
@@ -578,6 +602,7 @@ def query_student():
         raw_dat = res_dat.get('data')
         st_dat = raw_dat[0] if isinstance(raw_dat, list) and raw_dat else (raw_dat or {})
         st_dat['is_my_query'] = True
+        st_dat['_force_unmark_deleted'] = True
         st_dat['interaction_username'] = 'tranthang252'
         st_dat['interaction_user_id'] = '1380376964304474173'
         saved_st = db.upsert_student(st_dat, auto_save=True)
@@ -594,6 +619,7 @@ def query_student():
                     raw_lt = res_lt.get('data')
                     st_lt = raw_lt[0] if isinstance(raw_lt, list) and raw_lt else (raw_lt or {})
                     st_lt['is_my_query'] = True
+                    st_lt['_force_unmark_deleted'] = True
                     st_lt['interaction_username'] = 'tranthang252'
                     st_lt['interaction_user_id'] = '1380376964304474173'
                     saved_st = db.upsert_student(st_lt, auto_save=True)
@@ -636,6 +662,7 @@ def query_student():
         raw_items = raw_lt if isinstance(raw_lt, list) else [raw_lt]
         for it in raw_items:
             it['is_my_query'] = True
+            it['_force_unmark_deleted'] = True
             it['interaction_username'] = 'tranthang252'
             it['interaction_user_id'] = '1380376964304474173'
             saved = db.upsert_student(it, auto_save=True)
@@ -765,6 +792,7 @@ def query_student():
         if isinstance(raw_data, list):
             for st in raw_data:
                 st['is_my_query'] = True
+                st['_force_unmark_deleted'] = True
                 st['interaction_username'] = 'tranthang252'
                 st['interaction_user_id'] = '1380376964304474173'
                 saved = db.upsert_student(st)
@@ -775,6 +803,7 @@ def query_student():
         else:
             if isinstance(raw_data, dict):
                 raw_data['is_my_query'] = True
+                raw_data['_force_unmark_deleted'] = True
                 raw_data['interaction_username'] = 'tranthang252'
                 raw_data['interaction_user_id'] = '1380376964304474173'
             saved = db.upsert_student(raw_data)
@@ -2178,9 +2207,9 @@ _cloud_sync_lock = threading.Lock()
 _last_synced_data_hash = None
 
 def compute_data_hashes():
-    """Tính toán hash MD5 của nội dung students.json và roster.json."""
+    """Tính toán hash MD5 của nội dung students.json, roster.json và deleted_students.json."""
     h = hashlib.md5()
-    for fpath in (database.STUDENTS_FILE, database.ROSTER_FILE):
+    for fpath in (database.STUDENTS_FILE, database.ROSTER_FILE, database.DELETED_FILE):
         if os.path.exists(fpath):
             with open(fpath, 'rb') as f:
                 h.update(f.read())
@@ -2197,8 +2226,8 @@ database.register_on_change_callback(on_database_change)
 
 def sync_database_to_github():
     """
-    Lưu vĩnh viễn dữ liệu học viên (students.json & roster.json) lên GitHub.
-    - Sử dụng GitHub Git Trees API để tạo DUY NHẤT 1 commit nguyên tử cho cả 2 tệp.
+    Lưu vĩnh viễn dữ liệu học viên (students.json, roster.json & deleted_students.json) lên GitHub.
+    - Sử dụng GitHub Git Trees API để tạo DUY NHẤT 1 commit nguyên tử cho tất cả tệp.
     - Thông điệp commit có tiền tố '[skip render]' để Render KHÔNG khởi động lại hay huỷ container.
     - So sánh hash dữ liệu để KHÔNG gọi API nếu nội dung không thực sự thay đổi.
     """
@@ -2219,12 +2248,16 @@ def sync_database_to_github():
     try:
         students_str = ''
         roster_str = ''
+        deleted_str = '[]'
         if os.path.exists(database.STUDENTS_FILE):
             with open(database.STUDENTS_FILE, 'r', encoding='utf-8') as f:
                 students_str = f.read()
         if os.path.exists(database.ROSTER_FILE):
             with open(database.ROSTER_FILE, 'r', encoding='utf-8') as f:
                 roster_str = f.read()
+        if os.path.exists(database.DELETED_FILE):
+            with open(database.DELETED_FILE, 'r', encoding='utf-8') as f:
+                deleted_str = f.read()
 
         if not students_str and not roster_str:
             return {'success': False, 'error': 'Tệp dữ liệu rỗng'}
@@ -2236,7 +2269,7 @@ def sync_database_to_github():
             return {'success': False, 'error': f'Lỗi lấy ref main: {r_ref.status_code}'}
         base_commit_sha = r_ref.json()['object']['sha']
 
-        # 2. Tạo Tree chứa cả 2 tệp cùng lúc
+        # 2. Tạo Tree chứa cả 3 tệp cùng lúc
         tree_url = f'https://api.github.com/repos/{GITHUB_REPO}/git/trees'
         tree_payload = {
             'base_tree': base_commit_sha,
@@ -2252,6 +2285,12 @@ def sync_database_to_github():
                     'mode': '100644',
                     'type': 'blob',
                     'content': roster_str
+                },
+                {
+                    'path': 'data/deleted_students.json',
+                    'mode': '100644',
+                    'type': 'blob',
+                    'content': deleted_str
                 }
             ]
         }
@@ -2263,7 +2302,7 @@ def sync_database_to_github():
         # 3. Tạo Commit DUY NHẤT với [skip render] để Render không bao giờ tự động khởi động lại
         commit_url = f'https://api.github.com/repos/{GITHUB_REPO}/git/commits'
         commit_payload = {
-            'message': '[skip render] Auto-sync persistent database (students.json & roster.json)',
+            'message': '[skip render] Auto-sync persistent database (students, roster & deleted)',
             'tree': tree_sha,
             'parents': [base_commit_sha]
         }

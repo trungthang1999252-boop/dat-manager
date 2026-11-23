@@ -1354,24 +1354,14 @@ class DiscordDATService:
             print("[Discord Live Watcher] 🟢 Bắt đầu lắng nghe tin nhắn Discord thời gian thực...")
             last_mid = None
 
-            # BƯỚC 1: Quét nhanh 35 tin nhắn gần nhất lúc khởi động để gom ngay kết quả vừa tra cứu
+            # BƯỚC 1: Lấy tin nhắn mới nhất để làm mốc bắt đầu (chỉ lắng nghe tin nhắn mới phát sinh, không quét ngược lịch sử tránh kéo học viên lạ)
             try:
-                r_init = self.session.get(f"https://discord.com/api/v9/channels/{CHANNEL_ID}/messages?limit=35", timeout=5)
+                r_init = self.session.get(f"https://discord.com/api/v9/channels/{CHANNEL_ID}/messages?limit=5", timeout=5)
                 if r_init.status_code == 200:
                     init_msgs = r_init.json()
                     if init_msgs and isinstance(init_msgs, list) and len(init_msgs) > 0:
                         last_mid = init_msgs[0].get('id')
                         self.latest_msg_id = last_mid
-                        # Duyệt ngược từ cũ đến mới để cập nhật tuần tự
-                        for m in reversed(init_msgs):
-                            parsed_list = self.parse_discord_message(m)
-                            for st in parsed_list:
-                                if on_student_parsed_cb:
-                                    cmd = 'lythuyet' if st.get('has_lythuyet') or st.get('lythuyet_pdf_url') else ('phien' if st.get('is_phien_embed') or st.get('pdf_url') else 'dat')
-                                    try:
-                                        on_student_parsed_cb(st, cmd)
-                                    except Exception as ex_cb:
-                                        print("[Discord Live Watcher] Lỗi callback khởi tạo:", ex_cb)
             except Exception as e_init:
                 print("[Discord Live Watcher] Cảnh báo quét khởi tạo:", e_init)
 
