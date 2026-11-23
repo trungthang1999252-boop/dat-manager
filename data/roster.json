@@ -254,6 +254,94 @@
     "ghichu": "GV: Trần Thái Trung Thắng",
     "updated_at": "20/11/2026 22:01:17"
   },
+  "NGUYỄN ĐỨC TRỌNG": {
+    "hoten": "NGUYỄN ĐỨC TRỌNG",
+    "cccd": "052204004596",
+    "mahv": "52001-20261007-000024",
+    "khoa": "CD_14C1",
+    "hang": "C1",
+    "ngaysinh": "21/02/2004"
+  },
+  "ĐẶNG THÀNH DUY": {
+    "hoten": "ĐẶNG THÀNH DUY",
+    "cccd": "052203001768",
+    "mahv": "52001-20261007-000023",
+    "khoa": "CD_14C1",
+    "hang": "C1",
+    "ngaysinh": "19/03/2003"
+  },
+  "ĐINH VĂN TIẾN": {
+    "hoten": "ĐINH VĂN TIẾN",
+    "cccd": "051099005951",
+    "mahv": "52001-20261007-000002",
+    "khoa": "CD_14C1",
+    "hang": "C1",
+    "ngaysinh": "22/06/1999"
+  },
+  "NGÔ MINH HẬU": {
+    "hoten": "NGÔ MINH HẬU",
+    "cccd": "052098008260",
+    "mahv": "52001-20261016-000025",
+    "khoa": "CD_15C1",
+    "hang": "C1",
+    "ngaysinh": "03/02/1998"
+  },
+  "LÊ TRỌNG NGHĨA": {
+    "hoten": "LÊ TRỌNG NGHĨA",
+    "cccd": "052200004640",
+    "mahv": "52001-20261016-000026",
+    "khoa": "CD_15C1",
+    "hang": "C1",
+    "ngaysinh": "09/10/2000"
+  },
+  "PHÙNG QUANG THÂN": {
+    "hoten": "PHÙNG QUANG THÂN",
+    "cccd": "052080015654",
+    "mahv": "52001-20261016-000028",
+    "khoa": "CD_15C1",
+    "hang": "C1",
+    "ngaysinh": "26/06/1980"
+  },
+  "NGUYỄN THỊ CẨM GIANG": {
+    "hoten": "NGUYỄN THỊ CẨM GIANG",
+    "cccd": "052192024422",
+    "mahv": "52001-20261004-000033",
+    "khoa": "CD_111B.01",
+    "hang": "B.01",
+    "ngaysinh": "12/05/1992"
+  },
+  "NGUYỄN THỊ MỸ NGOAN": {
+    "hoten": "NGUYỄN THỊ MỸ NGOAN",
+    "cccd": "052190003271",
+    "mahv": "52001-20260920-000002",
+    "khoa": "CD_238B",
+    "hang": "B",
+    "ngaysinh": "17/04/1990"
+  },
+  "NGUYỄN THÀNH TRUNG": {
+    "hoten": "NGUYỄN THÀNH TRUNG",
+    "cccd": "052098004242",
+    "mahv": "52001-20260920-000108",
+    "khoa": "CD_238B",
+    "hang": "B",
+    "ngaysinh": "15/09/1998"
+  },
+  "BÙI MINH CHIẾN": {
+    "hoten": "BÙI MINH CHIẾN",
+    "cccd": "052202001558",
+    "mahv": "52001-20260920-000107",
+    "khoa": "CD_238B",
+    "hang": "B",
+    "ngaysinh": "28/05/2002"
+  },
+  "ĐẶNG VĂN LUẬN": {
+    "hoten": "ĐẶNG VĂN LUẬN",
+    "cccd": "052088014741",
+    "mahv": "52001-20260920-000089",
+    "khoa": "CD_238B",
+    "hang": "B",
+    "ngaysinh": "19/07/1988"
+  },
   "NGUYỄN NGỌC CƯỜNG": {
     "hoten": "NGUYỄN NGỌC CƯỜNG",
     "cccd": "049087005286",
@@ -270,228 +358,20 @@
     "hang": "B",
     "ngaysinh": "17/01/2008"
   },
-  "ĐẶNG VĂN LUẬN": {
-    "hoten": "ĐẶNG VĂN LUẬN",
-    "cccd": "052088014741",
-    "mahv": "52001-20260920-000089",
+  "TRẦN THỊ DIỆU": {
+    "hoten": "TRẦN THỊ DIỆU",
+    "cccd": "052199006572",
+    "mahv": "52001-20260920-000171",
     "khoa": "CD_238B",
     "hang": "B",
-    "ngaysinh": "19/07/1988"
+    "ngaysinh": "15/05/1999"
   },
-  "BÙI MINH CHIẾN": {
-    "hoten": "BÙI MINH CHIẾN",
-    "cccd": "052202001558",
-    "mahv": "52001-20260920-000107",
-    "khoa": "CD_238B",
-    "hang": "B",
-    "ngaysinh": "28/05/2002"
-  },
-  "NGUYỄN THÀNH TRUNG": {
-    "hoten": "NGUYỄN THÀNH TRUNG",
-    "cccd": "052098004242",
-    "mahv": "52001-20260920-000108",
-    "khoa": "CD_238B",
-    "hang": "B",
-    "ngaysinh": "15/09/1998"
-  },
-  "NGUYỄN THỊ MỸ NGOAN": {
-    "hoten": "NGUYỄN THỊ MỸ NGOAN",
-    "cccd": "052190003271",
-    "mahv": "52001-20260920-000002",
-    "khoa": "CD_238B",
-    "hang": "B",
-    "ngaysinh": "17/04/1990"
-  },
-  "NGUYỄN THỊ CẨM GIANG": {
-    "hoten": "NGUYỄN THỊ CẨM GIANG",
-    "cccd": "052192024422",
-    "mahv": "52001-20261004-000033",
-    "khoa": "CD_111B.01",
-    "hang": "B.01",
-    "ngaysinh": "12/05/1992"
-  },
-  "PHÙNG QUANG THÂN": {
-    "hoten": "PHÙNG QUANG THÂN",
-    "cccd": "052080015654",
-    "mahv": "52001-20261016-000028",
-    "khoa": "CD_15C1",
-    "hang": "C1",
-    "ngaysinh": "26/06/1980"
-  },
-  "LÊ TRỌNG NGHĨA": {
-    "hoten": "LÊ TRỌNG NGHĨA",
-    "cccd": "052200004640",
-    "mahv": "52001-20261016-000026",
-    "khoa": "CD_15C1",
-    "hang": "C1",
-    "ngaysinh": "09/10/2000"
-  },
-  "NGÔ MINH HẬU": {
-    "hoten": "NGÔ MINH HẬU",
-    "cccd": "052098008260",
-    "mahv": "52001-20261016-000025",
-    "khoa": "CD_15C1",
-    "hang": "C1",
-    "ngaysinh": "03/02/1998"
-  },
-  "ĐINH VĂN TIẾN": {
-    "hoten": "ĐINH VĂN TIẾN",
-    "cccd": "051099005951",
-    "mahv": "52001-20261007-000002",
-    "khoa": "CD_14C1",
-    "hang": "C1",
-    "ngaysinh": "22/06/1999"
-  },
-  "ĐẶNG THÀNH DUY": {
-    "hoten": "ĐẶNG THÀNH DUY",
-    "cccd": "052203001768",
-    "mahv": "52001-20261007-000023",
-    "khoa": "CD_14C1",
-    "hang": "C1",
-    "ngaysinh": "19/03/2003"
-  },
-  "NGUYỄN ĐỨC TRỌNG": {
-    "hoten": "NGUYỄN ĐỨC TRỌNG",
-    "cccd": "052204004596",
-    "mahv": "52001-20261007-000024",
-    "khoa": "CD_14C1",
-    "hang": "C1",
-    "ngaysinh": "21/02/2004"
-  },
-  "ĐINH MỪNG THẮNG": {
-    "hoten": "ĐINH MỪNG THẮNG",
-    "cccd": "051205000967",
-    "mahv": "52001-20261007-000019",
-    "khoa": "CD_14C1",
-    "hang": "C1",
-    "ngaysinh": "02/09/2005"
-  },
-  "PHAN THỊ THẢO NGUYÊN": {
-    "hoten": "PHAN THỊ THẢO NGUYÊN",
-    "cccd": "052303013528",
-    "mahv": "52001-20260920-000099",
-    "khoa": "CD_238B",
-    "hang": "B",
-    "ngaysinh": "28/06/2003"
-  },
-  "PHẠM THỊ THU HIỀN": {
-    "hoten": "PHẠM THỊ THU HIỀN",
-    "cccd": "051191016803",
-    "mahv": "52001-20261004-000075",
-    "khoa": "CD_111B.01",
-    "hang": "B.01",
-    "ngaysinh": "02/02/1991"
-  },
-  "PHẠM VĂN THƯỚC": {
-    "hoten": "PHẠM VĂN THƯỚC",
-    "cccd": "051086002027",
-    "mahv": "52001-20261004-000072",
-    "khoa": "CD_111B.01",
-    "hang": "B.01",
-    "ngaysinh": "12/02/1986"
-  },
-  "HUỲNH PHAN KHÁNH DUNG": {
-    "hoten": "HUỲNH PHAN KHÁNH DUNG",
-    "cccd": "051306000413",
-    "mahv": "52001-20261004-000068",
-    "khoa": "CD_111B.01",
-    "hang": "B.01",
-    "ngaysinh": "25/06/2006"
-  },
-  "LÊ THỊ DIỄM QUYÊN": {
-    "hoten": "LÊ THỊ DIỄM QUYÊN",
-    "cccd": "051191016777",
-    "mahv": "52001-20261004-000064",
-    "khoa": "CD_111B.01",
-    "hang": "B.01",
-    "ngaysinh": "24/10/1991"
-  },
-  "TRẦN THỊ THÍ": {
-    "hoten": "TRẦN THỊ THÍ",
-    "cccd": "051191011856",
-    "mahv": "52001-20261004-000065",
-    "khoa": "CD_111B.01",
-    "hang": "B.01",
-    "ngaysinh": "10/04/1991"
-  },
-  "NGUYỄN THỊ THU ĐẠT": {
-    "hoten": "NGUYỄN THỊ THU ĐẠT",
-    "cccd": "051187001764",
-    "mahv": "52001-20261004-000067",
-    "khoa": "CD_111B.01",
-    "hang": "B.01",
-    "ngaysinh": "01/06/1987"
-  },
-  "HUỲNH THỊ THÚY TRINH": {
-    "hoten": "HUỲNH THỊ THÚY TRINH",
-    "cccd": "051196011823",
-    "mahv": "52001-20261004-000066",
-    "khoa": "CD_111B.01",
-    "hang": "B.01",
-    "ngaysinh": "20/10/1996"
-  },
-  "NGUYỄN THỊ QUỲNH LIỄU": {
-    "hoten": "NGUYỄN THỊ QUỲNH LIỄU",
-    "cccd": "",
-    "mahv": "52001-20261012-000050",
-    "khoa": "",
-    "hang": "",
-    "ngaysinh": ""
-  },
-  "LÊ THỊ NỮ": {
-    "hoten": "LÊ THỊ NỮ",
-    "cccd": "052301010960",
-    "mahv": "52001-20261012-000051",
+  "NGUYỄN THỊ THU THẮM": {
+    "hoten": "NGUYỄN THỊ THU THẮM",
+    "cccd": "052196011175",
+    "mahv": "52001-20261012-000052",
     "khoa": "CD_112B.01",
     "hang": "B.01",
-    "ngaysinh": "01/07/2001"
-  },
-  "HUỲNH BÁ VINH": {
-    "hoten": "HUỲNH BÁ VINH",
-    "cccd": "052205001443",
-    "mahv": "52001-20261016-000033",
-    "khoa": "CD_15C1",
-    "hang": "C1",
-    "ngaysinh": "23/08/2005"
-  },
-  "NGUYỄN VĂN CHÂU": {
-    "hoten": "NGUYỄN VĂN CHÂU",
-    "cccd": "060093008495",
-    "mahv": "52001-20261102-000026",
-    "khoa": "CD_29CE",
-    "hang": "Cm-CE",
-    "ngaysinh": "18/10/1993"
-  },
-  "NGUYỄN TRỌNG HIỀN": {
-    "hoten": "NGUYỄN TRỌNG HIỀN",
-    "cccd": "075092001535",
-    "mahv": "52001-20261102-000022",
-    "khoa": "CD_29CE",
-    "hang": "Cm-CE",
-    "ngaysinh": "17/06/1992"
-  },
-  "HUỲNH TẤN VIÊN": {
-    "hoten": "HUỲNH TẤN VIÊN",
-    "cccd": "052095006767",
-    "mahv": "52001-20261102-000023",
-    "khoa": "CD_29CE",
-    "hang": "Cm-CE",
-    "ngaysinh": "02/11/1995"
-  },
-  "NGUYỄN VĂN HÙNG": {
-    "hoten": "NGUYỄN VĂN HÙNG",
-    "cccd": "051085017372",
-    "mahv": "52001-20261102-000029",
-    "khoa": "CD_29CE",
-    "hang": "Cm-CE",
-    "ngaysinh": "20/08/1985"
-  },
-  "TĂNG HOÀN TRÍ": {
-    "hoten": "TĂNG HOÀN TRÍ",
-    "cccd": "052203011744",
-    "mahv": "52001-20260908-000096",
-    "khoa": "CD_13C1",
-    "hang": "C1",
-    "ngaysinh": "27/08/2003"
+    "ngaysinh": "10/09/1996"
   }
 }
