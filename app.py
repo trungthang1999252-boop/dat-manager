@@ -289,6 +289,10 @@ def ensure_lythuyet_evaluated(student_obj, exempt_all_cabin=False, force_downloa
     if not student_obj:
         return student_obj
 
+    # Nếu đã được đánh giá trước đó và không yêu cầu bắt buộc tải lại: trả về ngay
+    if not force_download and student_obj.get('totnghiep_has_pdf') and student_obj.get('lythuyet_status') in ('Đạt', 'Không'):
+        return student_obj
+
     pdf_url = student_obj.get('lythuyet_pdf_url')
     fname = student_obj.get('lythuyet_pdf_filename') or f"{student_obj.get('mahv', 'HV')}_lythuyet.pdf"
 
@@ -789,6 +793,128 @@ def query_student():
     else:
         return jsonify({'success': False, 'error': res.get('error', 'Lỗi không xác định khi tra cứu.')})
 
+@app.route('/api/daykhoa/preview', methods=['GET', 'POST'])
+def daykhoa_preview_api():
+    """
+    Quét và kiểm tra danh sách học viên trong một khóa học để chuẩn bị lệnh /daykhoa:
+    1. Kiểm tra từng học viên xem cột lý thuyết đã ĐẠT chưa.
+    2. Với học viên ĐẠT, đọc file PDF lý thuyết (_lythuyet.pdf) để trích xuất biển số xe ('Phân Xe: <biển số>').
+    3. Gom nhóm theo các biển số xe khác nhau để hệ thống thiết lập lệnh đẩy khóa riêng biệt cho từng xe.
+    """
+    if request.method == 'POST':
+        data = request.get_json(silent=True) or {}
+        course_name = (data.get('course') or data.get('khoa') or '').strip()
+    else:
+        course_name = (request.args.get('course') or request.args.get('khoa') or '').strip()
+
+    # Nếu không truyền tên khóa, trả về danh sách tất cả các khóa hiện có trong hệ thống
+    if not course_name:
+        all_students = db.get_all()
+        course_counts = {}
+        for s in all_students:
+            c = (s.get('khoa') or '').strip()
+            if c:
+                course_counts[c] = course_counts.get(c, 0) + 1
+        return jsonify({
+            'success': True,
+            'courses': [
+                {'name': c, 'student_count': count}
+                for c, count in sorted(course_counts.items())
+            ]
+        })
+
+    all_students = db.get_all()
+    course_students = [s for s in all_students if (s.get('khoa') or '').strip().upper() == course_name.strip().upper()]
+    if not course_students:
+        return jsonify({'success': False, 'error': f'Không tìm thấy học viên nào thuộc khóa {course_name}.'})
+
+    import totnghiep_service
+    passed_students = []
+    skipped_students = []
+    car_groups = {}
+    no_car_students = []
+
+    for s in course_students:
+        s = ensure_lythuyet_evaluated(s, force_download=False)
+        is_lt_dat = bool(s.get('lythuyet_dat') is True or s.get('lythuyet_status') == 'Đạt')
+        if not is_lt_dat:
+            lt_st = s.get('lythuyet_status') or 'Chưa đạt'
+            reason = s.get('lythuyet_reason') or ('Chưa hoàn thành đủ các môn lý thuyết bắt buộc' if lt_st == 'Không' else 'Chưa tra cứu lý thuyết (/lythuyet)')
+            skipped_students.append({
+                'mahv': s.get('mahv', ''),
+                'cccd': s.get('cccd', ''),
+                'hoten': s.get('hoten', 'Chưa rõ tên'),
+                'status': lt_st,
+                'reason': reason
+            })
+            continue
+
+        passed_students.append(s)
+
+        # Trích xuất xe từ file PDF lý thuyết
+        car = None
+        fname = s.get('lythuyet_pdf_filename')
+        candidate_paths = []
+        if fname:
+            candidate_paths.append(os.path.join(DOWNLOADS_DIR, fname))
+        if s.get('mahv'):
+            candidate_paths.append(os.path.join(DOWNLOADS_DIR, f"{s.get('mahv')}_lythuyet.pdf"))
+        if s.get('cccd'):
+            candidate_paths.append(os.path.join(DOWNLOADS_DIR, f"{s.get('cccd')}_lythuyet.pdf"))
+
+        pdf_path = next((p for p in candidate_paths if os.path.exists(p)), None)
+        if not pdf_path and s.get('lythuyet_pdf_url'):
+            s = ensure_lythuyet_evaluated(s, force_download=True)
+            fname = s.get('lythuyet_pdf_filename')
+            if fname and os.path.exists(os.path.join(DOWNLOADS_DIR, fname)):
+                pdf_path = os.path.join(DOWNLOADS_DIR, fname)
+
+        if pdf_path and os.path.exists(pdf_path):
+            car = totnghiep_service.extract_car_from_lythuyet_pdf(pdf_path)
+
+        if not car:
+            car = s.get('xe_phan')
+
+        if car:
+            clean_car = ds.clean_plate(car)
+            if clean_car not in car_groups:
+                car_groups[clean_car] = []
+            car_groups[clean_car].append({
+                'mahv': s.get('mahv', ''),
+                'cccd': s.get('cccd', ''),
+                'hoten': s.get('hoten', 'Chưa rõ tên')
+            })
+        else:
+            no_car_students.append({
+                'mahv': s.get('mahv', ''),
+                'cccd': s.get('cccd', ''),
+                'hoten': s.get('hoten', 'Chưa rõ tên'),
+                'reason': "Đã đạt lý thuyết nhưng không tìm thấy thông tin 'Phân Xe' trong PDF lý thuyết"
+            })
+
+    unique_cars = sorted(list(car_groups.keys()))
+    car_groups_list = [
+        {
+            'biensoxe': plate,
+            'count': len(car_groups[plate]),
+            'students': car_groups[plate]
+        }
+        for plate in unique_cars
+    ]
+
+    return jsonify({
+        'success': True,
+        'course': course_name,
+        'total_students': len(course_students),
+        'passed_count': len(passed_students),
+        'skipped_count': len(skipped_students),
+        'unique_cars': unique_cars,
+        'car_count': len(unique_cars),
+        'car_groups': car_groups_list,
+        'skipped_students': skipped_students,
+        'no_car_students': no_car_students
+    })
+
 @app.route('/api/daykhoa', methods=['POST'])
 def daykhoa_api():
     """
@@ -798,7 +924,7 @@ def daykhoa_api():
        Nếu CHƯA ĐẠT: Tuyệt đối không chạy lệnh, trả về thông báo lỗi rõ ràng.
     2. Nếu ĐÃ ĐẠT: Mở file PDF trong cột lý thuyết tương ứng (_lythuyet.pdf),
        trích xuất thông tin học viên đó được phân xe nào ('Phân Xe: <biển số>').
-    3. Tiến hành gửi lệnh /daykhoa khoa: <khoa> biensoxe: <biển số> tới Discord Bot.
+    3. Nếu trong khóa có nhiều xe khác nhau: Thiết lập lệnh đẩy khóa riêng biệt cho từng xe khác nhau.
     """
     data = request.get_json(silent=True) or {}
     student_key = (data.get('student_key') or data.get('mahv') or data.get('query') or data.get('cccd') or '').strip()
@@ -922,7 +1048,32 @@ def daykhoa_api():
                 'student': st
             })
 
-    # TRƯỜNG HỢP 2: Chạy theo khóa học (course)
+    # TRƯỜNG HỢP 2: Chạy theo 1 biển số xe cụ thể trong khóa học
+    elif course_name and override_car:
+        clean_car = ds.clean_plate(override_car)
+        res_dk = ds.send_daykhoa(course_name, clean_car)
+        now_str = datetime.now().strftime('%d/%m/%Y %H:%M:%S')
+        all_students = db.get_all()
+        updated_hvs = []
+        for s in all_students:
+            if (s.get('khoa') or '').strip().upper() == course_name.strip().upper():
+                s_car = ds.clean_plate(s.get('xe_phan') or '')
+                if s_car == clean_car:
+                    s['last_daykhoa_time'] = now_str
+                    s['last_daykhoa_res'] = res_dk
+                    db.upsert_student(s, auto_save=False)
+                    broadcast_live_event('student_updated', s)
+                    updated_hvs.append(s.get('hoten'))
+        db._save()
+        return jsonify({
+            'success': res_dk.get('success', False),
+            'course': course_name,
+            'biensoxe': clean_car,
+            'message': res_dk.get('message') or res_dk.get('error'),
+            'updated_students': updated_hvs
+        })
+
+    # TRƯỜNG HỢP 3: Chạy tự động cho toàn bộ khóa học (Thiết lập lệnh riêng biệt cho từng xe khác nhau)
     elif course_name:
         all_students = db.get_all()
         course_students = [s for s in all_students if (s.get('khoa') or '').strip().upper() == course_name.strip().upper()]
@@ -969,7 +1120,9 @@ def daykhoa_api():
             })
 
         results = []
-        for c_plate, hvs in car_to_students.items():
+        for idx, (c_plate, hvs) in enumerate(car_to_students.items()):
+            if idx > 0:
+                time.sleep(1.2)  # Giãn cách 1.2s giữa các lệnh đẩy xe khác nhau để tránh Discord rate limit
             res_dk = ds.send_daykhoa(course_name, c_plate)
             now_str = datetime.now().strftime('%d/%m/%Y %H:%M:%S')
             for hv in hvs:
@@ -992,6 +1145,7 @@ def daykhoa_api():
             'total_students': len(course_students),
             'passed_count': len(passed_students),
             'failed_count': len(failed_students),
+            'car_count': len(results),
             'cars_pushed': results,
             'failed_students': failed_students
         })
