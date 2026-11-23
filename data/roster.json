@@ -454,14 +454,6 @@
     "hang": "C1",
     "ngaysinh": "23/08/2005"
   },
-  "NGUYỄN VĂN HÙNG": {
-    "hoten": "NGUYỄN VĂN HÙNG",
-    "cccd": "051085017372",
-    "mahv": "52001-20261102-000029",
-    "khoa": "CD_29CE",
-    "hang": "Cm-CE",
-    "ngaysinh": "20/08/1985"
-  },
   "LƯƠNG THÀNH ĐẠT": {
     "hoten": "LƯƠNG THÀNH ĐẠT",
     "cccd": "060097006764",
@@ -477,6 +469,14 @@
     "khoa": "CD_29CE",
     "hang": "Cm-CE",
     "ngaysinh": "10/02/1994"
+  },
+  "NGUYỄN VĂN HÙNG": {
+    "hoten": "NGUYỄN VĂN HÙNG",
+    "cccd": "051085017372",
+    "mahv": "52001-20261102-000029",
+    "khoa": "CD_29CE",
+    "hang": "Cm-CE",
+    "ngaysinh": "20/08/1985"
   },
   "HUỲNH TẤN VIÊN": {
     "hoten": "HUỲNH TẤN VIÊN",
