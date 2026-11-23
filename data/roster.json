@@ -438,6 +438,14 @@
     "hang": "",
     "ngaysinh": ""
   },
+  "LÊ THỊ NỮ": {
+    "hoten": "LÊ THỊ NỮ",
+    "cccd": "052301010960",
+    "mahv": "52001-20261012-000051",
+    "khoa": "CD_112B.01",
+    "hang": "B.01",
+    "ngaysinh": "01/07/2001"
+  },
   "TRẦN THIỆN PHƯỚC": {
     "hoten": "TRẦN THIỆN PHƯỚC",
     "cccd": "051201000546",
@@ -485,13 +493,5 @@
     "khoa": "CD_29CE",
     "hang": "Cm-CE",
     "ngaysinh": "02/11/1995"
-  },
-  "LÊ THỊ NỮ": {
-    "hoten": "LÊ THỊ NỮ",
-    "cccd": "052301010960",
-    "mahv": "52001-20261012-000051",
-    "khoa": "CD_112B.01",
-    "hang": "B.01",
-    "ngaysinh": "01/07/2001"
   }
 }
