@@ -26,7 +26,7 @@ def is_course_allowed(course_name):
     7. Xoá những khoá cũ của hạng B từ 236 trở về trước (B <= 236). Chỉ giữ B > 236 (CD_237B, CD_238B...)
     """
     if not course_name:
-        return False, "Tên khoá rỗng"
+        return True, "Không có tên khoá"
 
     c = str(course_name).strip()
     c_up = c.upper()
@@ -40,15 +40,16 @@ def is_course_allowed(course_name):
         return False, "Hạng CE"
 
     # 3. Xoá toàn bộ nâng hạng C / CM
-    if 'LÊN C' in c_up or 'LÊN CM' in c_up or 'CM' in c_up or 'B2 LÊN' in c_up:
+    if any(k in c_up for k in ['LÊN C', 'LÊN CM', 'B2 LÊN', 'B LÊN']) or re.search(r'\bCM\b', c_up):
         return False, "Nâng hạng C / CM"
 
     # 4. Xoá toàn bộ hạng C (CD_128C đến CD_144C...) - chú ý không xoá C1
-    if re.search(r'\b\d+C\b', c_up) or (re.search(r'C\b', c_up) and 'C1' not in c_up):
-        return False, "Hạng C"
+    m_c = re.search(r'(\d+)C(?!\d|[E1])', c_up)
+    if m_c:
+        return False, f"Hạng C ({m_c.group(1)}C)"
 
     # 5. Xoá những khoá cũ của hạng C1 từ 13 trở về trước (C1 <= 13)
-    m_c1 = re.search(r'(\d+)C1', c_up)
+    m_c1 = re.search(r'(\d+)\s*C1', c_up)
     if m_c1:
         c1_num = int(m_c1.group(1))
         if c1_num <= 13:
@@ -56,9 +57,9 @@ def is_course_allowed(course_name):
         else:
             return True, f"Hạng C1 mới > 13 ({c1_num}C1)"
 
-    # 6. Kiểm tra khoá B.01 / B1 (CD_102B.01 đến CD_112B.01)
+    # 6. Kiểm tra khoá B.01 / B1 / TĐ (CD_102B.01 đến CD_112B.01)
     # B.01 từ 108 trở về trước tương ứng với B <= 236
-    m_b01 = re.search(r'(\d+)B\.?01', c_up)
+    m_b01 = re.search(r'(\d+)\s*B\.?01', c_up) or re.search(r'(\d+)\s*(?:TĐ|TD|B1)\b', c_up)
     if m_b01:
         b01_num = int(m_b01.group(1))
         if b01_num <= 108:
@@ -67,7 +68,7 @@ def is_course_allowed(course_name):
             return True, f"Hạng B.01 mới > 108 ({b01_num}B.01)"
 
     # 7. Xoá những khoá cũ của hạng B từ 236 trở về trước (B <= 236)
-    m_b = re.search(r'(\d+)B(?!\.01|\d)', c_up)
+    m_b = re.search(r'(\d+)\s*B(?:2)?(?!\.01|\d)', c_up) or re.search(r'K(\d+)\s*B', c_up)
     if m_b:
         b_num = int(m_b.group(1))
         if b_num <= 236:
@@ -75,7 +76,8 @@ def is_course_allowed(course_name):
         else:
             return True, f"Hạng B mới > 236 ({b_num}B)"
 
-    return False, "Không thuộc danh mục khoá được phép"
+    # Mặc định: giữ lại khoá nếu không vi phạm bất kỳ quy tắc cũ nào ở trên
+    return True, "Khoá hợp lệ"
 
 def strip_accents(s):
     if not s:

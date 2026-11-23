@@ -6,6 +6,7 @@ import time
 from datetime import datetime
 import re
 import base64
+import hashlib
 import requests
 import urllib.request
 import gzip
@@ -41,12 +42,6 @@ init_token = discord_service.auto_detect_discord_token()
 if init_token:
     ds.set_token(init_token)
 db = database.StudentDatabase()
-try:
-    _purged_startup = teacher_sync_service.purge_obsolete_courses(db)
-    if _purged_startup:
-        print(f"🧹 [Khởi động] Đã tự động dọn sạch các khoá cũ khỏi CSDL: {', '.join(_purged_startup)}")
-except Exception as _e_purge:
-    print(f"⚠️ [Khởi động] Lỗi dọn khoá cũ: {_e_purge}")
 _has_initialized_totnghiep = False
 
 def is_my_queried_student(mahv_or_cccd_or_name):
@@ -449,16 +444,16 @@ def get_students():
     if not _has_initialized_totnghiep:
         with _init_lock:
             if not _has_initialized_totnghiep:
+                dirty = False
                 for s in list(db.students.values()):
                     if not s.get('totnghiep_has_pdf') or 'dat_quangduong' not in s.get('totnghiep_details', {}):
                         fname = s.get('lythuyet_pdf_filename') or (f"{s.get('mahv')}_lythuyet.pdf" if s.get('mahv') else '')
                         p = os.path.join(DOWNLOADS_DIR, fname) if fname else ''
                         if p and os.path.exists(p):
                             ensure_lythuyet_evaluated(s, auto_save=False)
-                        else:
-                            db.calculate_progress(s)
-                            db.upsert_student(s, auto_save=False)
-                db._save()
+                            dirty = True
+                if dirty:
+                    db._save()
                 _has_initialized_totnghiep = True
 
     # 2. Kiểm tra ETag 304 Not Modified
@@ -2180,6 +2175,18 @@ GITHUB_TOKEN = os.environ.get('GITHUB_TOKEN', _P1 + _P2 + _P3)
 _cloud_dirty = False
 _last_dirty_time = 0
 _cloud_sync_lock = threading.Lock()
+_last_synced_data_hash = None
+
+def compute_data_hashes():
+    """Tính toán hash MD5 của nội dung students.json và roster.json."""
+    h = hashlib.md5()
+    for fpath in (database.STUDENTS_FILE, database.ROSTER_FILE):
+        if os.path.exists(fpath):
+            with open(fpath, 'rb') as f:
+                h.update(f.read())
+        else:
+            h.update(b'empty')
+    return h.hexdigest()
 
 def on_database_change():
     global _cloud_dirty, _last_dirty_time
@@ -2191,66 +2198,96 @@ database.register_on_change_callback(on_database_change)
 def sync_database_to_github():
     """
     Lưu vĩnh viễn dữ liệu học viên (students.json & roster.json) lên GitHub.
-    Giúp Render ghi nhớ vĩnh viễn mọi học viên đã tra cứu và mọi học viên đã xóa,
-    kể cả khi máy chủ khởi động lại hoặc sau khi ngủ đông.
+    - Sử dụng GitHub Git Trees API để tạo DUY NHẤT 1 commit nguyên tử cho cả 2 tệp.
+    - Thông điệp commit có tiền tố '[skip render]' để Render KHÔNG khởi động lại hay huỷ container.
+    - So sánh hash dữ liệu để KHÔNG gọi API nếu nội dung không thực sự thay đổi.
     """
+    global _last_synced_data_hash
     token = GITHUB_TOKEN
     if not token:
         return {'success': False, 'error': 'Chưa cấu hình GitHub Token'}
+
+    current_hash = compute_data_hashes()
+    if _last_synced_data_hash and current_hash == _last_synced_data_hash:
+        return {'success': True, 'message': 'Dữ liệu không thay đổi, bỏ qua đồng bộ.', 'no_change': True}
 
     headers = {
         'Authorization': f'token {token}',
         'Accept': 'application/vnd.github.v3+json'
     }
 
-    files_to_sync = [
-        ('data/students.json', database.STUDENTS_FILE),
-        ('data/roster.json', database.ROSTER_FILE)
-    ]
+    try:
+        students_str = ''
+        roster_str = ''
+        if os.path.exists(database.STUDENTS_FILE):
+            with open(database.STUDENTS_FILE, 'r', encoding='utf-8') as f:
+                students_str = f.read()
+        if os.path.exists(database.ROSTER_FILE):
+            with open(database.ROSTER_FILE, 'r', encoding='utf-8') as f:
+                roster_str = f.read()
 
-    success_count = 0
-    errors = []
+        if not students_str and not roster_str:
+            return {'success': False, 'error': 'Tệp dữ liệu rỗng'}
 
-    for repo_path, local_path in files_to_sync:
-        if not os.path.exists(local_path):
-            continue
-        try:
-            url = f'https://api.github.com/repos/{GITHUB_REPO}/contents/{repo_path}'
-            r_get = requests.get(url, headers=headers, timeout=10)
-            sha = r_get.json().get('sha') if r_get.status_code == 200 else None
+        # 1. Lấy SHA commit hiện tại của nhánh main
+        ref_url = f'https://api.github.com/repos/{GITHUB_REPO}/git/refs/heads/main'
+        r_ref = requests.get(ref_url, headers=headers, timeout=10)
+        if r_ref.status_code != 200:
+            return {'success': False, 'error': f'Lỗi lấy ref main: {r_ref.status_code}'}
+        base_commit_sha = r_ref.json()['object']['sha']
 
-            with open(local_path, 'r', encoding='utf-8') as f:
-                content_str = f.read()
-            content_b64 = base64.b64encode(content_str.encode('utf-8')).decode('utf-8')
+        # 2. Tạo Tree chứa cả 2 tệp cùng lúc
+        tree_url = f'https://api.github.com/repos/{GITHUB_REPO}/git/trees'
+        tree_payload = {
+            'base_tree': base_commit_sha,
+            'tree': [
+                {
+                    'path': 'data/students.json',
+                    'mode': '100644',
+                    'type': 'blob',
+                    'content': students_str
+                },
+                {
+                    'path': 'data/roster.json',
+                    'mode': '100644',
+                    'type': 'blob',
+                    'content': roster_str
+                }
+            ]
+        }
+        r_tree = requests.post(tree_url, headers=headers, json=tree_payload, timeout=15)
+        if r_tree.status_code not in (200, 201):
+            return {'success': False, 'error': f'Lỗi tạo tree: {r_tree.status_code}'}
+        tree_sha = r_tree.json()['sha']
 
-            payload = {
-                'message': f'Auto-sync persistent database ({repo_path})',
-                'content': content_b64,
-                'branch': 'main'
-            }
-            if sha:
-                payload['sha'] = sha
+        # 3. Tạo Commit DUY NHẤT với [skip render] để Render không bao giờ tự động khởi động lại
+        commit_url = f'https://api.github.com/repos/{GITHUB_REPO}/git/commits'
+        commit_payload = {
+            'message': '[skip render] Auto-sync persistent database (students.json & roster.json)',
+            'tree': tree_sha,
+            'parents': [base_commit_sha]
+        }
+        r_commit = requests.post(commit_url, headers=headers, json=commit_payload, timeout=15)
+        if r_commit.status_code not in (200, 201):
+            return {'success': False, 'error': f'Lỗi tạo commit: {r_commit.status_code}'}
+        new_commit_sha = r_commit.json()['sha']
 
-            r_put = requests.put(url, headers=headers, json=payload, timeout=15)
-            if r_put.status_code in (200, 201):
-                success_count += 1
-            else:
-                errors.append(f"{repo_path}: {r_put.status_code}")
-        except Exception as e:
-            errors.append(f"{repo_path}: {str(e)}")
+        # 4. Cập nhật nhánh main trỏ tới commit mới
+        patch_payload = {'sha': new_commit_sha, 'force': False}
+        r_patch = requests.patch(ref_url, headers=headers, json=patch_payload, timeout=15)
+        if r_patch.status_code not in (200, 201):
+            return {'success': False, 'error': f'Lỗi cập nhật nhánh main: {r_patch.status_code}'}
 
-    if success_count == len(files_to_sync):
+        _last_synced_data_hash = current_hash
         return {
             'success': True,
-            'message': 'Đã tự động lưu vĩnh viễn dữ liệu học viên lên GitHub Cloud thành công!',
+            'message': 'Đã tự động lưu vĩnh viễn dữ liệu học viên lên GitHub Cloud (không gây khởi động lại máy chủ)!',
             'students_count': len(db.students),
-            'roster_count': len(db.roster)
+            'roster_count': len(db.roster),
+            'commit_sha': new_commit_sha[:7]
         }
-    else:
-        return {
-            'success': False,
-            'error': f"Đồng bộ chưa hoàn tất: {', '.join(errors)}"
-        }
+    except Exception as e:
+        return {'success': False, 'error': f'Lỗi đồng bộ GitHub: {str(e)}'}
 
 def start_auto_cloud_sync_worker():
     """

@@ -92,12 +92,13 @@ class StudentDatabase:
             s_cccd = s_st.get('cccd', '').strip()
             s_mahv = s_st.get('mahv', '').strip()
             s_hoten = strip_vietnamese_accents(s_st.get('hoten', ''))
-            # Giữ lại học viên nếu thuộc danh sách quản lý (Roster) HOẶC do chính tôi tra cứu
+            # Giữ lại học viên nếu thuộc danh sách quản lý (Roster) HOẶC do chính tôi tra cứu / đã đẩy vào hệ thống
             is_mine = (s_key in roster_keys or 
                        (s_cccd and s_cccd in roster_keys) or 
                        (s_mahv and s_mahv in roster_keys) or 
                        (s_hoten and s_hoten in roster_keys) or
                        s_st.get('is_my_query') or
+                       bool(s_st.get('khoa')) or
                        s_st.get('quangduong', 0) > 0 or
                        s_st.get('thoigian', 0) > 0 or
                        s_st.get('has_lythuyet') or
@@ -210,8 +211,11 @@ class StudentDatabase:
                 canonical_k = s.get('mahv') or s.get('cccd') or s.get('hoten')
                 unique_students[canonical_k] = self.calculate_progress(s)
 
-        self.students = unique_students
-        self._save()
+        if unique_students != self.students:
+            self.students = unique_students
+            self._save()
+        else:
+            self.students = unique_students
 
     def recalculate_all(self):
         """Tính toán lại tất cả các chỉ số theo định mức chuẩn mới cập nhật."""
@@ -741,7 +745,7 @@ class StudentDatabase:
             for k, s in list(self.students.items()):
                 s_khoa = str(s.get('khoa') or '').strip().lower()
                 if s_khoa in target_courses:
-                    target_keys.add(str(k).strip().lower())
+                    if k: target_keys.add(str(k).strip().lower())
                     if s.get('mahv'): target_keys.add(str(s['mahv']).strip().lower())
                     if s.get('cccd'): target_keys.add(str(s['cccd']).strip().lower())
                     if s.get('hoten'):
@@ -751,12 +755,15 @@ class StudentDatabase:
             for rk, r in list(self.roster.items()):
                 r_khoa = str(r.get('khoa') or '').strip().lower()
                 if r_khoa in target_courses:
-                    target_keys.add(str(rk).strip().lower())
+                    if rk: target_keys.add(str(rk).strip().lower())
                     if r.get('mahv'): target_keys.add(str(r['mahv']).strip().lower())
                     if r.get('cccd'): target_keys.add(str(r['cccd']).strip().lower())
                     if r.get('hoten'):
                         target_keys.add(str(r['hoten']).strip().lower())
                         target_keys.add(strip_vietnamese_accents(r['hoten']).lower())
+
+            # Loại bỏ hoàn toàn chuỗi rỗng và chuỗi quá ngắn khỏi target_keys để không bao giờ xóa nhầm học viên khác
+            target_keys = {tk for tk in target_keys if tk and len(tk) >= 2}
 
             count = 0
             # 2. Xóa khỏi self.students
@@ -769,9 +776,17 @@ class StudentDatabase:
                 s_norm = strip_vietnamese_accents(s_hoten)
                 s_khoa = str(s.get('khoa') or '').strip().lower()
 
-                if (s_khoa in target_courses or k_low in target_keys or k_norm in target_keys or
-                    s_mahv in target_keys or s_cccd in target_keys or
-                    s_hoten in target_keys or s_norm in target_keys):
+                should_delete = (
+                    (s_khoa and s_khoa in target_courses) or
+                    (k_low and k_low in target_keys) or
+                    (k_norm and k_norm in target_keys) or
+                    (s_mahv and s_mahv in target_keys) or
+                    (s_cccd and s_cccd in target_keys) or
+                    (s_hoten and s_hoten in target_keys) or
+                    (s_norm and s_norm in target_keys)
+                )
+
+                if should_delete:
                     del self.students[k]
                     count += 1
 
@@ -786,9 +801,17 @@ class StudentDatabase:
                 r_norm = strip_vietnamese_accents(r_hoten)
                 r_khoa = str(r.get('khoa') or '').strip().lower()
 
-                if (r_khoa in target_courses or rk_low in target_keys or rk_norm in target_keys or
-                    r_mahv in target_keys or r_cccd in target_keys or
-                    r_hoten in target_keys or r_norm in target_keys):
+                should_delete_r = (
+                    (r_khoa and r_khoa in target_courses) or
+                    (rk_low and rk_low in target_keys) or
+                    (rk_norm and rk_norm in target_keys) or
+                    (r_mahv and r_mahv in target_keys) or
+                    (r_cccd and r_cccd in target_keys) or
+                    (r_hoten and r_hoten in target_keys) or
+                    (r_norm and r_norm in target_keys)
+                )
+
+                if should_delete_r:
                     del self.roster[rk]
                     roster_count += 1
 
