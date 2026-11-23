@@ -469,5 +469,21 @@
     "khoa": "CD_29CE",
     "hang": "Cm-CE",
     "ngaysinh": "10/02/1994"
+  },
+  "HUỲNH TẤN VIÊN": {
+    "hoten": "HUỲNH TẤN VIÊN",
+    "cccd": "052095006767",
+    "mahv": "52001-20261102-000023",
+    "khoa": "CD_29CE",
+    "hang": "Cm-CE",
+    "ngaysinh": "02/11/1995"
+  },
+  "NGUYỄN THỊ QUỲNH LIỄU": {
+    "hoten": "NGUYỄN THỊ QUỲNH LIỄU",
+    "cccd": "",
+    "mahv": "52001-20261012-000050",
+    "khoa": "",
+    "hang": "",
+    "ngaysinh": ""
   }
 }
