@@ -28,10 +28,10 @@
     "pdf_filename": null,
     "note": "",
     "avatar_url": "https://cdn.discordapp.com/attachments/1100763300180017185/1572800759626473622/avatar.jpg?ex=6affb05a&is=6afe5eda&hm=966b05b72e3a3746409318b6ebe667074f2a65b3219ca484859ea94ae06a44b9&",
-    "msg_id": "1573139913627410494",
-    "msg_time": "2026-11-20T00:56:22.935000+00:00",
+    "msg_id": "1574236702283800596",
+    "msg_time": "2026-11-23T01:34:37.728000+00:00",
     "created_at": "16/11/2026 20:13:15",
-    "updated_at": "23/11/2026 01:36:09",
+    "updated_at": "23/11/2026 01:37:30",
     "target_km": 825.0,
     "target_gio": 24.0,
     "thoigian_tudong_toithieu": 1.0,
@@ -43,13 +43,13 @@
     "has_lythuyet": true,
     "has_phien_pdf": false,
     "lythuyet_pdf_filename": "52001-20261016-000100_lythuyet.pdf",
-    "lythuyet_pdf_url": "https://cdn.discordapp.com/attachments/1100763300180017185/1573139936805261422/52001-20261016-000100_lythuyet.pdf?ex=6b00ec3c&is=6aff9abc&hm=f96d4fa16eaeb71c583804a16ac8032834a44c9b0781085f8d37360da9720126&",
+    "lythuyet_pdf_url": "https://cdn.discordapp.com/attachments/1100763300180017185/1574236722957525012/52001-20261016-000100_lythuyet.pdf?ex=6b04e9b2&is=6b039832&hm=c5fee72f4a246a6e096d63d50eeba686c629478b65d58fb7fed26fda6dfd88a2&",
     "dieukien_totnghiep": "Không",
     "totnghiep_failing": [
       "Số Km DAT (0.0/825 km)",
       "Thời gian DAT (thiếu 24.0h, thiếu đêm (0.0/2.5h), thiếu TĐ (0.0/1.0h))",
       "Số ngày đường (0/5 ngày)",
-      "Đang chờ tải báo cáo lý thuyết"
+      "Giờ Cao Tốc"
     ],
     "totnghiep_details": {
       "dat_quangduong": {
@@ -81,118 +81,106 @@
       },
       "phap_luat": {
         "name": "Pháp luật TT14",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "ktlx": {
         "name": "Kỹ thuật lái xe TT14",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "cau_tao": {
         "name": "Cấu tạo TT14",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "dao_duc": {
         "name": "Đạo đức + PCCC TT14",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "mo_phong": {
         "name": "Mô phỏng (LT)",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "note_cabin": {
         "name": "Note Cabin (Bài cabin)",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "gio_cabin": {
         "name": "Giờ Cabin",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "da_nop_sk": {
         "name": "Đã nộp SK",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "da_nop_hd": {
         "name": "Đã nộp HĐ",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "gio_cao_toc": {
         "name": "Giờ Cao Tốc",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "FAIL",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "km_cao_toc": {
         "name": "Km Cao Tốc",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "van_toc_tb": {
         "name": "Vận tốc TB",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "hinh_cabin": {
         "name": "Nhận diện Cabin (Hình cabin)",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "FAIL",
         "exempt": true,
-        "rule": "Miễn trừ (Bỏ qua)",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Miễn trừ (Bỏ qua)"
       }
     },
-    "totnghiep_reason": "Chưa đạt: Số Km DAT (0.0/825 km), Thời gian DAT (thiếu 24.0h, thiếu đêm (0.0/2.5h), thiếu TĐ (0.0/1.0h)), Số ngày đường (0/5 ngày), Đang chờ tải báo cáo lý thuyết",
-    "totnghiep_has_pdf": false,
+    "totnghiep_reason": "Chưa đạt: Số Km DAT (0.0/825 km), Thời gian DAT (thiếu 24.0h, thiếu đêm (0.0/2.5h), thiếu TĐ (0.0/1.0h)), Số ngày đường (0/5 ngày), Giờ Cao Tốc",
+    "totnghiep_has_pdf": true,
     "interaction_user_id": "1380376964304474173",
     "interaction_username": "tranthang252",
     "lythuyet_dat": false,
-    "lythuyet_status": "Đang tải",
-    "lythuyet_reason": "Đang chờ tải báo cáo lý thuyết",
+    "lythuyet_status": "Không",
+    "lythuyet_reason": "Chưa đạt các môn: Giờ Cao Tốc",
     "phien_status": "Chưa tra phiên",
-    "is_my_query": true
+    "is_my_query": true,
+    "xe_phan": "77A36508"
   },
   "52001-20261016-000102": {
     "mahv": "52001-20261016-000102",
@@ -223,10 +211,10 @@
     "pdf_filename": null,
     "note": "",
     "avatar_url": "https://cdn.discordapp.com/attachments/1100763300180017185/1572472044224913438/avatar.jpg?ex=6afe7e36&is=6afd2cb6&hm=9b5ebd211018aa1170511124247f1f408cc49bac4ec5f8f1d2b8756e00ddd371&",
-    "msg_id": "1573142693532667945",
-    "msg_time": "2026-11-20T01:07:25.716000+00:00",
+    "msg_id": "1574236735569788968",
+    "msg_time": "2026-11-23T01:34:45.664000+00:00",
     "created_at": "16/11/2026 20:13:32",
-    "updated_at": "23/11/2026 01:36:09",
+    "updated_at": "23/11/2026 01:37:31",
     "target_km": 825.0,
     "target_gio": 24.0,
     "thoigian_tudong_toithieu": 1.0,
@@ -238,14 +226,13 @@
     "has_lythuyet": true,
     "has_phien_pdf": false,
     "lythuyet_pdf_filename": "52001-20261016-000102_lythuyet.pdf",
-    "lythuyet_pdf_url": "https://cdn.discordapp.com/attachments/1100763300180017185/1573142714965303377/52001-20261016-000102_lythuyet.pdf?ex=6b00eed2&is=6aff9d52&hm=c4fab4de06c74fe9c295963d6335e2aed8e72c663d382143f08a4b8de248227a&",
+    "lythuyet_pdf_url": "https://cdn.discordapp.com/attachments/1100763300180017185/1574236756688244856/52001-20261016-000102_lythuyet.pdf?ex=6b04e9ba&is=6b03983a&hm=7333e00371e9538bb906c147fb09f77bf984443b0440c7086ee8d11b0b71c397&",
     "dieukien_totnghiep": "Không",
-    "totnghiep_reason": "Chưa đạt: Số Km DAT (0.0/825 km), Thời gian DAT (thiếu 24.0h, thiếu đêm (0.0/2.5h), thiếu TĐ (0.0/1.0h)), Số ngày đường (0/5 ngày), Đang chờ tải báo cáo lý thuyết",
+    "totnghiep_reason": "Chưa đạt: Số Km DAT (0.0/825 km), Thời gian DAT (thiếu 24.0h, thiếu đêm (0.0/2.5h), thiếu TĐ (0.0/1.0h)), Số ngày đường (0/5 ngày)",
     "totnghiep_failing": [
       "Số Km DAT (0.0/825 km)",
       "Thời gian DAT (thiếu 24.0h, thiếu đêm (0.0/2.5h), thiếu TĐ (0.0/1.0h))",
-      "Số ngày đường (0/5 ngày)",
-      "Đang chờ tải báo cáo lý thuyết"
+      "Số ngày đường (0/5 ngày)"
     ],
     "totnghiep_details": {
       "dat_quangduong": {
@@ -277,117 +264,105 @@
       },
       "phap_luat": {
         "name": "Pháp luật TT14",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "ktlx": {
         "name": "Kỹ thuật lái xe TT14",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "cau_tao": {
         "name": "Cấu tạo TT14",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "dao_duc": {
         "name": "Đạo đức + PCCC TT14",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "mo_phong": {
         "name": "Mô phỏng (LT)",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "note_cabin": {
         "name": "Note Cabin (Bài cabin)",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "gio_cabin": {
         "name": "Giờ Cabin",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "da_nop_sk": {
         "name": "Đã nộp SK",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "da_nop_hd": {
         "name": "Đã nộp HĐ",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "gio_cao_toc": {
         "name": "Giờ Cao Tốc",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "km_cao_toc": {
         "name": "Km Cao Tốc",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "van_toc_tb": {
         "name": "Vận tốc TB",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "hinh_cabin": {
         "name": "Nhận diện Cabin (Hình cabin)",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "FAIL",
         "exempt": true,
-        "rule": "Miễn trừ (Bỏ qua)",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Miễn trừ (Bỏ qua)"
       }
     },
-    "totnghiep_has_pdf": false,
-    "lythuyet_dat": false,
-    "lythuyet_status": "Đang tải",
-    "lythuyet_reason": "Đang chờ tải báo cáo lý thuyết",
+    "totnghiep_has_pdf": true,
+    "lythuyet_dat": true,
+    "lythuyet_status": "Đạt",
+    "lythuyet_reason": "Tất cả các môn lý thuyết đều tích xanh (đã miễn trừ cabin)",
     "phien_status": "Chưa tra phiên",
     "is_my_query": true,
     "interaction_user_id": "1380376964304474173",
-    "interaction_username": "tranthang252"
+    "interaction_username": "tranthang252",
+    "xe_phan": "77A36508"
   },
   "52001-20261016-000088": {
     "mahv": "52001-20261016-000088",
@@ -418,10 +393,10 @@
     "pdf_filename": null,
     "note": "",
     "avatar_url": "https://cdn.discordapp.com/attachments/1100763300180017185/1572801003072258198/avatar.jpg?ex=6affb094&is=6afe5f14&hm=5fb70b6add893c7314d8c8ac11ffef965979383bdfdfcded387e09cceb2b4e1e&",
-    "msg_id": "1573142706652446761",
-    "msg_time": "2026-11-20T01:07:28.844000+00:00",
+    "msg_id": "1574236745497575464",
+    "msg_time": "2026-11-23T01:34:48.031000+00:00",
     "created_at": "16/11/2026 20:13:46",
-    "updated_at": "23/11/2026 01:36:09",
+    "updated_at": "23/11/2026 01:37:32",
     "target_km": 825.0,
     "target_gio": 24.0,
     "thoigian_tudong_toithieu": 1.0,
@@ -433,13 +408,14 @@
     "has_lythuyet": true,
     "has_phien_pdf": false,
     "lythuyet_pdf_filename": "52001-20261016-000088_lythuyet.pdf",
-    "lythuyet_pdf_url": "https://cdn.discordapp.com/attachments/1100763300180017185/1573142727590158478/52001-20261016-000088_lythuyet.pdf?ex=6b00eed5&is=6aff9d55&hm=599048bf5e5e8d974759ae38bbc197978fc560ece24ce62ac274a1550255c57f&",
+    "lythuyet_pdf_url": "https://cdn.discordapp.com/attachments/1100763300180017185/1574236766569893918/52001-20261016-000088_lythuyet.pdf?ex=6b04e9bd&is=6b03983d&hm=6551f00ba726f472d61756e2b80318a3c735f6e13b89faaa9e20e96a8dd96f9d&",
     "dieukien_totnghiep": "Không",
     "totnghiep_failing": [
       "Số Km DAT (0.0/825 km)",
       "Thời gian DAT (thiếu 24.0h, thiếu đêm (0.0/2.5h), thiếu TĐ (0.0/1.0h))",
       "Số ngày đường (0/5 ngày)",
-      "Đang chờ tải báo cáo lý thuyết"
+      "Note Cabin (Bài cabin)",
+      "Giờ Cabin"
     ],
     "totnghiep_details": {
       "dat_quangduong": {
@@ -471,118 +447,106 @@
       },
       "phap_luat": {
         "name": "Pháp luật TT14",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "ktlx": {
         "name": "Kỹ thuật lái xe TT14",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "cau_tao": {
         "name": "Cấu tạo TT14",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "dao_duc": {
         "name": "Đạo đức + PCCC TT14",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "mo_phong": {
         "name": "Mô phỏng (LT)",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "note_cabin": {
         "name": "Note Cabin (Bài cabin)",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "FAIL",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "gio_cabin": {
         "name": "Giờ Cabin",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "FAIL",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "da_nop_sk": {
         "name": "Đã nộp SK",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "da_nop_hd": {
         "name": "Đã nộp HĐ",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "gio_cao_toc": {
         "name": "Giờ Cao Tốc",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "km_cao_toc": {
         "name": "Km Cao Tốc",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "van_toc_tb": {
         "name": "Vận tốc TB",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "hinh_cabin": {
         "name": "Nhận diện Cabin (Hình cabin)",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "FAIL",
         "exempt": true,
-        "rule": "Miễn trừ (Bỏ qua)",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Miễn trừ (Bỏ qua)"
       }
     },
-    "totnghiep_reason": "Chưa đạt: Số Km DAT (0.0/825 km), Thời gian DAT (thiếu 24.0h, thiếu đêm (0.0/2.5h), thiếu TĐ (0.0/1.0h)), Số ngày đường (0/5 ngày), Đang chờ tải báo cáo lý thuyết",
-    "totnghiep_has_pdf": false,
+    "totnghiep_reason": "Chưa đạt: Số Km DAT (0.0/825 km), Thời gian DAT (thiếu 24.0h, thiếu đêm (0.0/2.5h), thiếu TĐ (0.0/1.0h)), Số ngày đường (0/5 ngày), Note Cabin (Bài cabin), Giờ Cabin",
+    "totnghiep_has_pdf": true,
     "interaction_user_id": "1380376964304474173",
     "interaction_username": "tranthang252",
     "lythuyet_dat": false,
-    "lythuyet_status": "Đang tải",
-    "lythuyet_reason": "Đang chờ tải báo cáo lý thuyết",
+    "lythuyet_status": "Không",
+    "lythuyet_reason": "Chưa đạt các môn: Note Cabin (Bài cabin), Giờ Cabin",
     "phien_status": "Chưa tra phiên",
-    "is_my_query": true
+    "is_my_query": true,
+    "xe_phan": "81A78293"
   },
   "52001-20261016-000040": {
     "mahv": "52001-20261016-000040",
@@ -613,10 +577,10 @@
     "pdf_filename": null,
     "note": "",
     "avatar_url": "https://cdn.discordapp.com/attachments/1100763300180017185/1572472186973847643/avatar.jpg?ex=6afe7e58&is=6afd2cd8&hm=2b897d726cfeae847007617024c401d73a10ecf43ffd545a328409e37f65a6ac&",
-    "msg_id": "1574213434021781614",
-    "msg_time": "2026-11-23T00:02:10.142000+00:00",
+    "msg_id": "1574236765386969179",
+    "msg_time": "2026-11-23T01:34:52.773000+00:00",
     "created_at": "16/11/2026 20:14:03",
-    "updated_at": "23/11/2026 01:36:09",
+    "updated_at": "23/11/2026 01:37:33",
     "target_km": 825.0,
     "target_gio": 24.0,
     "thoigian_tudong_toithieu": 1.0,
@@ -628,14 +592,13 @@
     "has_lythuyet": true,
     "has_phien_pdf": false,
     "lythuyet_pdf_filename": "52001-20261016-000040_lythuyet.pdf",
-    "lythuyet_pdf_url": "https://cdn.discordapp.com/attachments/1100763300180017185/1574213456893182043/52001-20261016-000040_lythuyet.pdf?ex=6b04d407&is=6b038287&hm=67882df59806ef6dbe106f05da3ca0b011db87c442df6a0ba82c4f1341a1df94&",
+    "lythuyet_pdf_url": "https://cdn.discordapp.com/attachments/1100763300180017185/1574236787231170630/52001-20261016-000040_lythuyet.pdf?ex=6b04e9c1&is=6b039841&hm=cf62810763d55c0c857915f2c25588b444d8dec3c22feb657fe25bea758f0f45&",
     "dieukien_totnghiep": "Không",
-    "totnghiep_reason": "Chưa đạt: Số Km DAT (0.0/825 km), Thời gian DAT (thiếu 24.0h, thiếu đêm (0.0/2.5h), thiếu TĐ (0.0/1.0h)), Số ngày đường (0/5 ngày), Đang chờ tải báo cáo lý thuyết",
+    "totnghiep_reason": "Chưa đạt: Số Km DAT (0.0/825 km), Thời gian DAT (thiếu 24.0h, thiếu đêm (0.0/2.5h), thiếu TĐ (0.0/1.0h)), Số ngày đường (0/5 ngày)",
     "totnghiep_failing": [
       "Số Km DAT (0.0/825 km)",
       "Thời gian DAT (thiếu 24.0h, thiếu đêm (0.0/2.5h), thiếu TĐ (0.0/1.0h))",
-      "Số ngày đường (0/5 ngày)",
-      "Đang chờ tải báo cáo lý thuyết"
+      "Số ngày đường (0/5 ngày)"
     ],
     "totnghiep_details": {
       "dat_quangduong": {
@@ -667,113 +630,100 @@
       },
       "phap_luat": {
         "name": "Pháp luật TT14",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "ktlx": {
         "name": "Kỹ thuật lái xe TT14",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "cau_tao": {
         "name": "Cấu tạo TT14",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "dao_duc": {
         "name": "Đạo đức + PCCC TT14",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "mo_phong": {
         "name": "Mô phỏng (LT)",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "note_cabin": {
         "name": "Note Cabin (Bài cabin)",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "gio_cabin": {
         "name": "Giờ Cabin",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "da_nop_sk": {
         "name": "Đã nộp SK",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "da_nop_hd": {
         "name": "Đã nộp HĐ",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "gio_cao_toc": {
         "name": "Giờ Cao Tốc",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "km_cao_toc": {
         "name": "Km Cao Tốc",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "van_toc_tb": {
         "name": "Vận tốc TB",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "hinh_cabin": {
         "name": "Nhận diện Cabin (Hình cabin)",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "FAIL",
         "exempt": true,
-        "rule": "Miễn trừ (Bỏ qua)",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Miễn trừ (Bỏ qua)"
       }
     },
-    "totnghiep_has_pdf": false,
-    "lythuyet_dat": false,
-    "lythuyet_status": "Đang tải",
-    "lythuyet_reason": "Đang chờ tải báo cáo lý thuyết",
+    "totnghiep_has_pdf": true,
+    "lythuyet_dat": true,
+    "lythuyet_status": "Đạt",
+    "lythuyet_reason": "Tất cả các môn lý thuyết đều tích xanh (đã miễn trừ cabin)",
     "phien_status": "Chưa tra phiên",
     "is_my_query": true,
     "interaction_user_id": "1380376964304474173",
@@ -809,10 +759,10 @@
     "pdf_filename": null,
     "note": "",
     "avatar_url": "https://cdn.discordapp.com/attachments/1100763300180017185/1572472256691572766/avatar.jpg?ex=6afe7e69&is=6afd2ce9&hm=6eba89a2734785fafa6c32e3ddef19f86d5ef60286ce0769d8a72dfa15c2bb77&",
-    "msg_id": "1574213469408862338",
-    "msg_time": "2026-11-23T00:02:18.579000+00:00",
+    "msg_id": "1574236785993846784",
+    "msg_time": "2026-11-23T01:34:57.686000+00:00",
     "created_at": "16/11/2026 20:14:18",
-    "updated_at": "23/11/2026 01:36:09",
+    "updated_at": "23/11/2026 01:37:33",
     "target_km": 825.0,
     "target_gio": 24.0,
     "thoigian_tudong_toithieu": 1.0,
@@ -824,14 +774,14 @@
     "has_lythuyet": true,
     "has_phien_pdf": false,
     "lythuyet_pdf_filename": "52001-20261016-000041_lythuyet.pdf",
-    "lythuyet_pdf_url": "https://cdn.discordapp.com/attachments/1100763300180017185/1574213552850337822/52001-20261016-000041_lythuyet.pdf?ex=6b04d41e&is=6b03829e&hm=4cdc8bd540e8e0148bef48cdecdda2b07188704bf47ce2f924889d103ef2dccf&",
+    "lythuyet_pdf_url": "https://cdn.discordapp.com/attachments/1100763300180017185/1574236803236626492/52001-20261016-000041_lythuyet.pdf?ex=6b04e9c5&is=6b039845&hm=77d207abbe43f087faef4f1ad999636cd39f9935008b4c5565c6f79d56438c9a&",
     "dieukien_totnghiep": "Không",
-    "totnghiep_reason": "Chưa đạt: Số Km DAT (0.0/825 km), Thời gian DAT (thiếu 24.0h, thiếu đêm (0.0/2.5h), thiếu TĐ (0.0/1.0h)), Số ngày đường (0/5 ngày), Đang chờ tải báo cáo lý thuyết",
+    "totnghiep_reason": "Chưa đạt: Số Km DAT (0.0/825 km), Thời gian DAT (thiếu 24.0h, thiếu đêm (0.0/2.5h), thiếu TĐ (0.0/1.0h)), Số ngày đường (0/5 ngày), Giờ Cabin",
     "totnghiep_failing": [
       "Số Km DAT (0.0/825 km)",
       "Thời gian DAT (thiếu 24.0h, thiếu đêm (0.0/2.5h), thiếu TĐ (0.0/1.0h))",
       "Số ngày đường (0/5 ngày)",
-      "Đang chờ tải báo cáo lý thuyết"
+      "Giờ Cabin"
     ],
     "totnghiep_details": {
       "dat_quangduong": {
@@ -863,113 +813,100 @@
       },
       "phap_luat": {
         "name": "Pháp luật TT14",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "ktlx": {
         "name": "Kỹ thuật lái xe TT14",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "cau_tao": {
         "name": "Cấu tạo TT14",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "dao_duc": {
         "name": "Đạo đức + PCCC TT14",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "mo_phong": {
         "name": "Mô phỏng (LT)",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "note_cabin": {
         "name": "Note Cabin (Bài cabin)",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "gio_cabin": {
         "name": "Giờ Cabin",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "FAIL",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "da_nop_sk": {
         "name": "Đã nộp SK",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "da_nop_hd": {
         "name": "Đã nộp HĐ",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "gio_cao_toc": {
         "name": "Giờ Cao Tốc",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "km_cao_toc": {
         "name": "Km Cao Tốc",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "van_toc_tb": {
         "name": "Vận tốc TB",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "hinh_cabin": {
         "name": "Nhận diện Cabin (Hình cabin)",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "FAIL",
         "exempt": true,
-        "rule": "Miễn trừ (Bỏ qua)",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Miễn trừ (Bỏ qua)"
       }
     },
-    "totnghiep_has_pdf": false,
+    "totnghiep_has_pdf": true,
     "lythuyet_dat": false,
-    "lythuyet_status": "Đang tải",
-    "lythuyet_reason": "Đang chờ tải báo cáo lý thuyết",
+    "lythuyet_status": "Không",
+    "lythuyet_reason": "Chưa đạt các môn: Giờ Cabin",
     "phien_status": "Chưa tra phiên",
     "is_my_query": true,
     "interaction_user_id": "1380376964304474173",
@@ -1005,10 +942,10 @@
     "pdf_filename": null,
     "note": "",
     "avatar_url": "https://cdn.discordapp.com/attachments/1100763300180017185/1572472327327715328/avatar.jpg?ex=6afe7e79&is=6afd2cf9&hm=b94472f03d8dfdc984661f9fb8478afa6caa3b3d09a0bff25490782c3a73922d&",
-    "msg_id": "1574213480087552151",
-    "msg_time": "2026-11-23T00:02:21.125000+00:00",
+    "msg_id": "1574236805836832818",
+    "msg_time": "2026-11-23T01:35:02.417000+00:00",
     "created_at": "16/11/2026 20:14:35",
-    "updated_at": "23/11/2026 01:36:09",
+    "updated_at": "23/11/2026 01:37:34",
     "target_km": 825.0,
     "target_gio": 24.0,
     "thoigian_tudong_toithieu": 1.0,
@@ -1020,14 +957,13 @@
     "has_lythuyet": true,
     "has_phien_pdf": false,
     "lythuyet_pdf_filename": "52001-20261016-000043_lythuyet.pdf",
-    "lythuyet_pdf_url": "https://cdn.discordapp.com/attachments/1100763300180017185/1574213501457793034/52001-20261016-000043_lythuyet.pdf?ex=6b04d412&is=6b038292&hm=0702e8d487304c761eecef59d78af44f5d387529b3a8a5e2070859cb0b21ff91&",
+    "lythuyet_pdf_url": "https://cdn.discordapp.com/attachments/1100763300180017185/1574236825894256821/52001-20261016-000043_lythuyet.pdf?ex=6b04e9cb&is=6b03984b&hm=0a15462abf27f03ef80479d55a342bc0871d6133d1f0478e37be7a7e17384c4a&",
     "dieukien_totnghiep": "Không",
-    "totnghiep_reason": "Chưa đạt: Số Km DAT (0.0/825 km), Thời gian DAT (thiếu 24.0h, thiếu đêm (0.0/2.5h), thiếu TĐ (0.0/1.0h)), Số ngày đường (0/5 ngày), Đang chờ tải báo cáo lý thuyết",
+    "totnghiep_reason": "Chưa đạt: Số Km DAT (0.0/825 km), Thời gian DAT (thiếu 24.0h, thiếu đêm (0.0/2.5h), thiếu TĐ (0.0/1.0h)), Số ngày đường (0/5 ngày)",
     "totnghiep_failing": [
       "Số Km DAT (0.0/825 km)",
       "Thời gian DAT (thiếu 24.0h, thiếu đêm (0.0/2.5h), thiếu TĐ (0.0/1.0h))",
-      "Số ngày đường (0/5 ngày)",
-      "Đang chờ tải báo cáo lý thuyết"
+      "Số ngày đường (0/5 ngày)"
     ],
     "totnghiep_details": {
       "dat_quangduong": {
@@ -1059,113 +995,100 @@
       },
       "phap_luat": {
         "name": "Pháp luật TT14",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "ktlx": {
         "name": "Kỹ thuật lái xe TT14",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "cau_tao": {
         "name": "Cấu tạo TT14",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "dao_duc": {
         "name": "Đạo đức + PCCC TT14",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "mo_phong": {
         "name": "Mô phỏng (LT)",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "note_cabin": {
         "name": "Note Cabin (Bài cabin)",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "gio_cabin": {
         "name": "Giờ Cabin",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "da_nop_sk": {
         "name": "Đã nộp SK",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "da_nop_hd": {
         "name": "Đã nộp HĐ",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "gio_cao_toc": {
         "name": "Giờ Cao Tốc",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "km_cao_toc": {
         "name": "Km Cao Tốc",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "van_toc_tb": {
         "name": "Vận tốc TB",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "hinh_cabin": {
         "name": "Nhận diện Cabin (Hình cabin)",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "FAIL",
         "exempt": true,
-        "rule": "Miễn trừ (Bỏ qua)",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Miễn trừ (Bỏ qua)"
       }
     },
-    "totnghiep_has_pdf": false,
-    "lythuyet_dat": false,
-    "lythuyet_status": "Đang tải",
-    "lythuyet_reason": "Đang chờ tải báo cáo lý thuyết",
+    "totnghiep_has_pdf": true,
+    "lythuyet_dat": true,
+    "lythuyet_status": "Đạt",
+    "lythuyet_reason": "Tất cả các môn lý thuyết đều tích xanh (đã miễn trừ cabin)",
     "phien_status": "Chưa tra phiên",
     "is_my_query": true,
     "interaction_user_id": "1380376964304474173",
@@ -1211,7 +1134,7 @@
     "msg_id": "1574237142610354206",
     "msg_time": "2026-11-23T01:36:22.710000+00:00",
     "created_at": "16/11/2026 20:14:49",
-    "updated_at": "23/11/2026 01:36:28",
+    "updated_at": "23/11/2026 01:37:39",
     "target_km": 825.0,
     "target_gio": 24.0,
     "thoigian_tudong_toithieu": 2.0,
@@ -1223,7 +1146,7 @@
     "has_lythuyet": true,
     "has_phien_pdf": false,
     "lythuyet_pdf_filename": "52001-20261016-000039_lythuyet.pdf",
-    "lythuyet_pdf_url": "https://cdn.discordapp.com/attachments/1100763300180017185/1573142788281729034/52001-20261016-000039_lythuyet.pdf?ex=6b00eee4&is=6aff9d64&hm=638ffce7e260ca461129359516d31d1d96b66ea562de047b0308c23c39590537&",
+    "lythuyet_pdf_url": "https://cdn.discordapp.com/attachments/1100763300180017185/1574236837143117824/52001-20261016-000039_lythuyet.pdf?ex=6b04e9cd&is=6b03984d&hm=ec3d319760dab73dc91214140107bb0f583ab613646589508e82053489f73642&",
     "dieukien_totnghiep": "Không",
     "totnghiep_failing": [
       "Số Km DAT (273.6/825 km)",
@@ -1359,8 +1282,8 @@
     "is_my_query": true,
     "interaction_user_id": "1380376964304474173",
     "interaction_username": "tranthang252",
-    "is_dat_embed": true,
-    "xe_phan": "81A78293"
+    "xe_phan": "81A78293",
+    "is_dat_embed": true
   },
   "52001-20261016-000042": {
     "mahv": "52001-20261016-000042",
@@ -1391,10 +1314,10 @@
     "pdf_filename": null,
     "note": "",
     "avatar_url": "https://cdn.discordapp.com/attachments/1100763300180017185/1572472380788310187/avatar.jpg?ex=6afe7e86&is=6afd2d06&hm=d67bbee94b0166f618b73eb4682b548302daa97f481f1257067b3a07dd646bc4&",
-    "msg_id": "1574213513801375905",
-    "msg_time": "2026-11-23T00:02:29.163000+00:00",
+    "msg_id": "1574236841853591663",
+    "msg_time": "2026-11-23T01:35:11.004000+00:00",
     "created_at": "16/11/2026 20:15:05",
-    "updated_at": "23/11/2026 01:36:09",
+    "updated_at": "23/11/2026 01:37:36",
     "target_km": 825.0,
     "target_gio": 24.0,
     "thoigian_tudong_toithieu": 1.0,
@@ -1406,13 +1329,12 @@
     "has_lythuyet": true,
     "has_phien_pdf": false,
     "lythuyet_pdf_filename": "52001-20261016-000042_lythuyet.pdf",
-    "lythuyet_pdf_url": "https://cdn.discordapp.com/attachments/1100763300180017185/1574213533711868086/52001-20261016-000042_lythuyet.pdf?ex=6b04d419&is=6b038299&hm=ae222320bb60388652aed7a8b61286f5c7b960e36ca67a3fb654ea4ba647955c&",
+    "lythuyet_pdf_url": "https://cdn.discordapp.com/attachments/1100763300180017185/1574236859217747978/52001-20261016-000042_lythuyet.pdf?ex=6b04e9d3&is=6b039853&hm=c225d043fa050d4f959e9a74c447d7cf3e4c2b2c707ba018b10b2106847d7209&",
     "dieukien_totnghiep": "Không",
     "totnghiep_failing": [
       "Số Km DAT (0.0/825 km)",
       "Thời gian DAT (thiếu 24.0h, thiếu đêm (0.0/2.5h), thiếu TĐ (0.0/1.0h))",
-      "Số ngày đường (0/5 ngày)",
-      "Đang chờ tải báo cáo lý thuyết"
+      "Số ngày đường (0/5 ngày)"
     ],
     "totnghiep_details": {
       "dat_quangduong": {
@@ -1444,114 +1366,101 @@
       },
       "phap_luat": {
         "name": "Pháp luật TT14",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "ktlx": {
         "name": "Kỹ thuật lái xe TT14",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "cau_tao": {
         "name": "Cấu tạo TT14",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "dao_duc": {
         "name": "Đạo đức + PCCC TT14",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "mo_phong": {
         "name": "Mô phỏng (LT)",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "note_cabin": {
         "name": "Note Cabin (Bài cabin)",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "gio_cabin": {
         "name": "Giờ Cabin",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "da_nop_sk": {
         "name": "Đã nộp SK",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "da_nop_hd": {
         "name": "Đã nộp HĐ",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "gio_cao_toc": {
         "name": "Giờ Cao Tốc",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "km_cao_toc": {
         "name": "Km Cao Tốc",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "van_toc_tb": {
         "name": "Vận tốc TB",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "hinh_cabin": {
         "name": "Nhận diện Cabin (Hình cabin)",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "FAIL",
         "exempt": true,
-        "rule": "Miễn trừ (Bỏ qua)",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Miễn trừ (Bỏ qua)"
       }
     },
-    "totnghiep_reason": "Chưa đạt: Số Km DAT (0.0/825 km), Thời gian DAT (thiếu 24.0h, thiếu đêm (0.0/2.5h), thiếu TĐ (0.0/1.0h)), Số ngày đường (0/5 ngày), Đang chờ tải báo cáo lý thuyết",
-    "totnghiep_has_pdf": false,
-    "lythuyet_dat": false,
-    "lythuyet_status": "Đang tải",
-    "lythuyet_reason": "Đang chờ tải báo cáo lý thuyết",
+    "totnghiep_reason": "Chưa đạt: Số Km DAT (0.0/825 km), Thời gian DAT (thiếu 24.0h, thiếu đêm (0.0/2.5h), thiếu TĐ (0.0/1.0h)), Số ngày đường (0/5 ngày)",
+    "totnghiep_has_pdf": true,
+    "lythuyet_dat": true,
+    "lythuyet_status": "Đạt",
+    "lythuyet_reason": "Tất cả các môn lý thuyết đều tích xanh (đã miễn trừ cabin)",
     "phien_status": "Chưa tra phiên",
     "is_my_query": true,
     "interaction_user_id": "1380376964304474173",
@@ -1581,7 +1490,7 @@
     "pdf_url": null,
     "ketqua": "Chưa tra DAT",
     "created_at": "16/11/2026 20:17:40",
-    "updated_at": "23/11/2026 01:36:09",
+    "updated_at": "23/11/2026 01:34:51",
     "note": "",
     "target_km": 810.0,
     "target_gio": 20.0,
@@ -1812,7 +1721,7 @@
     "msg_id": "1574223641405689887",
     "msg_time": "2026-11-23T00:42:43.772000+00:00",
     "created_at": "19/11/2026 09:55:01",
-    "updated_at": "23/11/2026 01:36:09",
+    "updated_at": "23/11/2026 01:34:51",
     "target_km": 710.0,
     "target_gio": 12.0,
     "thoigian_tudong_toithieu": 0.0,
@@ -2033,7 +1942,7 @@
     "interaction_user_id": "1380376964304474173",
     "interaction_username": "tranthang252",
     "created_at": "19/11/2026 10:58:41",
-    "updated_at": "23/11/2026 01:36:09",
+    "updated_at": "23/11/2026 01:34:51",
     "target_km": 825.0,
     "target_gio": 24.0,
     "thoigian_tudong_toithieu": 2.0,
@@ -2266,7 +2175,7 @@
     "interaction_user_id": "1380376964304474173",
     "interaction_username": "tranthang252",
     "created_at": "19/11/2026 12:45:11",
-    "updated_at": "23/11/2026 01:36:09",
+    "updated_at": "23/11/2026 01:34:51",
     "target_km": 710.0,
     "target_gio": 12.0,
     "thoigian_tudong_toithieu": 0.0,
@@ -2484,7 +2393,7 @@
     "interaction_user_id": "1380376964304474173",
     "interaction_username": "tranthang252",
     "created_at": "19/11/2026 17:23:05",
-    "updated_at": "23/11/2026 01:36:09",
+    "updated_at": "23/11/2026 01:34:51",
     "target_km": 710.0,
     "target_gio": 12.0,
     "thoigian_tudong_toithieu": 0.0,
@@ -2699,7 +2608,7 @@
     "interaction_user_id": "1380376964304474173",
     "interaction_username": "tranthang252",
     "created_at": "19/11/2026 18:00:00",
-    "updated_at": "23/11/2026 01:36:09",
+    "updated_at": "23/11/2026 01:34:51",
     "target_km": 810.0,
     "target_gio": 20.0,
     "thoigian_tudong_toithieu": 2.0,
@@ -2920,7 +2829,7 @@
     "interaction_user_id": "1380376964304474173",
     "interaction_username": "tranthang252",
     "created_at": "19/11/2026 18:14:38",
-    "updated_at": "23/11/2026 01:36:09",
+    "updated_at": "23/11/2026 01:34:51",
     "target_km": 810.0,
     "target_gio": 20.0,
     "thoigian_tudong_toithieu": 2.0,
@@ -3123,7 +3032,7 @@
     "interaction_username": "tranthang252",
     "interaction_user_id": "1380376964304474173",
     "created_at": "20/11/2026 04:42:59",
-    "updated_at": "23/11/2026 01:36:09",
+    "updated_at": "23/11/2026 01:34:51",
     "note": "",
     "target_km": 825.0,
     "target_gio": 24.0,
@@ -3348,7 +3257,7 @@
     "interaction_username": "tranthang252",
     "is_my_query": true,
     "created_at": "20/11/2026 07:49:21",
-    "updated_at": "23/11/2026 01:36:09",
+    "updated_at": "23/11/2026 01:34:51",
     "target_km": 710.0,
     "target_gio": 12.0,
     "thoigian_tudong_toithieu": 0.0,
@@ -3576,7 +3485,7 @@
     "interaction_username": "tranthang252",
     "is_my_query": true,
     "created_at": "20/11/2026 07:49:34",
-    "updated_at": "23/11/2026 01:36:09",
+    "updated_at": "23/11/2026 01:34:51",
     "target_km": 710.0,
     "target_gio": 12.0,
     "thoigian_tudong_toithieu": 0.0,
@@ -3767,7 +3676,7 @@
     "pdf_url": null,
     "ketqua": "Chưa tra DAT",
     "created_at": "20/11/2026 21:50:23",
-    "updated_at": "23/11/2026 01:36:09",
+    "updated_at": "23/11/2026 01:34:51",
     "note": "",
     "target_km": 710.0,
     "target_gio": 12.0,
@@ -3966,7 +3875,7 @@
     "pdf_url": null,
     "ketqua": "Chưa tra DAT",
     "created_at": "20/11/2026 21:50:23",
-    "updated_at": "23/11/2026 01:36:09",
+    "updated_at": "23/11/2026 01:37:27",
     "note": "",
     "target_km": 710.0,
     "target_gio": 12.0,
@@ -3980,9 +3889,9 @@
     "thoigian_dem_thieu": 2.5,
     "thoigian_tudong_thieu": 0.0,
     "has_phien_pdf": false,
-    "lythuyet_dat": false,
-    "lythuyet_status": "Đang tải",
-    "lythuyet_reason": "Đang chờ tải báo cáo lý thuyết",
+    "lythuyet_dat": true,
+    "lythuyet_status": "Đạt",
+    "lythuyet_reason": "Tất cả các môn lý thuyết đều tích xanh (đã miễn trừ cabin)",
     "totnghiep_details": {
       "dat_quangduong": {
         "name": "Số Km thực hành DAT",
@@ -4013,118 +3922,104 @@
       },
       "phap_luat": {
         "name": "Pháp luật TT14",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "ktlx": {
         "name": "Kỹ thuật lái xe TT14",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "cau_tao": {
         "name": "Cấu tạo TT14",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "dao_duc": {
         "name": "Đạo đức + PCCC TT14",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "mo_phong": {
         "name": "Mô phỏng (LT)",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "note_cabin": {
         "name": "Note Cabin (Bài cabin)",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "gio_cabin": {
         "name": "Giờ Cabin",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "da_nop_sk": {
         "name": "Đã nộp SK",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "da_nop_hd": {
         "name": "Đã nộp HĐ",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "gio_cao_toc": {
         "name": "Giờ Cao Tốc",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "km_cao_toc": {
         "name": "Km Cao Tốc",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "van_toc_tb": {
         "name": "Vận tốc TB",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "hinh_cabin": {
         "name": "Nhận diện Cabin (Hình cabin)",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "FAIL",
         "exempt": true,
-        "rule": "Miễn trừ (Bỏ qua)",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Miễn trừ (Bỏ qua)"
       }
     },
     "totnghiep_failing": [
       "Số Km DAT (0.0/710 km)",
       "Thời gian DAT (thiếu 12.0h, thiếu đêm (0.0/2.5h))",
-      "Số ngày đường (0/5 ngày)",
-      "Đang chờ tải báo cáo lý thuyết"
+      "Số ngày đường (0/5 ngày)"
     ],
-    "totnghiep_has_pdf": false,
+    "totnghiep_has_pdf": true,
     "dieukien_totnghiep": "Không",
-    "totnghiep_reason": "Chưa đạt: Số Km DAT (0.0/710 km), Thời gian DAT (thiếu 12.0h, thiếu đêm (0.0/2.5h)), Số ngày đường (0/5 ngày), Đang chờ tải báo cáo lý thuyết",
+    "totnghiep_reason": "Chưa đạt: Số Km DAT (0.0/710 km), Thời gian DAT (thiếu 12.0h, thiếu đêm (0.0/2.5h)), Số ngày đường (0/5 ngày)",
     "is_my_query": true,
     "lythuyet_pdf_filename": "52001-20260916-000009_lythuyet.pdf",
     "msg_id": "1574223710901239828",
@@ -4165,7 +4060,7 @@
     "pdf_url": null,
     "ketqua": "Chưa tra DAT",
     "created_at": "20/11/2026 21:50:23",
-    "updated_at": "23/11/2026 01:36:09",
+    "updated_at": "23/11/2026 01:34:51",
     "note": "",
     "target_km": 710.0,
     "target_gio": 12.0,
@@ -4358,7 +4253,7 @@
     "pdf_url": null,
     "ketqua": "Chưa Đạt",
     "created_at": "20/11/2026 21:50:23",
-    "updated_at": "23/11/2026 01:36:09",
+    "updated_at": "23/11/2026 01:34:51",
     "note": "",
     "target_km": 710.0,
     "target_gio": 12.0,
@@ -4583,7 +4478,7 @@
     "pdf_url": null,
     "ketqua": "Chưa tra DAT",
     "created_at": "20/11/2026 21:50:23",
-    "updated_at": "23/11/2026 01:36:09",
+    "updated_at": "23/11/2026 01:34:51",
     "note": "",
     "target_km": 710.0,
     "target_gio": 12.0,
@@ -4788,7 +4683,7 @@
     "interaction_username": "thinh03324",
     "is_my_query": true,
     "created_at": "22/11/2026 22:41:33",
-    "updated_at": "23/11/2026 01:36:09",
+    "updated_at": "23/11/2026 01:34:51",
     "target_km": 810.0,
     "target_gio": 20.0,
     "pct_km": 39.4,
@@ -5001,7 +4896,7 @@
     "interaction_username": "",
     "is_my_query": true,
     "created_at": "22/11/2026 22:41:33",
-    "updated_at": "23/11/2026 01:36:09",
+    "updated_at": "23/11/2026 01:34:51",
     "target_km": 810.0,
     "target_gio": 20.0,
     "pct_km": 78.6,
@@ -5220,7 +5115,7 @@
     "interaction_username": "caohung75",
     "is_my_query": true,
     "created_at": "22/11/2026 22:41:33",
-    "updated_at": "23/11/2026 01:36:09",
+    "updated_at": "23/11/2026 01:34:51",
     "target_km": 810.0,
     "target_gio": 20.0,
     "pct_km": 86.6,
@@ -5445,7 +5340,7 @@
     "interaction_username": "858056_",
     "is_my_query": true,
     "created_at": "22/11/2026 22:41:35",
-    "updated_at": "23/11/2026 01:36:09",
+    "updated_at": "23/11/2026 01:34:51",
     "target_km": 810.0,
     "target_gio": 20.0,
     "pct_km": 88.0,
@@ -5663,7 +5558,7 @@
     "interaction_username": "",
     "is_my_query": true,
     "created_at": "22/11/2026 22:41:35",
-    "updated_at": "23/11/2026 01:36:09",
+    "updated_at": "23/11/2026 01:34:51",
     "target_km": 810.0,
     "target_gio": 20.0,
     "pct_km": 77.6,
@@ -5857,7 +5752,7 @@
     "interaction_username": "huynhduc04284",
     "is_my_query": true,
     "created_at": "22/11/2026 22:41:36",
-    "updated_at": "23/11/2026 01:36:09",
+    "updated_at": "23/11/2026 01:34:51",
     "target_km": 810.0,
     "target_gio": 20.0,
     "pct_km": 100.0,
@@ -6073,7 +5968,7 @@
     "interaction_username": "",
     "is_my_query": true,
     "created_at": "22/11/2026 22:41:36",
-    "updated_at": "23/11/2026 01:36:09",
+    "updated_at": "23/11/2026 01:34:51",
     "target_km": 710.0,
     "target_gio": 12.0,
     "thoigian_tudong_toithieu": 0.0,
@@ -6268,13 +6163,13 @@
     "thoigian_tudong_toithieu": 2.0,
     "avatar_url": "https://cdn.discordapp.com/attachments/1100763300180017185/1574080834942541914/avatar.jpg?ex=6b045884&is=6b030704&hm=c41c2ad86ea251d4ed10cfdf301db9705374a1085465f33e05b129f0120bc11c&",
     "is_dat_embed": true,
-    "msg_id": "1574080815258931230",
-    "msg_time": "2026-11-22T15:15:11.365000+00:00",
-    "interaction_user_id": "1380027340331155528",
-    "interaction_username": "phunghienna",
+    "msg_id": "1574236854532706377",
+    "msg_time": "2026-11-23T01:35:14.027000+00:00",
+    "interaction_user_id": "1380376964304474173",
+    "interaction_username": "tranthang252",
     "is_my_query": true,
     "created_at": "22/11/2026 22:41:36",
-    "updated_at": "23/11/2026 01:36:09",
+    "updated_at": "23/11/2026 01:37:37",
     "target_km": 825.0,
     "target_gio": 24.0,
     "pct_km": 8.7,
@@ -6282,12 +6177,12 @@
     "overall_pct": 9.3,
     "thoigian_dem_thieu": 1.8,
     "thoigian_tudong_thieu": 0.0,
-    "has_lythuyet": false,
+    "has_lythuyet": true,
     "has_phien_pdf": false,
     "phien_status": "Chưa tra phiên",
-    "lythuyet_dat": false,
-    "lythuyet_status": "Chưa tra",
-    "lythuyet_reason": "Chưa tra cứu lý thuyết (/lythuyet)",
+    "lythuyet_dat": true,
+    "lythuyet_status": "Đạt",
+    "lythuyet_reason": "Tất cả các môn lý thuyết đều tích xanh (đã miễn trừ cabin)",
     "totnghiep_details": {
       "dat_quangduong": {
         "name": "Số Km thực hành DAT",
@@ -6318,118 +6213,107 @@
       },
       "phap_luat": {
         "name": "Pháp luật TT14",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "ktlx": {
         "name": "Kỹ thuật lái xe TT14",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "cau_tao": {
         "name": "Cấu tạo TT14",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "dao_duc": {
         "name": "Đạo đức + PCCC TT14",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "mo_phong": {
         "name": "Mô phỏng (LT)",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "note_cabin": {
         "name": "Note Cabin (Bài cabin)",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "gio_cabin": {
         "name": "Giờ Cabin",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "da_nop_sk": {
         "name": "Đã nộp SK",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "da_nop_hd": {
         "name": "Đã nộp HĐ",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "gio_cao_toc": {
         "name": "Giờ Cao Tốc",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "km_cao_toc": {
         "name": "Km Cao Tốc",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "van_toc_tb": {
         "name": "Vận tốc TB",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "hinh_cabin": {
         "name": "Nhận diện Cabin (Hình cabin)",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": true,
-        "rule": "Miễn trừ (Bỏ qua)",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Miễn trừ (Bỏ qua)"
       }
     },
     "totnghiep_failing": [
       "Số Km DAT (71.5/825 km)",
       "Thời gian DAT (thiếu 21.6h, thiếu đêm (0.2/2.0h))",
-      "Số ngày đường (1/5 ngày)",
-      "Chưa tra cứu lý thuyết (/lythuyet)"
+      "Số ngày đường (1/5 ngày)"
     ],
-    "totnghiep_has_pdf": false,
+    "totnghiep_has_pdf": true,
     "dieukien_totnghiep": "Không",
-    "totnghiep_reason": "Chưa đạt: Số Km DAT (71.5/825 km), Thời gian DAT (thiếu 21.6h, thiếu đêm (0.2/2.0h)), Số ngày đường (1/5 ngày), Chưa tra cứu lý thuyết (/lythuyet)"
+    "totnghiep_reason": "Chưa đạt: Số Km DAT (71.5/825 km), Thời gian DAT (thiếu 21.6h, thiếu đêm (0.2/2.0h)), Số ngày đường (1/5 ngày)",
+    "lythuyet_pdf_filename": "52001-20261016-000028_lythuyet.pdf",
+    "lythuyet_pdf_url": "https://cdn.discordapp.com/attachments/1100763300180017185/1574236874703118457/52001-20261016-000028_lythuyet.pdf?ex=6b04e9d6&is=6b039856&hm=63ed9c0977126ae431567461b382ff1dca015afe8da0b66885f9e81083418d42&",
+    "xe_phan": "77C24360"
   },
   "52001-20261016-000026": {
     "mahv": "52001-20261016-000026",
@@ -6469,13 +6353,13 @@
     "thoigian_tudong_toithieu": 2.0,
     "avatar_url": "https://cdn.discordapp.com/attachments/1100763300180017185/1574081114174259362/avatar.jpg?ex=6b0458c6&is=6b030746&hm=02337f86e819260bc5cc0f740cd9132b1165d75b0ae77adcc36b163b301258ca&",
     "is_dat_embed": true,
-    "msg_id": "1574081114392236102",
-    "msg_time": "2026-11-22T15:16:22.684000+00:00",
-    "interaction_user_id": "",
-    "interaction_username": "",
+    "msg_id": "1574236871955841084",
+    "msg_time": "2026-11-23T01:35:18.181000+00:00",
+    "interaction_user_id": "1380376964304474173",
+    "interaction_username": "tranthang252",
     "is_my_query": true,
     "created_at": "22/11/2026 22:41:36",
-    "updated_at": "23/11/2026 01:36:09",
+    "updated_at": "23/11/2026 01:37:38",
     "target_km": 825.0,
     "target_gio": 24.0,
     "pct_km": 11.7,
@@ -6483,12 +6367,12 @@
     "overall_pct": 10.8,
     "thoigian_dem_thieu": 1.7,
     "thoigian_tudong_thieu": 0.0,
-    "has_lythuyet": false,
+    "has_lythuyet": true,
     "has_phien_pdf": false,
     "phien_status": "Chưa tra phiên",
-    "lythuyet_dat": false,
-    "lythuyet_status": "Chưa tra",
-    "lythuyet_reason": "Chưa tra cứu lý thuyết (/lythuyet)",
+    "lythuyet_dat": true,
+    "lythuyet_status": "Đạt",
+    "lythuyet_reason": "Tất cả các môn lý thuyết đều tích xanh (đã miễn trừ cabin)",
     "totnghiep_details": {
       "dat_quangduong": {
         "name": "Số Km thực hành DAT",
@@ -6519,118 +6403,107 @@
       },
       "phap_luat": {
         "name": "Pháp luật TT14",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "ktlx": {
         "name": "Kỹ thuật lái xe TT14",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "cau_tao": {
         "name": "Cấu tạo TT14",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "dao_duc": {
         "name": "Đạo đức + PCCC TT14",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "mo_phong": {
         "name": "Mô phỏng (LT)",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "note_cabin": {
         "name": "Note Cabin (Bài cabin)",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "gio_cabin": {
         "name": "Giờ Cabin",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "da_nop_sk": {
         "name": "Đã nộp SK",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "da_nop_hd": {
         "name": "Đã nộp HĐ",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "gio_cao_toc": {
         "name": "Giờ Cao Tốc",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "km_cao_toc": {
         "name": "Km Cao Tốc",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "van_toc_tb": {
         "name": "Vận tốc TB",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "hinh_cabin": {
         "name": "Nhận diện Cabin (Hình cabin)",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": true,
-        "rule": "Miễn trừ (Bỏ qua)",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Miễn trừ (Bỏ qua)"
       }
     },
     "totnghiep_failing": [
       "Số Km DAT (96.2/825 km)",
       "Thời gian DAT (thiếu 21.7h, thiếu đêm (0.3/2.0h))",
-      "Số ngày đường (1/5 ngày)",
-      "Chưa tra cứu lý thuyết (/lythuyet)"
+      "Số ngày đường (1/5 ngày)"
     ],
-    "totnghiep_has_pdf": false,
+    "totnghiep_has_pdf": true,
     "dieukien_totnghiep": "Không",
-    "totnghiep_reason": "Chưa đạt: Số Km DAT (96.2/825 km), Thời gian DAT (thiếu 21.7h, thiếu đêm (0.3/2.0h)), Số ngày đường (1/5 ngày), Chưa tra cứu lý thuyết (/lythuyet)"
+    "totnghiep_reason": "Chưa đạt: Số Km DAT (96.2/825 km), Thời gian DAT (thiếu 21.7h, thiếu đêm (0.3/2.0h)), Số ngày đường (1/5 ngày)",
+    "lythuyet_pdf_filename": "52001-20261016-000026_lythuyet.pdf",
+    "lythuyet_pdf_url": "https://cdn.discordapp.com/attachments/1100763300180017185/1574236891383857182/52001-20261016-000026_lythuyet.pdf?ex=6b04e9da&is=6b03985a&hm=52ed6100072df94239c84f784979b15e61e57955797d1a0a03e171dea6dca6ac&",
+    "xe_phan": "77C24360"
   },
   "52001-20261016-000025": {
     "mahv": "52001-20261016-000025",
@@ -6676,13 +6549,13 @@
     "thoigian_tudong_toithieu": 2.0,
     "avatar_url": "https://cdn.discordapp.com/attachments/1100763300180017185/1574081490629689466/avatar.jpg?ex=6b045920&is=6b0307a0&hm=5fc7e71d797cc84a251098dccc8d91d5423bcfdf93288a764f16c47e4459ab78&",
     "is_dat_embed": true,
-    "msg_id": "1574081468328841348",
-    "msg_time": "2026-11-22T15:17:47.069000+00:00",
-    "interaction_user_id": "1380027340331155528",
-    "interaction_username": "phunghienna",
+    "msg_id": "1574236888905285722",
+    "msg_time": "2026-11-23T01:35:22.222000+00:00",
+    "interaction_user_id": "1380376964304474173",
+    "interaction_username": "tranthang252",
     "is_my_query": true,
     "created_at": "22/11/2026 22:41:36",
-    "updated_at": "23/11/2026 01:36:09",
+    "updated_at": "23/11/2026 01:37:38",
     "target_km": 825.0,
     "target_gio": 24.0,
     "pct_km": 31.2,
@@ -6690,12 +6563,12 @@
     "overall_pct": 29.6,
     "thoigian_dem_thieu": 2.0,
     "thoigian_tudong_thieu": 0.0,
-    "has_lythuyet": false,
+    "has_lythuyet": true,
     "has_phien_pdf": false,
     "phien_status": "Chưa tra phiên",
-    "lythuyet_dat": false,
-    "lythuyet_status": "Chưa tra",
-    "lythuyet_reason": "Chưa tra cứu lý thuyết (/lythuyet)",
+    "lythuyet_dat": true,
+    "lythuyet_status": "Đạt",
+    "lythuyet_reason": "Tất cả các môn lý thuyết đều tích xanh (đã miễn trừ cabin)",
     "totnghiep_details": {
       "dat_quangduong": {
         "name": "Số Km thực hành DAT",
@@ -6726,118 +6599,107 @@
       },
       "phap_luat": {
         "name": "Pháp luật TT14",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "ktlx": {
         "name": "Kỹ thuật lái xe TT14",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "cau_tao": {
         "name": "Cấu tạo TT14",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "dao_duc": {
         "name": "Đạo đức + PCCC TT14",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "mo_phong": {
         "name": "Mô phỏng (LT)",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "note_cabin": {
         "name": "Note Cabin (Bài cabin)",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "gio_cabin": {
         "name": "Giờ Cabin",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "da_nop_sk": {
         "name": "Đã nộp SK",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "da_nop_hd": {
         "name": "Đã nộp HĐ",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "gio_cao_toc": {
         "name": "Giờ Cao Tốc",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "km_cao_toc": {
         "name": "Km Cao Tốc",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "van_toc_tb": {
         "name": "Vận tốc TB",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "hinh_cabin": {
         "name": "Nhận diện Cabin (Hình cabin)",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": true,
-        "rule": "Miễn trừ (Bỏ qua)",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Miễn trừ (Bỏ qua)"
       }
     },
     "totnghiep_failing": [
       "Số Km DAT (257.4/825 km)",
       "Thời gian DAT (thiếu 17.4h, thiếu đêm (0.0/2.0h))",
-      "Số ngày đường (2/5 ngày)",
-      "Chưa tra cứu lý thuyết (/lythuyet)"
+      "Số ngày đường (2/5 ngày)"
     ],
-    "totnghiep_has_pdf": false,
+    "totnghiep_has_pdf": true,
     "dieukien_totnghiep": "Không",
-    "totnghiep_reason": "Chưa đạt: Số Km DAT (257.4/825 km), Thời gian DAT (thiếu 17.4h, thiếu đêm (0.0/2.0h)), Số ngày đường (2/5 ngày), Chưa tra cứu lý thuyết (/lythuyet)"
+    "totnghiep_reason": "Chưa đạt: Số Km DAT (257.4/825 km), Thời gian DAT (thiếu 17.4h, thiếu đêm (0.0/2.0h)), Số ngày đường (2/5 ngày)",
+    "lythuyet_pdf_filename": "52001-20261016-000025_lythuyet.pdf",
+    "lythuyet_pdf_url": "https://cdn.discordapp.com/attachments/1100763300180017185/1574236907481735220/52001-20261016-000025_lythuyet.pdf?ex=6b04e9de&is=6b03985e&hm=933240d542c9ecd091d9b0bbf73a1b18602e5795f01d1670067638c9d404e537&",
+    "xe_phan": "77C24360"
   },
   "52001-20261007-000002": {
     "mahv": "52001-20261007-000002",
@@ -6889,7 +6751,7 @@
     "interaction_username": "tranthang252",
     "is_my_query": true,
     "created_at": "22/11/2026 22:41:36",
-    "updated_at": "23/11/2026 01:36:09",
+    "updated_at": "23/11/2026 01:34:51",
     "target_km": 825.0,
     "target_gio": 24.0,
     "pct_km": 46.1,
@@ -7102,7 +6964,7 @@
     "interaction_username": "tranthang252",
     "is_my_query": true,
     "created_at": "22/11/2026 22:41:36",
-    "updated_at": "23/11/2026 01:36:09",
+    "updated_at": "23/11/2026 01:34:51",
     "target_km": 825.0,
     "target_gio": 24.0,
     "pct_km": 72.8,
@@ -7303,7 +7165,7 @@
     "interaction_username": "tranthang252",
     "is_my_query": true,
     "created_at": "22/11/2026 22:41:36",
-    "updated_at": "23/11/2026 01:36:09",
+    "updated_at": "23/11/2026 01:34:51",
     "target_km": 825.0,
     "target_gio": 24.0,
     "pct_km": 23.6,
@@ -7528,7 +7390,7 @@
     "interaction_username": "thinh03324",
     "is_my_query": true,
     "created_at": "22/11/2026 22:45:44",
-    "updated_at": "23/11/2026 01:36:09",
+    "updated_at": "23/11/2026 01:37:29",
     "target_km": 825.0,
     "target_gio": 24.0,
     "pct_km": 100.0,
@@ -7756,7 +7618,7 @@
     "interaction_username": "tranthang252",
     "is_my_query": true,
     "created_at": "22/11/2026 23:04:21",
-    "updated_at": "23/11/2026 01:36:09",
+    "updated_at": "23/11/2026 01:34:51",
     "target_km": 810.0,
     "target_gio": 20.0,
     "pct_km": 95.7,
@@ -7985,7 +7847,7 @@
     "interaction_username": "nguyentuananh0559",
     "is_my_query": true,
     "created_at": "22/11/2026 23:13:19",
-    "updated_at": "23/11/2026 01:36:09",
+    "updated_at": "23/11/2026 01:34:51",
     "target_km": 710.0,
     "target_gio": 12.0,
     "thoigian_tudong_toithieu": 0.0,
@@ -8214,7 +8076,7 @@
     "interaction_username": "nguyentuananh0559",
     "is_my_query": true,
     "created_at": "22/11/2026 23:13:19",
-    "updated_at": "23/11/2026 01:36:09",
+    "updated_at": "23/11/2026 01:34:51",
     "target_km": 710.0,
     "target_gio": 12.0,
     "thoigian_tudong_toithieu": 0.0,
@@ -8426,7 +8288,7 @@
     "interaction_username": "nguyentuananh0559",
     "is_my_query": true,
     "created_at": "22/11/2026 23:15:40",
-    "updated_at": "23/11/2026 01:36:09",
+    "updated_at": "23/11/2026 01:34:51",
     "target_km": 710.0,
     "target_gio": 12.0,
     "thoigian_tudong_toithieu": 0.0,
@@ -8639,7 +8501,7 @@
     "interaction_username": "nguyentuananh0559",
     "is_my_query": true,
     "created_at": "22/11/2026 23:15:40",
-    "updated_at": "23/11/2026 01:36:09",
+    "updated_at": "23/11/2026 01:34:51",
     "target_km": 710.0,
     "target_gio": 12.0,
     "thoigian_tudong_toithieu": 0.0,
@@ -8863,7 +8725,7 @@
     "interaction_username": "nguyentuananh0559",
     "is_my_query": true,
     "created_at": "22/11/2026 23:17:47",
-    "updated_at": "23/11/2026 01:36:09",
+    "updated_at": "23/11/2026 01:34:51",
     "target_km": 710.0,
     "target_gio": 12.0,
     "thoigian_tudong_toithieu": 0.0,
@@ -9086,7 +8948,7 @@
     "interaction_username": "nguyentuananh0559",
     "is_my_query": true,
     "created_at": "22/11/2026 23:17:47",
-    "updated_at": "23/11/2026 01:36:09",
+    "updated_at": "23/11/2026 01:34:51",
     "target_km": 710.0,
     "target_gio": 12.0,
     "thoigian_tudong_toithieu": 0.0,
@@ -9303,7 +9165,7 @@
     "interaction_username": "nguyentuananh0559",
     "is_my_query": true,
     "created_at": "22/11/2026 23:17:47",
-    "updated_at": "23/11/2026 01:36:09",
+    "updated_at": "23/11/2026 01:34:51",
     "target_km": 710.0,
     "target_gio": 12.0,
     "thoigian_tudong_toithieu": 0.0,
@@ -9461,17 +9323,51 @@
     "totnghiep_reason": "Chưa đạt: Số Km DAT (648.1/710 km), Số ngày đường (4/5 ngày), Chưa tra cứu lý thuyết (/lythuyet)"
   },
   "52001-20261012-000050": {
-    "mahv": "52001-20261012-000050",
     "hoten": "NGUYỄN THỊ QUỲNH LIỄU",
-    "lythuyet_pdf_filename": "52001-20261012-000050_lythuyet.pdf",
-    "lythuyet_pdf_url": "https://cdn.discordapp.com/attachments/1100763300180017185/1574223628969582612/52001-20261012-000050_lythuyet.pdf?ex=6b04dd80&is=6b038c00&hm=4cdaa8fd9ce0bf6608878568879c3307da3819c5c2f7b8026dd64d7f2bb4ae16&",
+    "cccd": "",
+    "mahv": "52001-20261012-000050",
+    "ngaysinh": "",
+    "khoa": "",
+    "hang": "",
+    "sdt": "",
+    "quangduong": 0.0,
+    "thoigian": 0.0,
+    "thoigian_dem": 0.0,
+    "thoigian_tudong": 0.0,
+    "songay_str": "0/5 ngày",
+    "songay_dat": false,
+    "quangduong_dat": false,
+    "thoigian_dat": false,
+    "thoigian_dem_dat": false,
+    "thoigian_tudong_dat": false,
+    "cabin_uploaded": false,
+    "cabin_status": "",
+    "cabin_image_url": "",
+    "so_phien_hople": 0,
+    "so_phien_loi": 0,
+    "phien_status": "Chưa tra phiên",
+    "phien_loi_detail": [],
+    "phien_recoverable_cars": [],
+    "phien_permanent_reasons": [],
     "has_lythuyet": true,
-    "msg_id": "1574223607490420836",
-    "msg_time": "2026-11-23T00:42:35.686000+00:00",
-    "interaction_user_id": "1380376964304474173",
-    "interaction_username": "tranthang252",
-    "is_my_query": true,
-    "xe_phan": "76A33872",
+    "lythuyet_pdf_url": "https://cdn.discordapp.com/attachments/1100763300180017185/1574223628969582612/52001-20261012-000050_lythuyet.pdf?ex=6b04dd80&is=6b038c00&hm=4cdaa8fd9ce0bf6608878568879c3307da3819c5c2f7b8026dd64d7f2bb4ae16&",
+    "pdf_url": null,
+    "ketqua": "Chưa tra DAT",
+    "created_at": "23/11/2026 00:45:09",
+    "updated_at": "23/11/2026 01:34:51",
+    "note": "",
+    "target_km": 810.0,
+    "target_gio": 20.0,
+    "thoigian_dem_toithieu": 3.0,
+    "thoigian_tudong_toithieu": 2.0,
+    "pct_km": 0.0,
+    "pct_gio": 0.0,
+    "overall_pct": 0.0,
+    "quangduong_thieu": 810.0,
+    "thoigian_thieu": 20.0,
+    "thoigian_dem_thieu": 3.0,
+    "thoigian_tudong_thieu": 2.0,
+    "has_phien_pdf": false,
     "lythuyet_dat": false,
     "lythuyet_status": "Đang tải",
     "lythuyet_reason": "Đang chờ tải báo cáo lý thuyết",
@@ -9617,80 +9513,63 @@
     "totnghiep_has_pdf": false,
     "dieukien_totnghiep": "Không",
     "totnghiep_reason": "Chưa đạt: Số Km DAT (0.0/810 km), Thời gian DAT (thiếu 20.0h, thiếu đêm (0.0/3.0h), thiếu TĐ (0.0/2.0h)), Số ngày đường (0/5 ngày), Đang chờ tải báo cáo lý thuyết",
-    "created_at": "23/11/2026 00:44:11",
-    "updated_at": "23/11/2026 01:36:09",
-    "note": "",
-    "target_km": 810.0,
-    "target_gio": 20.0,
-    "thoigian_dem_toithieu": 3.0,
-    "thoigian_tudong_toithieu": 2.0,
-    "pct_km": 0.0,
-    "pct_gio": 0.0,
-    "overall_pct": 0.0,
-    "quangduong_dat": false,
-    "thoigian_dat": false,
-    "thoigian_dem_dat": false,
-    "thoigian_tudong_dat": false,
-    "songay_dat": false,
-    "quangduong_thieu": 810.0,
-    "thoigian_thieu": 20.0,
-    "thoigian_dem_thieu": 3.0,
-    "thoigian_tudong_thieu": 2.0,
-    "has_phien_pdf": false,
-    "phien_status": "Chưa tra phiên",
-    "ketqua": "Chưa tra DAT"
-  },
-  "52001-20261012-000051": {
-    "mahv": "52001-20261012-000051",
-    "hoten": "LÊ THỊ NỮ",
-    "ngaysinh": "01/07/2001",
-    "cccd": "052301010960",
-    "hang": "B.01",
-    "khoa": "CD_112B.01",
-    "quangduong": 0.0,
-    "quangduong_dat": false,
-    "quangduong_thieu": 710.0,
-    "thoigian": 0.0,
-    "thoigian_dat": false,
-    "thoigian_thieu": 12.0,
-    "thoigian_dem": 0.0,
-    "thoigian_dem_dat": false,
-    "thoigian_dem_toithieu": 2.5,
-    "thoigian_tudong": 0.0,
-    "thoigian_tudong_dat": true,
-    "suckhoe": "Chưa có dữ liệu",
-    "songay_str": "0/5 ngày",
-    "songay_dat": false,
-    "lich_trinh_ngay": [],
-    "so_phien_hople": 0,
-    "so_phien_loi": 0,
-    "ketqua": "Chưa tra DAT",
-    "pdf_url": null,
-    "pdf_filename": null,
-    "note": "",
-    "avatar_url": "https://cdn.discordapp.com/attachments/1100763300180017185/1574224389933764740/avatar.jpg?ex=6b04de36&is=6b038cb6&hm=e06774ba60b9753b826463ecb6b63040635bf8774493b2f9e66bc8893660af90&",
-    "is_dat_embed": true,
-    "msg_id": "1574224714585608232",
-    "msg_time": "2026-11-23T00:46:59.638000+00:00",
+    "lythuyet_pdf_filename": "52001-20261012-000050_lythuyet.pdf",
+    "msg_id": "1574223607490420836",
+    "msg_time": "2026-11-23T00:42:35.686000+00:00",
     "interaction_user_id": "1380376964304474173",
     "interaction_username": "tranthang252",
     "is_my_query": true,
-    "created_at": "23/11/2026 00:46:44",
-    "updated_at": "23/11/2026 01:36:09",
+    "xe_phan": "76A33872"
+  },
+  "52001-20261012-000051": {
+    "hoten": "LÊ THỊ NỮ",
+    "cccd": "052301010960",
+    "mahv": "52001-20261012-000051",
+    "ngaysinh": "01/07/2001",
+    "khoa": "CD_112B.01",
+    "hang": "B.01",
+    "sdt": "",
+    "quangduong": 0.0,
+    "thoigian": 0.0,
+    "thoigian_dem": 0.0,
+    "thoigian_tudong": 0.0,
+    "songay_str": "0/5 ngày",
+    "songay_dat": false,
+    "quangduong_dat": false,
+    "thoigian_dat": false,
+    "thoigian_dem_dat": false,
+    "thoigian_tudong_dat": true,
+    "cabin_uploaded": false,
+    "cabin_status": "",
+    "cabin_image_url": "",
+    "so_phien_hople": 0,
+    "so_phien_loi": 0,
+    "phien_status": "Chưa tra phiên",
+    "phien_loi_detail": [],
+    "phien_recoverable_cars": [],
+    "phien_permanent_reasons": [],
+    "has_lythuyet": true,
+    "lythuyet_pdf_url": "https://cdn.discordapp.com/attachments/1100763300180017185/1574224736500580463/52001-20261012-000051_lythuyet.pdf?ex=6b04de88&is=6b038d08&hm=d42e7919dbf49c31c4a8bc047d05229f0bede1760a1969c211a1e4b44d681823&",
+    "pdf_url": null,
+    "ketqua": "Chưa tra DAT",
+    "created_at": "23/11/2026 00:47:46",
+    "updated_at": "23/11/2026 01:37:29",
+    "note": "",
     "target_km": 710.0,
     "target_gio": 12.0,
+    "thoigian_dem_toithieu": 2.5,
     "thoigian_tudong_toithieu": 0.0,
     "pct_km": 0.0,
     "pct_gio": 0.0,
     "overall_pct": 0.0,
+    "quangduong_thieu": 710.0,
+    "thoigian_thieu": 12.0,
     "thoigian_dem_thieu": 2.5,
     "thoigian_tudong_thieu": 0.0,
-    "has_lythuyet": true,
     "has_phien_pdf": false,
-    "phien_status": "Chưa tra phiên",
     "lythuyet_dat": false,
-    "lythuyet_status": "Đang tải",
-    "lythuyet_reason": "Đang chờ tải báo cáo lý thuyết",
+    "lythuyet_status": "Không",
+    "lythuyet_reason": "Chưa đạt các môn: Note Cabin (Bài cabin), Giờ Cabin",
     "totnghiep_details": {
       "dat_quangduong": {
         "name": "Số Km thực hành DAT",
@@ -9721,120 +9600,115 @@
       },
       "phap_luat": {
         "name": "Pháp luật TT14",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "ktlx": {
         "name": "Kỹ thuật lái xe TT14",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "cau_tao": {
         "name": "Cấu tạo TT14",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "dao_duc": {
         "name": "Đạo đức + PCCC TT14",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "mo_phong": {
         "name": "Mô phỏng (LT)",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "note_cabin": {
         "name": "Note Cabin (Bài cabin)",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "FAIL",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "gio_cabin": {
         "name": "Giờ Cabin",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "FAIL",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "da_nop_sk": {
         "name": "Đã nộp SK",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "da_nop_hd": {
         "name": "Đã nộp HĐ",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "gio_cao_toc": {
         "name": "Giờ Cao Tốc",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "km_cao_toc": {
         "name": "Km Cao Tốc",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "van_toc_tb": {
         "name": "Vận tốc TB",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "PASS",
         "exempt": false,
-        "rule": "Bắt buộc đạt",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
       },
       "hinh_cabin": {
         "name": "Nhận diện Cabin (Hình cabin)",
-        "group": "LY_THUYET",
-        "status": "NONE",
+        "status": "FAIL",
         "exempt": true,
-        "rule": "Miễn trừ (Bỏ qua)",
-        "detail": "Chưa tải báo cáo lý thuyết"
+        "group": "LY_THUYET",
+        "rule": "Miễn trừ (Bỏ qua)"
       }
     },
     "totnghiep_failing": [
       "Số Km DAT (0.0/710 km)",
       "Thời gian DAT (thiếu 12.0h, thiếu đêm (0.0/2.5h))",
       "Số ngày đường (0/5 ngày)",
-      "Đang chờ tải báo cáo lý thuyết"
+      "Note Cabin (Bài cabin)",
+      "Giờ Cabin"
     ],
-    "totnghiep_has_pdf": false,
+    "totnghiep_has_pdf": true,
     "dieukien_totnghiep": "Không",
-    "totnghiep_reason": "Chưa đạt: Số Km DAT (0.0/710 km), Thời gian DAT (thiếu 12.0h, thiếu đêm (0.0/2.5h)), Số ngày đường (0/5 ngày), Đang chờ tải báo cáo lý thuyết",
+    "totnghiep_reason": "Chưa đạt: Số Km DAT (0.0/710 km), Thời gian DAT (thiếu 12.0h, thiếu đêm (0.0/2.5h)), Số ngày đường (0/5 ngày), Note Cabin (Bài cabin), Giờ Cabin",
+    "suckhoe": "Chưa có dữ liệu",
+    "avatar_url": "https://cdn.discordapp.com/attachments/1100763300180017185/1574224389933764740/avatar.jpg?ex=6b04de36&is=6b038cb6&hm=e06774ba60b9753b826463ecb6b63040635bf8774493b2f9e66bc8893660af90&",
+    "is_dat_embed": true,
+    "msg_id": "1574224714585608232",
+    "msg_time": "2026-11-23T00:46:59.638000+00:00",
+    "is_my_query": true,
     "lythuyet_pdf_filename": "52001-20261012-000051_lythuyet.pdf",
-    "lythuyet_pdf_url": "https://cdn.discordapp.com/attachments/1100763300180017185/1574224736500580463/52001-20261012-000051_lythuyet.pdf?ex=6b04de88&is=6b038d08&hm=d42e7919dbf49c31c4a8bc047d05229f0bede1760a1969c211a1e4b44d681823&",
+    "interaction_user_id": "1380376964304474173",
+    "interaction_username": "tranthang252",
     "xe_phan": "76A33872"
   },
   "52001-20261016-000033": {
@@ -9881,13 +9755,13 @@
     "thoigian_tudong_toithieu": 2.0,
     "avatar_url": "https://cdn.discordapp.com/attachments/1100763300180017185/1574232949644071033/avatar.jpg?ex=6b04e62f&is=6b0394af&hm=aa307f5f59cf1a3a1216d2f59d3066734f56682ef0532e6106294b3bdf21e2b6&",
     "is_dat_embed": true,
-    "msg_id": "1574232931466219621",
-    "msg_time": "2026-11-23T01:19:38.695000+00:00",
-    "interaction_user_id": "1380039198668488794",
-    "interaction_username": "duong047663",
+    "msg_id": "1574236908253614170",
+    "msg_time": "2026-11-23T01:35:26.835000+00:00",
+    "interaction_user_id": "1380376964304474173",
+    "interaction_username": "tranthang252",
     "is_my_query": true,
-    "created_at": "23/11/2026 01:20:49",
-    "updated_at": "23/11/2026 01:36:09",
+    "created_at": "23/11/2026 01:22:08",
+    "updated_at": "23/11/2026 01:37:39",
     "target_km": 825.0,
     "target_gio": 24.0,
     "pct_km": 20.6,
@@ -9895,12 +9769,12 @@
     "overall_pct": 20.9,
     "thoigian_dem_thieu": 2.0,
     "thoigian_tudong_thieu": 2.0,
-    "has_lythuyet": false,
+    "has_lythuyet": true,
     "has_phien_pdf": false,
     "phien_status": "Chưa tra phiên",
-    "lythuyet_dat": false,
-    "lythuyet_status": "Chưa tra",
-    "lythuyet_reason": "Chưa tra cứu lý thuyết (/lythuyet)",
+    "lythuyet_dat": true,
+    "lythuyet_status": "Đạt",
+    "lythuyet_reason": "Tất cả các môn lý thuyết đều tích xanh (đã miễn trừ cabin)",
     "totnghiep_details": {
       "dat_quangduong": {
         "name": "Số Km thực hành DAT",
@@ -9926,6 +9800,202 @@
         "status": "FAIL",
         "value": "2/5 ngày",
         "detail": "Chưa đủ số ngày đường (2/5 ngày)",
+        "rule": "Tối thiểu 4 hoặc 5 ngày đường",
+        "exempt": false
+      },
+      "phap_luat": {
+        "name": "Pháp luật TT14",
+        "status": "PASS",
+        "exempt": false,
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
+      },
+      "ktlx": {
+        "name": "Kỹ thuật lái xe TT14",
+        "status": "PASS",
+        "exempt": false,
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
+      },
+      "cau_tao": {
+        "name": "Cấu tạo TT14",
+        "status": "PASS",
+        "exempt": false,
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
+      },
+      "dao_duc": {
+        "name": "Đạo đức + PCCC TT14",
+        "status": "PASS",
+        "exempt": false,
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
+      },
+      "mo_phong": {
+        "name": "Mô phỏng (LT)",
+        "status": "PASS",
+        "exempt": false,
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
+      },
+      "note_cabin": {
+        "name": "Note Cabin (Bài cabin)",
+        "status": "PASS",
+        "exempt": false,
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
+      },
+      "gio_cabin": {
+        "name": "Giờ Cabin",
+        "status": "PASS",
+        "exempt": false,
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
+      },
+      "da_nop_sk": {
+        "name": "Đã nộp SK",
+        "status": "PASS",
+        "exempt": false,
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
+      },
+      "da_nop_hd": {
+        "name": "Đã nộp HĐ",
+        "status": "PASS",
+        "exempt": false,
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
+      },
+      "gio_cao_toc": {
+        "name": "Giờ Cao Tốc",
+        "status": "PASS",
+        "exempt": false,
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
+      },
+      "km_cao_toc": {
+        "name": "Km Cao Tốc",
+        "status": "PASS",
+        "exempt": false,
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
+      },
+      "van_toc_tb": {
+        "name": "Vận tốc TB",
+        "status": "PASS",
+        "exempt": false,
+        "group": "LY_THUYET",
+        "rule": "Bắt buộc đạt"
+      },
+      "hinh_cabin": {
+        "name": "Nhận diện Cabin (Hình cabin)",
+        "status": "PASS",
+        "exempt": true,
+        "group": "LY_THUYET",
+        "rule": "Miễn trừ (Bỏ qua)"
+      }
+    },
+    "totnghiep_failing": [
+      "Số Km DAT (170.1/825 km)",
+      "Thời gian DAT (thiếu 18.9h, thiếu đêm (0.0/2.0h), thiếu TĐ (0.0/2.0h))",
+      "Số ngày đường (2/5 ngày)"
+    ],
+    "totnghiep_has_pdf": true,
+    "dieukien_totnghiep": "Không",
+    "totnghiep_reason": "Chưa đạt: Số Km DAT (170.1/825 km), Thời gian DAT (thiếu 18.9h, thiếu đêm (0.0/2.0h), thiếu TĐ (0.0/2.0h)), Số ngày đường (2/5 ngày)",
+    "lythuyet_pdf_filename": "52001-20261016-000033_lythuyet.pdf",
+    "lythuyet_pdf_url": "https://cdn.discordapp.com/attachments/1100763300180017185/1574236926481793044/52001-20261016-000033_lythuyet.pdf?ex=6b04e9e3&is=6b039863&hm=dd9843f8daf6a73b97979b93dfe3929ced688ae44a0d57d41d455066c1c4849d&",
+    "xe_phan": "77A49902"
+  },
+  "52001-20261102-000026": {
+    "mahv": "52001-20261102-000026",
+    "hoten": "NGUYỄN VĂN CHÂU",
+    "ngaysinh": "18/10/1993",
+    "cccd": "060093008495",
+    "hang": "Cm-CE",
+    "khoa": "CD_29CE",
+    "quangduong": 211.74,
+    "quangduong_dat": true,
+    "quangduong_thieu": 0.0,
+    "thoigian": 5.1,
+    "thoigian_dat": true,
+    "thoigian_thieu": 0.0,
+    "thoigian_dem": 1.03,
+    "thoigian_dem_dat": true,
+    "thoigian_dem_toithieu": 1.0,
+    "thoigian_tudong": 0.0,
+    "thoigian_tudong_dat": true,
+    "suckhoe": "Chưa có dữ liệu",
+    "songay_str": "2/2 ngày",
+    "songay_dat": true,
+    "lich_trinh_ngay": [
+      {
+        "ngay": "22/11/2026",
+        "km": 192.0,
+        "gio": 4.62,
+        "phien": 3
+      },
+      {
+        "ngay": "23/11/2026",
+        "km": 19.7,
+        "gio": 0.48,
+        "phien": 1
+      }
+    ],
+    "so_phien_hople": 0,
+    "so_phien_loi": 0,
+    "ketqua": "Đạt",
+    "pdf_url": null,
+    "pdf_filename": null,
+    "note": "",
+    "avatar_url": "https://cdn.discordapp.com/attachments/1100763300180017185/1574228659181592757/avatar.jpg?ex=6b04e230&is=6b0390b0&hm=2253dd840f87d322b7c8acade42bb849a1872133328f06b7e7462a080bedefd9&",
+    "is_dat_embed": true,
+    "msg_id": "1574228659596697660",
+    "msg_time": "2026-11-23T01:02:40.202000+00:00",
+    "interaction_user_id": "",
+    "interaction_username": "",
+    "is_my_query": true,
+    "created_at": "23/11/2026 01:37:29",
+    "updated_at": "23/11/2026 01:37:29",
+    "target_km": 210.0,
+    "target_gio": 5.0,
+    "thoigian_tudong_toithieu": 0.0,
+    "pct_km": 100.0,
+    "pct_gio": 100.0,
+    "overall_pct": 100.0,
+    "thoigian_dem_thieu": 0.0,
+    "thoigian_tudong_thieu": 0.0,
+    "has_lythuyet": false,
+    "has_phien_pdf": false,
+    "phien_status": "Chưa tra phiên",
+    "lythuyet_dat": false,
+    "lythuyet_status": "Chưa tra",
+    "lythuyet_reason": "Chưa tra cứu lý thuyết (/lythuyet)",
+    "totnghiep_details": {
+      "dat_quangduong": {
+        "name": "Số Km thực hành DAT",
+        "group": "DAT",
+        "status": "PASS",
+        "value": "211.7 / 210 km",
+        "detail": "Đã hoàn thành 211.7 / 210 km",
+        "rule": "Định mức tối thiểu 210 km",
+        "exempt": false
+      },
+      "dat_thoigian": {
+        "name": "Thời gian thực hành DAT",
+        "group": "DAT",
+        "status": "PASS",
+        "value": "5.1 / 5h (Đêm: 1.0h, TĐ: Bỏ qua)",
+        "detail": "Đã hoàn thành 5.1 / 5h",
+        "rule": "Tối thiểu 5h (gồm đêm; miễn trừ xe tự động)",
+        "exempt": false
+      },
+      "dat_songay": {
+        "name": "Số ngày chạy đường DAT",
+        "group": "DAT",
+        "status": "PASS",
+        "value": "2/2 ngày",
+        "detail": "Đã hoàn thành 2/2 ngày",
         "rule": "Tối thiểu 4 hoặc 5 ngày đường",
         "exempt": false
       },
@@ -10035,13 +10105,850 @@
       }
     },
     "totnghiep_failing": [
-      "Số Km DAT (170.1/825 km)",
-      "Thời gian DAT (thiếu 18.9h, thiếu đêm (0.0/2.0h), thiếu TĐ (0.0/2.0h))",
-      "Số ngày đường (2/5 ngày)",
       "Chưa tra cứu lý thuyết (/lythuyet)"
     ],
     "totnghiep_has_pdf": false,
     "dieukien_totnghiep": "Không",
-    "totnghiep_reason": "Chưa đạt: Số Km DAT (170.1/825 km), Thời gian DAT (thiếu 18.9h, thiếu đêm (0.0/2.0h), thiếu TĐ (0.0/2.0h)), Số ngày đường (2/5 ngày), Chưa tra cứu lý thuyết (/lythuyet)"
+    "totnghiep_reason": "Chưa đạt: Chưa tra cứu lý thuyết (/lythuyet)"
+  },
+  "52001-20261102-000022": {
+    "mahv": "52001-20261102-000022",
+    "hoten": "NGUYỄN TRỌNG HIỀN",
+    "ngaysinh": "17/06/1992",
+    "cccd": "075092001535",
+    "hang": "Cm-CE",
+    "khoa": "CD_29CE",
+    "quangduong": 210.21,
+    "quangduong_dat": true,
+    "quangduong_thieu": 0.0,
+    "thoigian": 5.33,
+    "thoigian_dat": true,
+    "thoigian_thieu": 0.0,
+    "thoigian_dem": 1.03,
+    "thoigian_dem_dat": true,
+    "thoigian_dem_toithieu": 1.0,
+    "thoigian_tudong": 0.0,
+    "thoigian_tudong_dat": true,
+    "suckhoe": "Chưa có dữ liệu",
+    "songay_str": "2/2 ngày",
+    "songay_dat": true,
+    "lich_trinh_ngay": [
+      {
+        "ngay": "22/11/2026",
+        "km": 202.0,
+        "gio": 5.04,
+        "phien": 3
+      },
+      {
+        "ngay": "23/11/2026",
+        "km": 8.2,
+        "gio": 0.29,
+        "phien": 1
+      }
+    ],
+    "so_phien_hople": 0,
+    "so_phien_loi": 0,
+    "ketqua": "Đạt",
+    "pdf_url": null,
+    "pdf_filename": null,
+    "note": "",
+    "avatar_url": "https://cdn.discordapp.com/attachments/1100763300180017185/1574228959456010290/avatar.jpg?ex=6b04e277&is=6b0390f7&hm=6b013194391bd09e0c7a55580aa754779c6950cb2a4b6bc3720aabe3112e10c1&",
+    "is_dat_embed": true,
+    "msg_id": "1574228943467192370",
+    "msg_time": "2026-11-23T01:03:47.882000+00:00",
+    "interaction_user_id": "1482618853216354325",
+    "interaction_username": "vovankhue._58293",
+    "is_my_query": true,
+    "created_at": "23/11/2026 01:37:29",
+    "updated_at": "23/11/2026 01:37:29",
+    "target_km": 210.0,
+    "target_gio": 5.0,
+    "thoigian_tudong_toithieu": 0.0,
+    "pct_km": 100.0,
+    "pct_gio": 100.0,
+    "overall_pct": 100.0,
+    "thoigian_dem_thieu": 0.0,
+    "thoigian_tudong_thieu": 0.0,
+    "has_lythuyet": false,
+    "has_phien_pdf": false,
+    "phien_status": "Chưa tra phiên",
+    "lythuyet_dat": false,
+    "lythuyet_status": "Chưa tra",
+    "lythuyet_reason": "Chưa tra cứu lý thuyết (/lythuyet)",
+    "totnghiep_details": {
+      "dat_quangduong": {
+        "name": "Số Km thực hành DAT",
+        "group": "DAT",
+        "status": "PASS",
+        "value": "210.2 / 210 km",
+        "detail": "Đã hoàn thành 210.2 / 210 km",
+        "rule": "Định mức tối thiểu 210 km",
+        "exempt": false
+      },
+      "dat_thoigian": {
+        "name": "Thời gian thực hành DAT",
+        "group": "DAT",
+        "status": "PASS",
+        "value": "5.3 / 5h (Đêm: 1.0h, TĐ: Bỏ qua)",
+        "detail": "Đã hoàn thành 5.3 / 5h",
+        "rule": "Tối thiểu 5h (gồm đêm; miễn trừ xe tự động)",
+        "exempt": false
+      },
+      "dat_songay": {
+        "name": "Số ngày chạy đường DAT",
+        "group": "DAT",
+        "status": "PASS",
+        "value": "2/2 ngày",
+        "detail": "Đã hoàn thành 2/2 ngày",
+        "rule": "Tối thiểu 4 hoặc 5 ngày đường",
+        "exempt": false
+      },
+      "phap_luat": {
+        "name": "Pháp luật TT14",
+        "group": "LY_THUYET",
+        "status": "NONE",
+        "exempt": false,
+        "rule": "Bắt buộc đạt",
+        "detail": "Chưa tải báo cáo lý thuyết"
+      },
+      "ktlx": {
+        "name": "Kỹ thuật lái xe TT14",
+        "group": "LY_THUYET",
+        "status": "NONE",
+        "exempt": false,
+        "rule": "Bắt buộc đạt",
+        "detail": "Chưa tải báo cáo lý thuyết"
+      },
+      "cau_tao": {
+        "name": "Cấu tạo TT14",
+        "group": "LY_THUYET",
+        "status": "NONE",
+        "exempt": false,
+        "rule": "Bắt buộc đạt",
+        "detail": "Chưa tải báo cáo lý thuyết"
+      },
+      "dao_duc": {
+        "name": "Đạo đức + PCCC TT14",
+        "group": "LY_THUYET",
+        "status": "NONE",
+        "exempt": false,
+        "rule": "Bắt buộc đạt",
+        "detail": "Chưa tải báo cáo lý thuyết"
+      },
+      "mo_phong": {
+        "name": "Mô phỏng (LT)",
+        "group": "LY_THUYET",
+        "status": "NONE",
+        "exempt": false,
+        "rule": "Bắt buộc đạt",
+        "detail": "Chưa tải báo cáo lý thuyết"
+      },
+      "note_cabin": {
+        "name": "Note Cabin (Bài cabin)",
+        "group": "LY_THUYET",
+        "status": "NONE",
+        "exempt": false,
+        "rule": "Bắt buộc đạt",
+        "detail": "Chưa tải báo cáo lý thuyết"
+      },
+      "gio_cabin": {
+        "name": "Giờ Cabin",
+        "group": "LY_THUYET",
+        "status": "NONE",
+        "exempt": false,
+        "rule": "Bắt buộc đạt",
+        "detail": "Chưa tải báo cáo lý thuyết"
+      },
+      "da_nop_sk": {
+        "name": "Đã nộp SK",
+        "group": "LY_THUYET",
+        "status": "NONE",
+        "exempt": false,
+        "rule": "Bắt buộc đạt",
+        "detail": "Chưa tải báo cáo lý thuyết"
+      },
+      "da_nop_hd": {
+        "name": "Đã nộp HĐ",
+        "group": "LY_THUYET",
+        "status": "NONE",
+        "exempt": false,
+        "rule": "Bắt buộc đạt",
+        "detail": "Chưa tải báo cáo lý thuyết"
+      },
+      "gio_cao_toc": {
+        "name": "Giờ Cao Tốc",
+        "group": "LY_THUYET",
+        "status": "NONE",
+        "exempt": false,
+        "rule": "Bắt buộc đạt",
+        "detail": "Chưa tải báo cáo lý thuyết"
+      },
+      "km_cao_toc": {
+        "name": "Km Cao Tốc",
+        "group": "LY_THUYET",
+        "status": "NONE",
+        "exempt": false,
+        "rule": "Bắt buộc đạt",
+        "detail": "Chưa tải báo cáo lý thuyết"
+      },
+      "van_toc_tb": {
+        "name": "Vận tốc TB",
+        "group": "LY_THUYET",
+        "status": "NONE",
+        "exempt": false,
+        "rule": "Bắt buộc đạt",
+        "detail": "Chưa tải báo cáo lý thuyết"
+      },
+      "hinh_cabin": {
+        "name": "Nhận diện Cabin (Hình cabin)",
+        "group": "LY_THUYET",
+        "status": "NONE",
+        "exempt": true,
+        "rule": "Miễn trừ (Bỏ qua)",
+        "detail": "Chưa tải báo cáo lý thuyết"
+      }
+    },
+    "totnghiep_failing": [
+      "Chưa tra cứu lý thuyết (/lythuyet)"
+    ],
+    "totnghiep_has_pdf": false,
+    "dieukien_totnghiep": "Không",
+    "totnghiep_reason": "Chưa đạt: Chưa tra cứu lý thuyết (/lythuyet)"
+  },
+  "52001-20261102-000023": {
+    "mahv": "52001-20261102-000023",
+    "hoten": "HUỲNH TẤN VIÊN",
+    "ngaysinh": "02/11/1995",
+    "cccd": "052095006767",
+    "hang": "Cm-CE",
+    "khoa": "CD_29CE",
+    "quangduong": 210.99,
+    "quangduong_dat": true,
+    "quangduong_thieu": 0.0,
+    "thoigian": 5.05,
+    "thoigian_dat": true,
+    "thoigian_thieu": 0.0,
+    "thoigian_dem": 1.1,
+    "thoigian_dem_dat": true,
+    "thoigian_dem_toithieu": 1.0,
+    "thoigian_tudong": 0.0,
+    "thoigian_tudong_dat": true,
+    "suckhoe": "Chưa có dữ liệu",
+    "songay_str": "2/2 ngày",
+    "songay_dat": true,
+    "lich_trinh_ngay": [
+      {
+        "ngay": "22/11/2026",
+        "km": 202.7,
+        "gio": 4.76,
+        "phien": 2
+      },
+      {
+        "ngay": "23/11/2026",
+        "km": 8.3,
+        "gio": 0.29,
+        "phien": 1
+      }
+    ],
+    "so_phien_hople": 0,
+    "so_phien_loi": 0,
+    "ketqua": "Đạt",
+    "pdf_url": null,
+    "pdf_filename": null,
+    "note": "",
+    "avatar_url": "https://cdn.discordapp.com/attachments/1100763300180017185/1574229655576256542/avatar.jpg?ex=6b04e31d&is=6b03919d&hm=e80facda5df7bb9ebf5ae5499a9ab81eacf7fa4a18edc51e65bb08c7c1067e91&",
+    "is_dat_embed": true,
+    "msg_id": "1574229637926748160",
+    "msg_time": "2026-11-23T01:06:33.454000+00:00",
+    "interaction_user_id": "1482618853216354325",
+    "interaction_username": "vovankhue._58293",
+    "is_my_query": true,
+    "created_at": "23/11/2026 01:37:29",
+    "updated_at": "23/11/2026 01:37:29",
+    "target_km": 210.0,
+    "target_gio": 5.0,
+    "thoigian_tudong_toithieu": 0.0,
+    "pct_km": 100.0,
+    "pct_gio": 100.0,
+    "overall_pct": 100.0,
+    "thoigian_dem_thieu": 0.0,
+    "thoigian_tudong_thieu": 0.0,
+    "has_lythuyet": false,
+    "has_phien_pdf": false,
+    "phien_status": "Chưa tra phiên",
+    "lythuyet_dat": false,
+    "lythuyet_status": "Chưa tra",
+    "lythuyet_reason": "Chưa tra cứu lý thuyết (/lythuyet)",
+    "totnghiep_details": {
+      "dat_quangduong": {
+        "name": "Số Km thực hành DAT",
+        "group": "DAT",
+        "status": "PASS",
+        "value": "211.0 / 210 km",
+        "detail": "Đã hoàn thành 211.0 / 210 km",
+        "rule": "Định mức tối thiểu 210 km",
+        "exempt": false
+      },
+      "dat_thoigian": {
+        "name": "Thời gian thực hành DAT",
+        "group": "DAT",
+        "status": "PASS",
+        "value": "5.0 / 5h (Đêm: 1.1h, TĐ: Bỏ qua)",
+        "detail": "Đã hoàn thành 5.0 / 5h",
+        "rule": "Tối thiểu 5h (gồm đêm; miễn trừ xe tự động)",
+        "exempt": false
+      },
+      "dat_songay": {
+        "name": "Số ngày chạy đường DAT",
+        "group": "DAT",
+        "status": "PASS",
+        "value": "2/2 ngày",
+        "detail": "Đã hoàn thành 2/2 ngày",
+        "rule": "Tối thiểu 4 hoặc 5 ngày đường",
+        "exempt": false
+      },
+      "phap_luat": {
+        "name": "Pháp luật TT14",
+        "group": "LY_THUYET",
+        "status": "NONE",
+        "exempt": false,
+        "rule": "Bắt buộc đạt",
+        "detail": "Chưa tải báo cáo lý thuyết"
+      },
+      "ktlx": {
+        "name": "Kỹ thuật lái xe TT14",
+        "group": "LY_THUYET",
+        "status": "NONE",
+        "exempt": false,
+        "rule": "Bắt buộc đạt",
+        "detail": "Chưa tải báo cáo lý thuyết"
+      },
+      "cau_tao": {
+        "name": "Cấu tạo TT14",
+        "group": "LY_THUYET",
+        "status": "NONE",
+        "exempt": false,
+        "rule": "Bắt buộc đạt",
+        "detail": "Chưa tải báo cáo lý thuyết"
+      },
+      "dao_duc": {
+        "name": "Đạo đức + PCCC TT14",
+        "group": "LY_THUYET",
+        "status": "NONE",
+        "exempt": false,
+        "rule": "Bắt buộc đạt",
+        "detail": "Chưa tải báo cáo lý thuyết"
+      },
+      "mo_phong": {
+        "name": "Mô phỏng (LT)",
+        "group": "LY_THUYET",
+        "status": "NONE",
+        "exempt": false,
+        "rule": "Bắt buộc đạt",
+        "detail": "Chưa tải báo cáo lý thuyết"
+      },
+      "note_cabin": {
+        "name": "Note Cabin (Bài cabin)",
+        "group": "LY_THUYET",
+        "status": "NONE",
+        "exempt": false,
+        "rule": "Bắt buộc đạt",
+        "detail": "Chưa tải báo cáo lý thuyết"
+      },
+      "gio_cabin": {
+        "name": "Giờ Cabin",
+        "group": "LY_THUYET",
+        "status": "NONE",
+        "exempt": false,
+        "rule": "Bắt buộc đạt",
+        "detail": "Chưa tải báo cáo lý thuyết"
+      },
+      "da_nop_sk": {
+        "name": "Đã nộp SK",
+        "group": "LY_THUYET",
+        "status": "NONE",
+        "exempt": false,
+        "rule": "Bắt buộc đạt",
+        "detail": "Chưa tải báo cáo lý thuyết"
+      },
+      "da_nop_hd": {
+        "name": "Đã nộp HĐ",
+        "group": "LY_THUYET",
+        "status": "NONE",
+        "exempt": false,
+        "rule": "Bắt buộc đạt",
+        "detail": "Chưa tải báo cáo lý thuyết"
+      },
+      "gio_cao_toc": {
+        "name": "Giờ Cao Tốc",
+        "group": "LY_THUYET",
+        "status": "NONE",
+        "exempt": false,
+        "rule": "Bắt buộc đạt",
+        "detail": "Chưa tải báo cáo lý thuyết"
+      },
+      "km_cao_toc": {
+        "name": "Km Cao Tốc",
+        "group": "LY_THUYET",
+        "status": "NONE",
+        "exempt": false,
+        "rule": "Bắt buộc đạt",
+        "detail": "Chưa tải báo cáo lý thuyết"
+      },
+      "van_toc_tb": {
+        "name": "Vận tốc TB",
+        "group": "LY_THUYET",
+        "status": "NONE",
+        "exempt": false,
+        "rule": "Bắt buộc đạt",
+        "detail": "Chưa tải báo cáo lý thuyết"
+      },
+      "hinh_cabin": {
+        "name": "Nhận diện Cabin (Hình cabin)",
+        "group": "LY_THUYET",
+        "status": "NONE",
+        "exempt": true,
+        "rule": "Miễn trừ (Bỏ qua)",
+        "detail": "Chưa tải báo cáo lý thuyết"
+      }
+    },
+    "totnghiep_failing": [
+      "Chưa tra cứu lý thuyết (/lythuyet)"
+    ],
+    "totnghiep_has_pdf": false,
+    "dieukien_totnghiep": "Không",
+    "totnghiep_reason": "Chưa đạt: Chưa tra cứu lý thuyết (/lythuyet)"
+  },
+  "52001-20261102-000029": {
+    "mahv": "52001-20261102-000029",
+    "hoten": "NGUYỄN VĂN HÙNG",
+    "ngaysinh": "20/08/1985",
+    "cccd": "051085017372",
+    "hang": "Cm-CE",
+    "khoa": "CD_29CE",
+    "quangduong": 218.52,
+    "quangduong_dat": true,
+    "quangduong_thieu": 0.0,
+    "thoigian": 5.2,
+    "thoigian_dat": true,
+    "thoigian_thieu": 0.0,
+    "thoigian_dem": 1.07,
+    "thoigian_dem_dat": true,
+    "thoigian_dem_toithieu": 1.0,
+    "thoigian_tudong": 0.0,
+    "thoigian_tudong_dat": true,
+    "suckhoe": "Chưa có dữ liệu",
+    "songay_str": "2/2 ngày",
+    "songay_dat": true,
+    "lich_trinh_ngay": [
+      {
+        "ngay": "22/11/2026",
+        "km": 209.9,
+        "gio": 4.85,
+        "phien": 3
+      },
+      {
+        "ngay": "23/11/2026",
+        "km": 8.6,
+        "gio": 0.35,
+        "phien": 1
+      }
+    ],
+    "so_phien_hople": 0,
+    "so_phien_loi": 0,
+    "ketqua": "Đạt",
+    "pdf_url": null,
+    "pdf_filename": null,
+    "note": "",
+    "avatar_url": "https://cdn.discordapp.com/attachments/1100763300180017185/1574229796601462885/avatar.jpg?ex=6b04e33f&is=6b0391bf&hm=6c5b89d328649f721aa9e332a490426b613551169c67d76fd680a145ea1e9bca&",
+    "is_dat_embed": true,
+    "msg_id": "1574229796458725379",
+    "msg_time": "2026-11-23T01:07:11.251000+00:00",
+    "interaction_user_id": "",
+    "interaction_username": "",
+    "is_my_query": true,
+    "created_at": "23/11/2026 01:37:29",
+    "updated_at": "23/11/2026 01:37:29",
+    "target_km": 210.0,
+    "target_gio": 5.0,
+    "thoigian_tudong_toithieu": 0.0,
+    "pct_km": 100.0,
+    "pct_gio": 100.0,
+    "overall_pct": 100.0,
+    "thoigian_dem_thieu": 0.0,
+    "thoigian_tudong_thieu": 0.0,
+    "has_lythuyet": false,
+    "has_phien_pdf": false,
+    "phien_status": "Chưa tra phiên",
+    "lythuyet_dat": false,
+    "lythuyet_status": "Chưa tra",
+    "lythuyet_reason": "Chưa tra cứu lý thuyết (/lythuyet)",
+    "totnghiep_details": {
+      "dat_quangduong": {
+        "name": "Số Km thực hành DAT",
+        "group": "DAT",
+        "status": "PASS",
+        "value": "218.5 / 210 km",
+        "detail": "Đã hoàn thành 218.5 / 210 km",
+        "rule": "Định mức tối thiểu 210 km",
+        "exempt": false
+      },
+      "dat_thoigian": {
+        "name": "Thời gian thực hành DAT",
+        "group": "DAT",
+        "status": "PASS",
+        "value": "5.2 / 5h (Đêm: 1.1h, TĐ: Bỏ qua)",
+        "detail": "Đã hoàn thành 5.2 / 5h",
+        "rule": "Tối thiểu 5h (gồm đêm; miễn trừ xe tự động)",
+        "exempt": false
+      },
+      "dat_songay": {
+        "name": "Số ngày chạy đường DAT",
+        "group": "DAT",
+        "status": "PASS",
+        "value": "2/2 ngày",
+        "detail": "Đã hoàn thành 2/2 ngày",
+        "rule": "Tối thiểu 4 hoặc 5 ngày đường",
+        "exempt": false
+      },
+      "phap_luat": {
+        "name": "Pháp luật TT14",
+        "group": "LY_THUYET",
+        "status": "NONE",
+        "exempt": false,
+        "rule": "Bắt buộc đạt",
+        "detail": "Chưa tải báo cáo lý thuyết"
+      },
+      "ktlx": {
+        "name": "Kỹ thuật lái xe TT14",
+        "group": "LY_THUYET",
+        "status": "NONE",
+        "exempt": false,
+        "rule": "Bắt buộc đạt",
+        "detail": "Chưa tải báo cáo lý thuyết"
+      },
+      "cau_tao": {
+        "name": "Cấu tạo TT14",
+        "group": "LY_THUYET",
+        "status": "NONE",
+        "exempt": false,
+        "rule": "Bắt buộc đạt",
+        "detail": "Chưa tải báo cáo lý thuyết"
+      },
+      "dao_duc": {
+        "name": "Đạo đức + PCCC TT14",
+        "group": "LY_THUYET",
+        "status": "NONE",
+        "exempt": false,
+        "rule": "Bắt buộc đạt",
+        "detail": "Chưa tải báo cáo lý thuyết"
+      },
+      "mo_phong": {
+        "name": "Mô phỏng (LT)",
+        "group": "LY_THUYET",
+        "status": "NONE",
+        "exempt": false,
+        "rule": "Bắt buộc đạt",
+        "detail": "Chưa tải báo cáo lý thuyết"
+      },
+      "note_cabin": {
+        "name": "Note Cabin (Bài cabin)",
+        "group": "LY_THUYET",
+        "status": "NONE",
+        "exempt": false,
+        "rule": "Bắt buộc đạt",
+        "detail": "Chưa tải báo cáo lý thuyết"
+      },
+      "gio_cabin": {
+        "name": "Giờ Cabin",
+        "group": "LY_THUYET",
+        "status": "NONE",
+        "exempt": false,
+        "rule": "Bắt buộc đạt",
+        "detail": "Chưa tải báo cáo lý thuyết"
+      },
+      "da_nop_sk": {
+        "name": "Đã nộp SK",
+        "group": "LY_THUYET",
+        "status": "NONE",
+        "exempt": false,
+        "rule": "Bắt buộc đạt",
+        "detail": "Chưa tải báo cáo lý thuyết"
+      },
+      "da_nop_hd": {
+        "name": "Đã nộp HĐ",
+        "group": "LY_THUYET",
+        "status": "NONE",
+        "exempt": false,
+        "rule": "Bắt buộc đạt",
+        "detail": "Chưa tải báo cáo lý thuyết"
+      },
+      "gio_cao_toc": {
+        "name": "Giờ Cao Tốc",
+        "group": "LY_THUYET",
+        "status": "NONE",
+        "exempt": false,
+        "rule": "Bắt buộc đạt",
+        "detail": "Chưa tải báo cáo lý thuyết"
+      },
+      "km_cao_toc": {
+        "name": "Km Cao Tốc",
+        "group": "LY_THUYET",
+        "status": "NONE",
+        "exempt": false,
+        "rule": "Bắt buộc đạt",
+        "detail": "Chưa tải báo cáo lý thuyết"
+      },
+      "van_toc_tb": {
+        "name": "Vận tốc TB",
+        "group": "LY_THUYET",
+        "status": "NONE",
+        "exempt": false,
+        "rule": "Bắt buộc đạt",
+        "detail": "Chưa tải báo cáo lý thuyết"
+      },
+      "hinh_cabin": {
+        "name": "Nhận diện Cabin (Hình cabin)",
+        "group": "LY_THUYET",
+        "status": "NONE",
+        "exempt": true,
+        "rule": "Miễn trừ (Bỏ qua)",
+        "detail": "Chưa tải báo cáo lý thuyết"
+      }
+    },
+    "totnghiep_failing": [
+      "Chưa tra cứu lý thuyết (/lythuyet)"
+    ],
+    "totnghiep_has_pdf": false,
+    "dieukien_totnghiep": "Không",
+    "totnghiep_reason": "Chưa đạt: Chưa tra cứu lý thuyết (/lythuyet)"
+  },
+  "52001-20260908-000096": {
+    "mahv": "52001-20260908-000096",
+    "hoten": "TĂNG HOÀN TRÍ",
+    "ngaysinh": "27/08/2003",
+    "cccd": "052203011744",
+    "hang": "C1",
+    "khoa": "CD_13C1",
+    "quangduong": 829.79,
+    "quangduong_dat": true,
+    "quangduong_thieu": 0.0,
+    "thoigian": 24.75,
+    "thoigian_dat": true,
+    "thoigian_thieu": 0.0,
+    "thoigian_dem": 7.88,
+    "thoigian_dem_dat": true,
+    "thoigian_dem_toithieu": 2.0,
+    "thoigian_tudong": 2.73,
+    "thoigian_tudong_dat": true,
+    "suckhoe": "Chưa có dữ liệu",
+    "songay_str": "6/5 ngày",
+    "songay_dat": true,
+    "lich_trinh_ngay": [
+      {
+        "ngay": "14/10/2026",
+        "km": 129.2,
+        "gio": 3.63,
+        "phien": 5
+      },
+      {
+        "ngay": "16/10/2026",
+        "km": 111.0,
+        "gio": 3.33,
+        "phien": 2
+      },
+      {
+        "ngay": "17/10/2026",
+        "km": 198.7,
+        "gio": 5.05,
+        "phien": 3
+      },
+      {
+        "ngay": "18/10/2026",
+        "km": 162.1,
+        "gio": 4.63,
+        "phien": 3
+      },
+      {
+        "ngay": "17/11/2026",
+        "km": 70.1,
+        "gio": 3.39,
+        "phien": 2
+      },
+      {
+        "ngay": "19/11/2026",
+        "km": 158.8,
+        "gio": 4.72,
+        "phien": 3
+      }
+    ],
+    "so_phien_hople": 0,
+    "so_phien_loi": 0,
+    "ketqua": "Đạt",
+    "pdf_url": null,
+    "pdf_filename": null,
+    "note": "",
+    "thoigian_tudong_toithieu": 2.0,
+    "avatar_url": "https://cdn.discordapp.com/attachments/1100763300180017185/1574230565463531610/avatar.jpg?ex=6b04e3f6&is=6b039276&hm=f4a978547e664a880b136dd09cdf63962aa298eac148525bdf872a5ceca9f7f4&",
+    "is_dat_embed": true,
+    "msg_id": "1574230546836627637",
+    "msg_time": "2026-11-23T01:10:10.155000+00:00",
+    "interaction_user_id": "1382849479325253633",
+    "interaction_username": "giantuhoa",
+    "is_my_query": true,
+    "created_at": "23/11/2026 01:37:30",
+    "updated_at": "23/11/2026 01:37:30",
+    "target_km": 825.0,
+    "target_gio": 24.0,
+    "pct_km": 100.0,
+    "pct_gio": 100.0,
+    "overall_pct": 100.0,
+    "thoigian_dem_thieu": 0.0,
+    "thoigian_tudong_thieu": 0.0,
+    "has_lythuyet": false,
+    "has_phien_pdf": false,
+    "phien_status": "Chưa tra phiên",
+    "lythuyet_dat": false,
+    "lythuyet_status": "Chưa tra",
+    "lythuyet_reason": "Chưa tra cứu lý thuyết (/lythuyet)",
+    "totnghiep_details": {
+      "dat_quangduong": {
+        "name": "Số Km thực hành DAT",
+        "group": "DAT",
+        "status": "PASS",
+        "value": "829.8 / 825 km",
+        "detail": "Đã hoàn thành 829.8 / 825 km",
+        "rule": "Định mức tối thiểu 825 km",
+        "exempt": false
+      },
+      "dat_thoigian": {
+        "name": "Thời gian thực hành DAT",
+        "group": "DAT",
+        "status": "PASS",
+        "value": "24.8 / 24h (Đêm: 7.9h, TĐ: 2.7h)",
+        "detail": "Đã hoàn thành 24.8 / 24h",
+        "rule": "Tối thiểu 24h (gồm đêm; tự động 2.0h)",
+        "exempt": false
+      },
+      "dat_songay": {
+        "name": "Số ngày chạy đường DAT",
+        "group": "DAT",
+        "status": "PASS",
+        "value": "6/5 ngày",
+        "detail": "Đã hoàn thành 6/5 ngày",
+        "rule": "Tối thiểu 4 hoặc 5 ngày đường",
+        "exempt": false
+      },
+      "phap_luat": {
+        "name": "Pháp luật TT14",
+        "group": "LY_THUYET",
+        "status": "NONE",
+        "exempt": false,
+        "rule": "Bắt buộc đạt",
+        "detail": "Chưa tải báo cáo lý thuyết"
+      },
+      "ktlx": {
+        "name": "Kỹ thuật lái xe TT14",
+        "group": "LY_THUYET",
+        "status": "NONE",
+        "exempt": false,
+        "rule": "Bắt buộc đạt",
+        "detail": "Chưa tải báo cáo lý thuyết"
+      },
+      "cau_tao": {
+        "name": "Cấu tạo TT14",
+        "group": "LY_THUYET",
+        "status": "NONE",
+        "exempt": false,
+        "rule": "Bắt buộc đạt",
+        "detail": "Chưa tải báo cáo lý thuyết"
+      },
+      "dao_duc": {
+        "name": "Đạo đức + PCCC TT14",
+        "group": "LY_THUYET",
+        "status": "NONE",
+        "exempt": false,
+        "rule": "Bắt buộc đạt",
+        "detail": "Chưa tải báo cáo lý thuyết"
+      },
+      "mo_phong": {
+        "name": "Mô phỏng (LT)",
+        "group": "LY_THUYET",
+        "status": "NONE",
+        "exempt": false,
+        "rule": "Bắt buộc đạt",
+        "detail": "Chưa tải báo cáo lý thuyết"
+      },
+      "note_cabin": {
+        "name": "Note Cabin (Bài cabin)",
+        "group": "LY_THUYET",
+        "status": "NONE",
+        "exempt": false,
+        "rule": "Bắt buộc đạt",
+        "detail": "Chưa tải báo cáo lý thuyết"
+      },
+      "gio_cabin": {
+        "name": "Giờ Cabin",
+        "group": "LY_THUYET",
+        "status": "NONE",
+        "exempt": false,
+        "rule": "Bắt buộc đạt",
+        "detail": "Chưa tải báo cáo lý thuyết"
+      },
+      "da_nop_sk": {
+        "name": "Đã nộp SK",
+        "group": "LY_THUYET",
+        "status": "NONE",
+        "exempt": false,
+        "rule": "Bắt buộc đạt",
+        "detail": "Chưa tải báo cáo lý thuyết"
+      },
+      "da_nop_hd": {
+        "name": "Đã nộp HĐ",
+        "group": "LY_THUYET",
+        "status": "NONE",
+        "exempt": false,
+        "rule": "Bắt buộc đạt",
+        "detail": "Chưa tải báo cáo lý thuyết"
+      },
+      "gio_cao_toc": {
+        "name": "Giờ Cao Tốc",
+        "group": "LY_THUYET",
+        "status": "NONE",
+        "exempt": false,
+        "rule": "Bắt buộc đạt",
+        "detail": "Chưa tải báo cáo lý thuyết"
+      },
+      "km_cao_toc": {
+        "name": "Km Cao Tốc",
+        "group": "LY_THUYET",
+        "status": "NONE",
+        "exempt": false,
+        "rule": "Bắt buộc đạt",
+        "detail": "Chưa tải báo cáo lý thuyết"
+      },
+      "van_toc_tb": {
+        "name": "Vận tốc TB",
+        "group": "LY_THUYET",
+        "status": "NONE",
+        "exempt": false,
+        "rule": "Bắt buộc đạt",
+        "detail": "Chưa tải báo cáo lý thuyết"
+      },
+      "hinh_cabin": {
+        "name": "Nhận diện Cabin (Hình cabin)",
+        "group": "LY_THUYET",
+        "status": "NONE",
+        "exempt": true,
+        "rule": "Miễn trừ (Bỏ qua)",
+        "detail": "Chưa tải báo cáo lý thuyết"
+      }
+    },
+    "totnghiep_failing": [
+      "Chưa tra cứu lý thuyết (/lythuyet)"
+    ],
+    "totnghiep_has_pdf": false,
+    "dieukien_totnghiep": "Không",
+    "totnghiep_reason": "Chưa đạt: Chưa tra cứu lý thuyết (/lythuyet)"
   }
 }
