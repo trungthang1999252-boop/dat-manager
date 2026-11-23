@@ -453,5 +453,13 @@
     "khoa": "CD_12C1",
     "hang": "C1",
     "ngaysinh": "25/09/2001"
+  },
+  "NGUYỄN VĂN HÙNG": {
+    "hoten": "NGUYỄN VĂN HÙNG",
+    "cccd": "051085017372",
+    "mahv": "52001-20261102-000029",
+    "khoa": "CD_29CE",
+    "hang": "Cm-CE",
+    "ngaysinh": "20/08/1985"
   }
 }
