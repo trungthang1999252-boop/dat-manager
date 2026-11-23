@@ -430,14 +430,6 @@
     "hang": "B.01",
     "ngaysinh": "20/10/1996"
   },
-  "NGUYỄN THỊ YẾN LÀNH": {
-    "hoten": "NGUYỄN THỊ YẾN LÀNH",
-    "cccd": "052195013174",
-    "mahv": "52001-20260908-000016",
-    "khoa": "CD_13C1",
-    "hang": "C1",
-    "ngaysinh": "13/10/1995"
-  },
   "TRẦN THIỆN PHƯỚC": {
     "hoten": "TRẦN THIỆN PHƯỚC",
     "cccd": "051201000546",
@@ -461,5 +453,13 @@
     "khoa": "CD_29CE",
     "hang": "Cm-CE",
     "ngaysinh": "20/08/1985"
+  },
+  "LƯƠNG THÀNH ĐẠT": {
+    "hoten": "LƯƠNG THÀNH ĐẠT",
+    "cccd": "060097006764",
+    "mahv": "52001-20261102-000027",
+    "khoa": "CD_29CE",
+    "hang": "Cm-CE",
+    "ngaysinh": "10/09/1997"
   }
 }
