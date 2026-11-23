@@ -432,7 +432,7 @@
 
                         </button>
 
-                        <button onclick="handleQuery('daykhoa')" id="btn-query-daykhoa" class="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-xl font-semibold text-xs transition flex items-center space-x-2 shadow-sm" title="Kiểm tra lý thuyết Đạt ➔ Trích xuất xe từ PDF lý thuyết ➔ Gửi lệnh /daykhoa">
+                        <button onclick="openDayKhoaModal()" id="btn-query-daykhoa" class="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-xl font-semibold text-xs transition flex items-center space-x-2 shadow-sm" title="Chọn khóa hiện có ➔ Quét xe từ PDF lý thuyết ➔ Đẩy khóa riêng biệt cho từng xe">
 
                             <i class="fa-solid fa-car-side"></i>
 
@@ -2569,6 +2569,136 @@
                     class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 active:scale-95 text-white font-bold text-xs px-5 py-2.5 rounded-xl transition flex items-center space-x-1.5 shadow-md">
                     <i class="fa-solid fa-cloud-arrow-down"></i>
                     <span id="btn-do-update-lythuyet-text">🚀 Cập Nhật File PDF (/lythuyet)</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Đẩy Khóa Xe (/daykhoa) - Tự Động Phân Loại Các Xe Khác Nhau -->
+    <div id="daykhoa-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3 sm:p-4">
+        <div class="bg-white rounded-3xl max-w-2xl w-full p-5 sm:p-6 space-y-4 shadow-2xl border border-slate-100 max-h-[92vh] flex flex-col">
+            <!-- Header -->
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3 shrink-0">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-amber-500 to-orange-600 text-white flex items-center justify-center shadow-md">
+                        <i class="fa-solid fa-car-side text-lg"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-bold text-slate-800 flex items-center gap-1.5">
+                            <span>Đẩy Khóa Xuống Xe Tập Lái</span>
+                            <span class="bg-amber-100 text-amber-800 text-[10px] font-black px-2 py-0.5 rounded-full">/daykhoa</span>
+                        </h3>
+                        <p class="text-[11px] text-slate-500">Tự động kiểm tra điểm lý thuyết ĐẠT & quét các xe khác nhau trong file PDF lý thuyết</p>
+                    </div>
+                </div>
+                <button onclick="closeModal('daykhoa-modal')" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-100 transition cursor-pointer">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <!-- Content Area (Scrollable) -->
+            <div class="space-y-4 overflow-y-auto pr-1 flex-1">
+                <!-- Chọn Khóa Học -->
+                <div class="bg-slate-50 p-3.5 rounded-2xl border border-slate-200 space-y-2">
+                    <div class="flex items-center justify-between">
+                        <label class="block text-xs font-bold text-slate-800">
+                            <i class="fa-solid fa-graduation-cap text-amber-600 mr-1"></i>Chọn Khóa Học Hiện Tại Đang Có:
+                        </label>
+                        <button type="button" onclick="scanDayKhoaCurrentCourse()" class="text-[11px] text-blue-600 hover:text-blue-800 font-bold flex items-center space-x-1 cursor-pointer">
+                            <i class="fa-solid fa-arrows-rotate text-[10px]"></i>
+                            <span>Quét Lại Xe Từ PDF</span>
+                        </button>
+                    </div>
+                    <select id="daykhoa-course-select" onchange="onDayKhoaCourseChange()"
+                        class="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500 shadow-xs cursor-pointer">
+                        <!-- Populated dynamically with all existing courses -->
+                    </select>
+                </div>
+
+                <!-- Loading State khi đang quét xe -->
+                <div id="daykhoa-scan-loading" class="hidden py-6 text-center space-y-2">
+                    <i class="fa-solid fa-circle-notch fa-spin text-amber-600 text-2xl"></i>
+                    <p class="text-xs text-slate-600 font-medium" id="daykhoa-loading-text">Đang đọc file PDF lý thuyết để trích xuất danh sách các biển số xe...</p>
+                </div>
+
+                <!-- Kết Quả Quét Xe -->
+                <div id="daykhoa-scan-result" class="space-y-3.5 hidden">
+                    <!-- Thống kê nhanh -->
+                    <div class="grid grid-cols-4 gap-2 text-center text-xs">
+                        <div class="p-2 bg-slate-50 border border-slate-200 rounded-xl">
+                            <span class="block text-[10px] text-slate-500 font-medium">Tổng HV</span>
+                            <span class="text-xs font-black text-slate-800" id="dk-stat-total">0</span>
+                        </div>
+                        <div class="p-2 bg-emerald-50 border border-emerald-200 rounded-xl">
+                            <span class="block text-[10px] text-emerald-600 font-medium">Đạt Lý Thuyết</span>
+                            <span class="text-xs font-black text-emerald-700" id="dk-stat-passed">0</span>
+                        </div>
+                        <div class="p-2 bg-rose-50 border border-rose-200 rounded-xl">
+                            <span class="block text-[10px] text-rose-600 font-medium">Chưa Đạt (Bỏ qua)</span>
+                            <span class="text-xs font-black text-rose-700" id="dk-stat-skipped">0</span>
+                        </div>
+                        <div class="p-2 bg-amber-50 border border-amber-200 rounded-xl">
+                            <span class="block text-[10px] text-amber-700 font-medium">Số Xe Khác Nhau</span>
+                            <span class="text-xs font-black text-amber-800" id="dk-stat-cars">0</span>
+                        </div>
+                    </div>
+
+                    <!-- Danh sách các xe khác nhau được phát hiện -->
+                    <div class="space-y-2">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-bold text-slate-700">
+                                <i class="fa-solid fa-list-check text-amber-600 mr-1"></i>Các Biển Số Xe Phát Hiện Trong PDF (Được Đẩy Riêng Biệt):
+                            </span>
+                            <span id="dk-badge-car-count" class="text-[10px] bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full font-bold"></span>
+                        </div>
+                        <div id="daykhoa-cars-container" class="space-y-2 max-h-52 overflow-y-auto pr-1">
+                            <!-- Các card xe được render động -->
+                        </div>
+                    </div>
+
+                    <!-- Danh sách học viên chưa đạt lý thuyết bị bỏ qua -->
+                    <div id="daykhoa-skipped-container" class="hidden bg-rose-50/70 border border-rose-200 p-3 rounded-2xl space-y-1.5">
+                        <div class="flex items-center justify-between text-xs font-bold text-rose-800">
+                            <span class="flex items-center gap-1">
+                                <i class="fa-solid fa-triangle-exclamation text-rose-600"></i>
+                                <span>Học viên CHƯA ĐẠT lý thuyết (Sẽ BỎ QUA, không đẩy xe):</span>
+                            </span>
+                            <span id="dk-skipped-count-badge" class="bg-rose-200 text-rose-800 text-[10px] px-2 py-0.5 rounded-full"></span>
+                        </div>
+                        <div id="daykhoa-skipped-list" class="text-[11px] text-slate-600 max-h-24 overflow-y-auto space-y-1 pr-1 font-mono">
+                            <!-- List of skipped students -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Hộp Nhật Ký Tiến Trình Đẩy Khóa (Live Execution Box) -->
+                <div id="daykhoa-execution-box" class="hidden bg-slate-900 text-slate-200 p-4 rounded-2xl space-y-2.5 shadow-inner">
+                    <div class="flex items-center justify-between text-xs">
+                        <span class="font-bold flex items-center gap-1.5 text-amber-400">
+                            <i class="fa-solid fa-bolt"></i>
+                            <span id="dk-exec-title">Đang thực hiện các lệnh đẩy khóa riêng biệt...</span>
+                        </span>
+                        <span id="dk-exec-progress" class="font-mono text-[11px] text-slate-400">0 / 0 xe</span>
+                    </div>
+                    <!-- Thanh tiến trình -->
+                    <div class="w-full bg-slate-800 rounded-full h-2 overflow-hidden border border-slate-700">
+                        <div id="dk-progress-bar" class="bg-gradient-to-r from-amber-500 to-emerald-500 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+                    </div>
+                    <!-- Danh sách logs -->
+                    <div id="daykhoa-logs" class="text-[11px] font-mono space-y-1 max-h-36 overflow-y-auto pr-1 text-slate-300">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer Action Buttons -->
+            <div class="pt-3 border-t border-slate-100 flex items-center justify-between shrink-0">
+                <button type="button" onclick="closeModal('daykhoa-modal')" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition cursor-pointer">
+                    Đóng
+                </button>
+                <button type="button" id="btn-run-daykhoa-all" onclick="executeBatchDayKhoaDistinctCars()"
+                    class="px-5 py-2.5 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white text-xs font-bold rounded-xl transition shadow-md flex items-center space-x-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
+                    <i class="fa-solid fa-paper-plane"></i>
+                    <span id="btn-run-daykhoa-text">🚀 Đẩy Khóa Cho Các Xe Riêng Biệt</span>
                 </button>
             </div>
         </div>
@@ -4791,7 +4921,7 @@ let _loadStudentsAbortCtrl = null;
 
                                 <div class="flex items-center space-x-2 text-[11px]">
 
-                                    <button onclick="executeDayKhoaCourse('${courseName}')" class="bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-400/40 px-2 py-0.5 rounded-full font-bold transition inline-flex items-center cursor-pointer" title="Đẩy khóa ${courseName} xuống xe các học viên đạt lý thuyết">
+                                    <button onclick="openDayKhoaModal('${courseName}')" class="bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-400/40 px-2 py-0.5 rounded-full font-bold transition inline-flex items-center cursor-pointer" title="Chọn khóa ${courseName} ➔ Quét xe từ PDF ➔ Đẩy khóa riêng biệt cho từng xe">
 
                                         <i class="fa-solid fa-car-side mr-1 text-amber-300"></i>/daykhoa
 
@@ -5539,54 +5669,284 @@ let _loadStudentsAbortCtrl = null;
 
 
 
-        async function executeDayKhoaCourse(courseName) {
+        let currentDayKhoaPreview = null;
 
-            if (!courseName) return;
+        async function openDayKhoaModal(targetCourse = null) {
+            const modal = document.getElementById('daykhoa-modal');
+            if (!modal) return;
 
-            if (!confirm(`Bạn có chắc muốn đẩy khóa "${courseName}" xuống tất cả các xe của học viên ĐÃ ĐẠT lý thuyết trong khóa này?`)) {
+            const select = document.getElementById('daykhoa-course-select');
+            select.innerHTML = '<option value="">-- Đang nạp danh sách khóa học... --</option>';
+            modal.classList.remove('hidden');
 
-                return;
-
-            }
-
-            showToast(`🚗 Đang quét các học viên đạt lý thuyết trong khóa "${courseName}" và gửi /daykhoa...`, true);
+            // Reset UI
+            document.getElementById('daykhoa-scan-loading').classList.add('hidden');
+            document.getElementById('daykhoa-scan-result').classList.add('hidden');
+            document.getElementById('daykhoa-execution-box').classList.add('hidden');
+            const runBtn = document.getElementById('btn-run-daykhoa-all');
+            runBtn.disabled = true;
+            document.getElementById('btn-run-daykhoa-text').innerText = '🚀 Đẩy Khóa Cho Các Xe Riêng Biệt';
 
             try {
-
-                const res = await fetch('/api/daykhoa', {
-
-                    method: 'POST',
-
-                    headers: { 'Content-Type': 'application/json' },
-
-                    body: JSON.stringify({ course: courseName })
-
-                });
-
+                const res = await fetch('/api/daykhoa/preview');
                 const data = await res.json();
-
-                if (data.success) {
-
-                    const carCount = (data.cars_pushed || []).length;
-
-                    showToast(`✅ Khóa "${courseName}": Đã đẩy thành công xuống ${carCount} xe (${data.passed_count} HV đạt lý thuyết, ${data.failed_count} HV chưa đạt bỏ qua)!`);
-
-                    await loadStudents();
-
-                } else {
-
-                    showToast(`❌ ${data.error || 'Lỗi khi đẩy khóa'}`, false);
-
+                
+                select.innerHTML = '';
+                let coursesList = [];
+                if (data.success && data.courses && data.courses.length > 0) {
+                    coursesList = data.courses;
+                } else if (cachedStats && cachedStats.courses) {
+                    coursesList = cachedStats.courses.map(c => ({ name: c, student_count: '' }));
                 }
 
+                if (coursesList.length === 0) {
+                    select.innerHTML = '<option value="">(Không có khóa học nào trong hệ thống)</option>';
+                    return;
+                }
+
+                coursesList.forEach(c => {
+                    const opt = document.createElement('option');
+                    opt.value = c.name;
+                    opt.textContent = c.student_count ? `Khóa ${c.name} (${c.student_count} học viên)` : `Khóa ${c.name}`;
+                    select.appendChild(opt);
+                });
+
+                if (targetCourse && coursesList.some(c => c.name === targetCourse)) {
+                    select.value = targetCourse;
+                }
+
+                await scanDayKhoaCurrentCourse();
             } catch (err) {
+                console.error('Lỗi nạp khóa học:', err);
+                showToast('Không thể nạp danh sách khóa học!', false);
+            }
+        }
 
-                console.error('Lỗi executeDayKhoaCourse:', err);
+        async function onDayKhoaCourseChange() {
+            await scanDayKhoaCurrentCourse();
+        }
 
-                showToast('Lỗi kết nối khi gửi lệnh đẩy khóa!', false);
+        async function scanDayKhoaCurrentCourse() {
+            const select = document.getElementById('daykhoa-course-select');
+            const courseName = (select.value || '').trim();
+            if (!courseName) return;
 
+            const loader = document.getElementById('daykhoa-scan-loading');
+            const resultBox = document.getElementById('daykhoa-scan-result');
+            const execBox = document.getElementById('daykhoa-execution-box');
+            const runBtn = document.getElementById('btn-run-daykhoa-all');
+
+            loader.classList.remove('hidden');
+            resultBox.classList.add('hidden');
+            execBox.classList.add('hidden');
+            runBtn.disabled = true;
+
+            try {
+                const res = await fetch(`/api/daykhoa/preview?course=${encodeURIComponent(courseName)}`);
+                const data = await res.json();
+                loader.classList.add('hidden');
+
+                if (!data.success) {
+                    showToast(data.error || 'Lỗi khi quét học viên của khóa!', false);
+                    return;
+                }
+
+                currentDayKhoaPreview = data;
+                resultBox.classList.remove('hidden');
+
+                // Cập nhật thống kê
+                document.getElementById('dk-stat-total').innerText = data.total_students || 0;
+                document.getElementById('dk-stat-passed').innerText = data.passed_count || 0;
+                document.getElementById('dk-stat-skipped').innerText = data.skipped_count || 0;
+                document.getElementById('dk-stat-cars').innerText = data.car_count || 0;
+                document.getElementById('dk-badge-car-count').innerText = `${data.car_count || 0} xe phát hiện`;
+
+                // Render danh sách các xe phát hiện
+                const carsContainer = document.getElementById('daykhoa-cars-container');
+                carsContainer.innerHTML = '';
+
+                if (!data.car_groups || data.car_groups.length === 0) {
+                    carsContainer.innerHTML = `
+                        <div class="p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-800 text-center">
+                            <i class="fa-solid fa-triangle-exclamation mr-1.5 text-amber-600"></i>
+                            Không tìm thấy biển số xe nào trong file PDF lý thuyết của các học viên đạt khóa này!
+                        </div>
+                    `;
+                    runBtn.disabled = true;
+                } else {
+                    data.car_groups.forEach(cg => {
+                        const studentNames = cg.students.map(s => s.hoten || s.mahv).join(', ');
+                        const card = document.createElement('div');
+                        card.className = 'p-3 bg-white border border-slate-200 rounded-xl hover:border-amber-400 hover:shadow-xs transition space-y-1.5';
+                        card.innerHTML = `
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center space-x-2">
+                                    <span class="w-7 h-7 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center text-xs font-bold">
+                                        <i class="fa-solid fa-car"></i>
+                                    </span>
+                                    <span class="font-black text-slate-800 text-xs font-mono tracking-wide bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
+                                        ${cg.biensoxe}
+                                    </span>
+                                    <span class="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                                        ${cg.count} học viên đạt
+                                    </span>
+                                </div>
+                                <button type="button" onclick="executeSingleCarDayKhoa('${courseName}', '${cg.biensoxe}')"
+                                    class="text-[10px] font-bold text-amber-800 bg-amber-100 hover:bg-amber-200 px-2.5 py-1 rounded-lg border border-amber-300 transition flex items-center space-x-1 cursor-pointer">
+                                    <i class="fa-solid fa-paper-plane text-[9px]"></i>
+                                    <span>Đẩy riêng xe này</span>
+                                </button>
+                            </div>
+                            <div class="text-[11px] text-slate-600 flex items-center justify-between">
+                                <span class="truncate max-w-[400px]" title="${studentNames}">
+                                    <i class="fa-solid fa-users text-[10px] text-slate-400 mr-1"></i>${studentNames}
+                                </span>
+                                <span class="text-[10px] text-purple-700 font-mono font-semibold shrink-0">
+                                    /daykhoa ${courseName} ${cg.biensoxe}
+                                </span>
+                            </div>
+                        `;
+                        carsContainer.appendChild(card);
+                    });
+                    runBtn.disabled = false;
+                }
+
+                // Render danh sách học viên bị bỏ qua (chưa đạt lý thuyết)
+                const skippedContainer = document.getElementById('daykhoa-skipped-container');
+                const skippedList = document.getElementById('daykhoa-skipped-list');
+                skippedList.innerHTML = '';
+
+                if (data.skipped_students && data.skipped_students.length > 0) {
+                    skippedContainer.classList.remove('hidden');
+                    document.getElementById('dk-skipped-count-badge').innerText = `${data.skipped_students.length} học viên`;
+                    data.skipped_students.forEach(st => {
+                        const div = document.createElement('div');
+                        div.className = 'flex items-center justify-between py-0.5 border-b border-rose-100 last:border-b-0';
+                        div.innerHTML = `
+                            <span class="font-bold text-slate-700">${st.hoten} (${st.mahv || st.cccd})</span>
+                            <span class="text-[10px] text-rose-600 font-semibold">${st.reason || 'Chưa đạt lý thuyết'}</span>
+                        `;
+                        skippedList.appendChild(div);
+                    });
+                } else {
+                    skippedContainer.classList.add('hidden');
+                }
+            } catch (err) {
+                loader.classList.add('hidden');
+                console.error('Lỗi scanDayKhoaCurrentCourse:', err);
+                showToast('Lỗi đường truyền khi quét xe từ PDF!', false);
+            }
+        }
+
+        async function executeSingleCarDayKhoa(courseName, biensoxe) {
+            if (!courseName || !biensoxe) return;
+            showToast(`🚗 Đang gửi /daykhoa khoa: ${courseName} biensoxe: ${biensoxe}...`, true);
+            try {
+                const res = await fetch('/api/daykhoa', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ course: courseName, biensoxe: biensoxe })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showToast(`✅ Đã đẩy khóa ${courseName} xuống xe ${biensoxe} thành công!`);
+                    await loadStudents();
+                } else {
+                    showToast(`❌ Lỗi đẩy xe ${biensoxe}: ${data.error || 'Thất bại'}`, false);
+                }
+            } catch (err) {
+                console.error('Lỗi executeSingleCarDayKhoa:', err);
+                showToast('Lỗi kết nối tới máy chủ!', false);
+            }
+        }
+
+        async function executeBatchDayKhoaDistinctCars() {
+            if (!currentDayKhoaPreview || !currentDayKhoaPreview.car_groups || currentDayKhoaPreview.car_groups.length === 0) {
+                showToast('Không có biển số xe nào để đẩy!', false);
+                return;
             }
 
+            const courseName = currentDayKhoaPreview.course;
+            const carGroups = currentDayKhoaPreview.car_groups;
+            const totalCars = carGroups.length;
+
+            if (!confirm(`Xác nhận thực hiện ${totalCars} lệnh /daykhoa riêng biệt cho ${totalCars} xe khác nhau trong khóa ${courseName}?`)) {
+                return;
+            }
+
+            const execBox = document.getElementById('daykhoa-execution-box');
+            const logsBox = document.getElementById('daykhoa-logs');
+            const progressBar = document.getElementById('dk-progress-bar');
+            const progressText = document.getElementById('dk-exec-progress');
+            const execTitle = document.getElementById('dk-exec-title');
+            const runBtn = document.getElementById('btn-run-daykhoa-all');
+            const runBtnText = document.getElementById('btn-run-daykhoa-text');
+
+            execBox.classList.remove('hidden');
+            logsBox.innerHTML = '';
+            runBtn.disabled = true;
+            runBtnText.innerText = '⏳ Đang Đẩy Khóa...';
+
+            let successCount = 0;
+            let failCount = 0;
+
+            for (let i = 0; i < totalCars; i++) {
+                const cg = carGroups[i];
+                const car = cg.biensoxe;
+                const idx = i + 1;
+
+                progressText.innerText = `Xe ${idx} / ${totalCars} (${Math.round((idx / totalCars) * 100)}%)`;
+                progressBar.style.width = `${Math.round((idx / totalCars) * 100)}%`;
+                execTitle.innerText = `Đang đẩy xe ${idx}/${totalCars}: ${car} (${cg.count} HV)...`;
+
+                const logItem = document.createElement('div');
+                logItem.className = 'py-0.5 flex items-center space-x-1.5';
+                logItem.innerHTML = `<span class="text-amber-400 font-bold">[Xe ${idx}/${totalCars}]</span> <i class="fa-solid fa-spinner fa-spin text-slate-400"></i> <span>Gửi /daykhoa khoa: <b>${courseName}</b> biensoxe: <b>${car}</b>...</span>`;
+                logsBox.appendChild(logItem);
+                logsBox.scrollTop = logsBox.scrollHeight;
+
+                try {
+                    const res = await fetch('/api/daykhoa', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ course: courseName, biensoxe: car })
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                        successCount++;
+                        logItem.innerHTML = `<span class="text-emerald-400 font-bold">[Xe ${idx}/${totalCars}]</span> <i class="fa-solid fa-circle-check text-emerald-400"></i> <span class="text-emerald-300">Xe ${car} (${cg.count} HV): Thành công!</span>`;
+                    } else {
+                        failCount++;
+                        logItem.innerHTML = `<span class="text-rose-400 font-bold">[Xe ${idx}/${totalCars}]</span> <i class="fa-solid fa-circle-xmark text-rose-400"></i> <span class="text-rose-300">Xe ${car}: ${data.error || 'Thất bại'}</span>`;
+                    }
+                } catch (err) {
+                    failCount++;
+                    logItem.innerHTML = `<span class="text-rose-400 font-bold">[Xe ${idx}/${totalCars}]</span> <i class="fa-solid fa-triangle-exclamation text-rose-400"></i> <span class="text-rose-300">Xe ${car}: Lỗi kết nối</span>`;
+                }
+
+                logsBox.scrollTop = logsBox.scrollHeight;
+
+                if (i < totalCars - 1) {
+                    await new Promise(r => setTimeout(r, 1500));
+                }
+            }
+
+            execTitle.innerText = `Hoàn tất: ${successCount} xe thành công, ${failCount} xe lỗi!`;
+            const finalLog = document.createElement('div');
+            finalLog.className = 'pt-1.5 text-emerald-400 font-bold border-t border-slate-700 flex items-center space-x-1.5';
+            finalLog.innerHTML = `<i class="fa-solid fa-check-double"></i><span>ĐÃ HOÀN TẤT ĐẨY KHÓA CHO TOÀN BỘ ${totalCars} XE RIÊNG BIỆT!</span>`;
+            logsBox.appendChild(finalLog);
+            logsBox.scrollTop = logsBox.scrollHeight;
+
+            runBtn.disabled = false;
+            runBtnText.innerText = '✅ Đã Hoàn Tất (Bấm Để Đẩy Lại)';
+
+            showToast(`✅ Đã đẩy khóa thành công cho ${successCount}/${totalCars} xe của khóa ${courseName}!`);
+            await loadStudents();
+        }
+
+        async function executeDayKhoaCourse(courseName) {
+            openDayKhoaModal(courseName);
         }
 
 
