@@ -446,6 +446,14 @@
     "hang": "B.01",
     "ngaysinh": "01/07/2001"
   },
+  "HUỲNH BÁ VINH": {
+    "hoten": "HUỲNH BÁ VINH",
+    "cccd": "052205001443",
+    "mahv": "52001-20261016-000033",
+    "khoa": "CD_15C1",
+    "hang": "C1",
+    "ngaysinh": "23/08/2005"
+  },
   "NGUYỄN VĂN HÙNG": {
     "hoten": "NGUYỄN VĂN HÙNG",
     "cccd": "051085017372",
@@ -501,13 +509,5 @@
     "khoa": "CD_13C1",
     "hang": "C1",
     "ngaysinh": "27/08/2003"
-  },
-  "HUỲNH BÁ VINH": {
-    "hoten": "HUỲNH BÁ VINH",
-    "cccd": "052205001443",
-    "mahv": "52001-20261016-000033",
-    "khoa": "CD_15C1",
-    "hang": "C1",
-    "ngaysinh": "23/08/2005"
   }
 }
