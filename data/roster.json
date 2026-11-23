@@ -454,30 +454,6 @@
     "hang": "C1",
     "ngaysinh": "23/08/2005"
   },
-  "PHẠM THANH TỨ": {
-    "hoten": "PHẠM THANH TỨ",
-    "cccd": "060094009007",
-    "mahv": "52001-20261102-000040",
-    "khoa": "CD_29CE",
-    "hang": "Cm-CE",
-    "ngaysinh": "10/02/1994"
-  },
-  "NGUYỄN VĂN HÙNG": {
-    "hoten": "NGUYỄN VĂN HÙNG",
-    "cccd": "051085017372",
-    "mahv": "52001-20261102-000029",
-    "khoa": "CD_29CE",
-    "hang": "Cm-CE",
-    "ngaysinh": "20/08/1985"
-  },
-  "HUỲNH TẤN VIÊN": {
-    "hoten": "HUỲNH TẤN VIÊN",
-    "cccd": "052095006767",
-    "mahv": "52001-20261102-000023",
-    "khoa": "CD_29CE",
-    "hang": "Cm-CE",
-    "ngaysinh": "02/11/1995"
-  },
   "NGUYỄN VĂN CHÂU": {
     "hoten": "NGUYỄN VĂN CHÂU",
     "cccd": "060093008495",
@@ -493,6 +469,22 @@
     "khoa": "CD_29CE",
     "hang": "Cm-CE",
     "ngaysinh": "17/06/1992"
+  },
+  "HUỲNH TẤN VIÊN": {
+    "hoten": "HUỲNH TẤN VIÊN",
+    "cccd": "052095006767",
+    "mahv": "52001-20261102-000023",
+    "khoa": "CD_29CE",
+    "hang": "Cm-CE",
+    "ngaysinh": "02/11/1995"
+  },
+  "NGUYỄN VĂN HÙNG": {
+    "hoten": "NGUYỄN VĂN HÙNG",
+    "cccd": "051085017372",
+    "mahv": "52001-20261102-000029",
+    "khoa": "CD_29CE",
+    "hang": "Cm-CE",
+    "ngaysinh": "20/08/1985"
   },
   "TĂNG HOÀN TRÍ": {
     "hoten": "TĂNG HOÀN TRÍ",
