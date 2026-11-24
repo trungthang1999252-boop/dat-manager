@@ -4635,7 +4635,7 @@
     ],
     "totnghiep_has_pdf": false,
     "totnghiep_reason": "Chưa đạt: Số Km DAT (509.9/825 km), Thời gian DAT (thiếu 11.0h, thiếu TĐ (1.8/2.0h)), Số ngày đường (3/5 ngày), Chưa tra cứu lý thuyết (/lythuyet)",
-    "updated_at": "24/11/2026 00:36:37",
+    "updated_at": "24/11/2026 00:37:47",
     "suckhoe": "Chưa có dữ liệu",
     "lich_trinh_ngay": [
       {
@@ -9517,7 +9517,7 @@
     ],
     "totnghiep_has_pdf": true,
     "totnghiep_reason": "Chưa đạt: Số Km DAT (44.6/825 km), Thời gian DAT (thiếu 22.8h, thiếu đêm (0.4/2.0h), thiếu TĐ (0.0/2.0h)), Số ngày đường (1/5 ngày), Giờ Cao Tốc, Km Cao Tốc, Vận tốc TB",
-    "updated_at": "24/11/2026 00:36:37",
+    "updated_at": "24/11/2026 00:37:47",
     "xe_phan": "81A78293",
     "is_dat_embed": true
   },
@@ -9710,7 +9710,7 @@
     ],
     "totnghiep_has_pdf": true,
     "totnghiep_reason": "Chưa đạt: Số Km DAT (273.6/825 km), Thời gian DAT (thiếu 17.7h, thiếu đêm (0.0/2.0h)), Số ngày đường (1/5 ngày), Giờ Cao Tốc, Km Cao Tốc, Vận tốc TB",
-    "updated_at": "24/11/2026 00:36:36",
+    "updated_at": "24/11/2026 00:37:46",
     "xe_phan": "81A78293",
     "is_dat_embed": true
   },
@@ -10302,7 +10302,7 @@
     "totnghiep_failing": [],
     "totnghiep_has_pdf": true,
     "totnghiep_reason": "Đủ điều kiện thi tốt nghiệp: Đủ Km, Giờ, Ngày đường thực hành DAT và các môn Lý thuyết (Miễn trừ hình cabin)",
-    "updated_at": "24/11/2026 00:36:40",
+    "updated_at": "24/11/2026 00:37:50",
     "_force_unmark_deleted": true,
     "xe_phan": "77A43674"
   },
@@ -10738,7 +10738,7 @@
     ],
     "totnghiep_has_pdf": true,
     "totnghiep_reason": "Chưa đạt: Số Km DAT (521.6/825 km), Thời gian DAT (thiếu 12.0h)",
-    "updated_at": "24/11/2026 00:36:44",
+    "updated_at": "24/11/2026 00:37:53",
     "_force_unmark_deleted": true,
     "xe_phan": "77A43674"
   },
@@ -11373,7 +11373,7 @@
     ],
     "totnghiep_has_pdf": false,
     "totnghiep_reason": "Chưa đạt: Số Km DAT (568.2/710 km), Chưa tra cứu lý thuyết (/lythuyet)",
-    "updated_at": "24/11/2026 00:36:44"
+    "updated_at": "24/11/2026 00:37:53"
   },
   "52001-20261004-000017": {
     "cabin_image_url": "",
@@ -11981,7 +11981,7 @@
     ],
     "totnghiep_has_pdf": false,
     "totnghiep_reason": "Chưa đạt: Số Km DAT (521.3/825 km), Thời gian DAT (thiếu 11.2h, thiếu TĐ (1.0/2.0h)), Số ngày đường (3/5 ngày), Chưa tra cứu lý thuyết (/lythuyet)",
-    "updated_at": "24/11/2026 00:36:37",
+    "updated_at": "24/11/2026 00:37:47",
     "_force_unmark_deleted": true
   },
   "52001-20260916-000036": {
