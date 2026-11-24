@@ -256,26 +256,37 @@ def fetch_pdf_file(pdf_url, fname, student_key=None, url_field=None, force_downl
     target_url = pdf_url
     for attempt in range(2):
         try:
-            req = urllib.request.Request(target_url, headers={'User-Agent': 'Mozilla/5.0'})
-            with urllib.request.urlopen(req, timeout=15) as resp:
-                data = resp.read()
-                if len(data) > 500:
-                    with open(dest_path, 'wb') as f:
-                        f.write(data)
-                    if student_key and url_field and target_url != pdf_url:
-                        st = db.get_by_id(student_key)
-                        if st:
-                            st[url_field] = target_url
-                            db._save()
-                    return dest_path, None
-        except Exception as e:
-            if attempt == 0:
-                # Làm mới link nếu bị hết hạn CDN signature
+            r = requests.get(target_url, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}, timeout=12)
+            if r.status_code == 200 and len(r.content) > 500:
+                with open(dest_path, 'wb') as f:
+                    f.write(r.content)
+                if student_key and url_field and target_url != pdf_url:
+                    st = db.get_by_id(student_key)
+                    if st:
+                        st[url_field] = target_url
+                        db._save()
+                return dest_path, None
+            elif r.status_code != 200 and attempt == 0:
                 refreshed = ds.refresh_attachment_url(pdf_url)
                 if refreshed and refreshed != target_url:
                     target_url = refreshed
                     continue
-            return None, str(e)
+        except Exception as e_req:
+            try:
+                req = urllib.request.Request(target_url, headers={'User-Agent': 'Mozilla/5.0'})
+                with urllib.request.urlopen(req, timeout=12) as resp:
+                    data = resp.read()
+                    if len(data) > 500:
+                        with open(dest_path, 'wb') as f:
+                            f.write(data)
+                        return dest_path, None
+            except Exception as e:
+                if attempt == 0:
+                    refreshed = ds.refresh_attachment_url(pdf_url)
+                    if refreshed and refreshed != target_url:
+                        target_url = refreshed
+                        continue
+                return None, str(e)
 
     return (dest_path, None) if os.path.exists(dest_path) else (None, "Không thể tải tệp")
 
@@ -373,14 +384,29 @@ def handle_live_discord_student(st, cmd):
 
     st['is_my_query'] = True
     
-    # 1. Nếu là báo cáo lý thuyết hoặc có file PDF lý thuyết
+    # 3. KẾT HỢP DỮ LIỆU ĐÃ CÓ (MERGE RECORD):
+    # Đảm bảo lệnh /lythuyet giữ nguyên quãng đường DAT, và lệnh /dat giữ nguyên file lý thuyết
+    existing = db.find_student(mahv) or db.find_student(cccd) or db.find_student(hoten)
+    if existing:
+        merged = dict(existing)
+        for k, v in st.items():
+            if v or (v is not False and v == 0):
+                if k in ('quangduong', 'thoigian', 'thoigian_dem', 'thoigian_tudong'):
+                    curr_val = float(existing.get(k, 0.0) or 0.0)
+                    new_val = float(v or 0.0)
+                    if new_val < curr_val and not st.get('_force_overwrite'):
+                        continue
+                merged[k] = v
+        st = merged
+
+    # 4. Nếu là báo cáo lý thuyết hoặc có file PDF lý thuyết: Tải ngay lập tức (force_download=True)
     if cmd == 'lythuyet' or st.get('lythuyet_pdf_url'):
         try:
-            st = ensure_lythuyet_evaluated(st, force_download=False, auto_save=False)
+            st = ensure_lythuyet_evaluated(st, force_download=True, auto_save=False)
         except Exception as e_lt:
             print("[Discord Live Sync] Cảnh báo chấm điểm lý thuyết:", e_lt)
 
-    # 2. Nếu là phiên học có file PDF báo cáo phiên
+    # 5. Nếu là phiên học có file PDF báo cáo phiên
     if (cmd == 'phien' or st.get('pdf_url')) and st.get('pdf_url'):
         fname = st.get('pdf_filename') or f"{mahv or 'HV'}_phienhoc.pdf"
         try:
@@ -388,7 +414,7 @@ def handle_live_discord_student(st, cmd):
         except Exception:
             pass
 
-    # 3. Lưu vào CSDL
+    # 6. Lưu vào CSDL
     saved_st = db.upsert_student(st, auto_save=True)
     if saved_st:
         print(f"[Discord Live Sync] ⚡ Cập nhật tức thì: {saved_st.get('hoten')} ({saved_st.get('mahv')}) [{cmd}]")
@@ -495,6 +521,7 @@ def get_students():
     courses = sorted(list(set(s.get('khoa') for s in list(db.students.values()) if s.get('khoa'))))
     resp = jsonify({
         'success': True,
+        'version': db.version,
         'count': len(students),
         'students': students,
         'courses': courses

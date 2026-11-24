@@ -3547,6 +3547,21 @@
                     }
                 } catch (_) {}
             }, 2000);
+
+            // 3. Tự động đồng bộ ngay khi chuyển từ ứng dụng Discord trở lại tab trình duyệt
+            document.addEventListener('visibilitychange', () => {
+                if (!document.hidden) {
+                    loadStats();
+                    loadStudents();
+                    if (!_sseSource || _sseSource.readyState === EventSource.CLOSED) {
+                        initLiveSync();
+                    }
+                }
+            });
+            window.addEventListener('focus', () => {
+                loadStats();
+                loadStudents();
+            });
         }
 
         function onLiveStudentUpdated(updated) {
@@ -4775,6 +4790,7 @@ let _loadStudentsAbortCtrl = null;
                 const res = await fetch(url, { signal });
                 if (res.status === 304) return;
                 const data = await res.json();
+                if (data.version) _lastServerVersion = data.version;
 
                 currentStudents = data.students || [];
 

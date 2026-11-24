@@ -1352,16 +1352,35 @@ class DiscordDATService:
 
         def _watcher_loop():
             print("[Discord Live Watcher] 🟢 Bắt đầu lắng nghe tin nhắn Discord thời gian thực...")
-            last_mid = None
+            # Theo dõi trạng thái từng tin nhắn: msg_id -> (edited_timestamp, embed_count, attachment_count, content_len)
+            seen_message_states = {}
 
-            # BƯỚC 1: Lấy tin nhắn mới nhất để làm mốc bắt đầu (chỉ lắng nghe tin nhắn mới phát sinh, không quét ngược lịch sử tránh kéo học viên lạ)
+            # BƯỚC 1: Quét khởi tạo (Initial Catch-up)
+            # Quét 15 tin nhắn gần nhất để không bỏ lỡ bất kỳ lệnh nào vừa chạy trước khi app khởi động
             try:
-                r_init = self.session.get(f"https://discord.com/api/v9/channels/{CHANNEL_ID}/messages?limit=5", timeout=5)
+                r_init = self.session.get(f"https://discord.com/api/v9/channels/{CHANNEL_ID}/messages?limit=15", timeout=6)
                 if r_init.status_code == 200:
                     init_msgs = r_init.json()
-                    if init_msgs and isinstance(init_msgs, list) and len(init_msgs) > 0:
-                        last_mid = init_msgs[0].get('id')
-                        self.latest_msg_id = last_mid
+                    if init_msgs and isinstance(init_msgs, list):
+                        for m in reversed(init_msgs):
+                            mid = m.get('id')
+                            if not mid:
+                                continue
+                            m_state = (
+                                m.get('edited_timestamp') or '',
+                                len(m.get('embeds', [])),
+                                len(m.get('attachments', [])),
+                                len(m.get('content', ''))
+                            )
+                            seen_message_states[mid] = m_state
+                            parsed_list = self.parse_discord_message(m)
+                            for st in parsed_list:
+                                cmd = 'lythuyet' if st.get('has_lythuyet') or st.get('lythuyet_pdf_url') else ('phien' if st.get('is_phien_embed') or st.get('pdf_url') else 'dat')
+                                if on_student_parsed_cb:
+                                    try:
+                                        on_student_parsed_cb(st, cmd)
+                                    except Exception as ex_cb:
+                                        print("[Discord Live Watcher] Lỗi callback khởi tạo:", ex_cb)
             except Exception as e_init:
                 print("[Discord Live Watcher] Cảnh báo quét khởi tạo:", e_init)
 
@@ -1375,10 +1394,10 @@ class DiscordDATService:
                         if self.token:
                             self.set_token(self.token)
                         else:
-                            time.sleep(5)
+                            time.sleep(4)
                             continue
 
-                    r = self.session.get(f"https://discord.com/api/v9/channels/{CHANNEL_ID}/messages?limit=8", timeout=3.5)
+                    r = self.session.get(f"https://discord.com/api/v9/channels/{CHANNEL_ID}/messages?limit=10", timeout=3.5)
                     
                     if r.status_code == 429:
                         try:
@@ -1391,18 +1410,22 @@ class DiscordDATService:
                     if r.status_code == 200:
                         consecutive_errors = 0
                         msgs = r.json()
-                        if msgs and isinstance(msgs, list) and len(msgs) > 0:
-                            newest_id = msgs[0].get('id')
-                            if last_mid is None:
-                                last_mid = newest_id
-                                self.latest_msg_id = newest_id
-                            elif int(newest_id) > int(last_mid):
-                                # Có tin nhắn mới trong kênh!
-                                new_msgs = [m for m in msgs if int(m.get('id', 0)) > int(last_mid)]
-                                last_mid = newest_id
-                                self.latest_msg_id = newest_id
+                        if msgs and isinstance(msgs, list):
+                            for m in reversed(msgs):
+                                mid = m.get('id')
+                                if not mid:
+                                    continue
+                                m_state = (
+                                    m.get('edited_timestamp') or '',
+                                    len(m.get('embeds', [])),
+                                    len(m.get('attachments', [])),
+                                    len(m.get('content', ''))
+                                )
+                                # Bắt tin nhắn mới HOẶC tin nhắn được Bot chỉnh sửa bổ sung embed/attachment
+                                if mid not in seen_message_states or seen_message_states[mid] != m_state:
+                                    seen_message_states[mid] = m_state
+                                    self.latest_msg_id = mid
 
-                                for m in reversed(new_msgs):
                                     parsed_list = self.parse_discord_message(m)
                                     for st in parsed_list:
                                         cmd = 'lythuyet' if st.get('has_lythuyet') or st.get('lythuyet_pdf_url') else ('phien' if st.get('is_phien_embed') or st.get('pdf_url') else 'dat')
@@ -1411,6 +1434,14 @@ class DiscordDATService:
                                                 on_student_parsed_cb(st, cmd)
                                             except Exception as ex_cb:
                                                 print("[Discord Live Watcher] Lỗi callback:", ex_cb)
+
+                            # Duy trì bộ nhớ đệm gọn nhẹ không quá 200 tin nhắn
+                            if len(seen_message_states) > 200:
+                                active_ids = set(m.get('id') for m in msgs if m.get('id'))
+                                keys_to_keep = list(seen_message_states.keys())[-100:]
+                                keys_to_keep_set = set(keys_to_keep) | active_ids
+                                seen_message_states = {k: v for k, v in seen_message_states.items() if k in keys_to_keep_set}
+
                     elif r.status_code in (401, 403):
                         print("[Discord Live Watcher] Token hết hạn, đang tự động làm mới...")
                         new_t = auto_detect_discord_token()

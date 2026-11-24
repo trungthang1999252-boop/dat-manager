@@ -185,12 +185,16 @@ class StudentDatabase:
                 }
                 cleaned_students[target_key] = self.calculate_progress(new_st)
 
-        # Khử trùng lặp học viên theo CCCD và Mã HV
+        # Khử trùng lặp học viên theo CCCD, Mã HV và Họ tên chuẩn hóa
         unique_students = {}
         for s in cleaned_students.values():
             matched_k = None
+            s_name = strip_vietnamese_accents(s.get('hoten') or '')
             for uk, u in unique_students.items():
-                if (s.get('cccd') and u.get('cccd') == s.get('cccd')) or (s.get('mahv') and u.get('mahv') == s.get('mahv')):
+                u_name = strip_vietnamese_accents(u.get('hoten') or '')
+                if (s.get('cccd') and u.get('cccd') == s.get('cccd')) or \
+                   (s.get('mahv') and u.get('mahv') == s.get('mahv')) or \
+                   (s_name and u_name and s_name == u_name):
                     matched_k = uk
                     break
             if matched_k:
@@ -198,13 +202,13 @@ class StudentDatabase:
                 for f, v in s.items():
                     if v and not u.get(f):
                         u[f] = v
-                if s.get('quangduong', 0) > u.get('quangduong', 0):
+                if float(s.get('quangduong', 0.0) or 0.0) > float(u.get('quangduong', 0.0) or 0.0):
                     u['quangduong'] = s['quangduong']
-                if s.get('thoigian', 0) > u.get('thoigian', 0):
+                if float(s.get('thoigian', 0.0) or 0.0) > float(u.get('thoigian', 0.0) or 0.0):
                     u['thoigian'] = s['thoigian']
-                if s.get('thoigian_dem', 0) > u.get('thoigian_dem', 0):
+                if float(s.get('thoigian_dem', 0.0) or 0.0) > float(u.get('thoigian_dem', 0.0) or 0.0):
                     u['thoigian_dem'] = s['thoigian_dem']
-                if s.get('thoigian_tudong', 0) > u.get('thoigian_tudong', 0):
+                if float(s.get('thoigian_tudong', 0.0) or 0.0) > float(u.get('thoigian_tudong', 0.0) or 0.0):
                     u['thoigian_tudong'] = s['thoigian_tudong']
                 if s.get('songay_str') and s.get('songay_str') not in ('', '0/5 ngày'):
                     u['songay_str'] = s['songay_str']
@@ -216,6 +220,12 @@ class StudentDatabase:
                     u['pdf_url'] = s['pdf_url']
                 if s.get('lythuyet_pdf_url') and not u.get('lythuyet_pdf_url'):
                     u['lythuyet_pdf_url'] = s['lythuyet_pdf_url']
+                if s.get('xe_phan') and not u.get('xe_phan'):
+                    u['xe_phan'] = s['xe_phan']
+                if s.get('dieukien_totnghiep') in ('Đạt', 'Không') and u.get('dieukien_totnghiep') not in ('Đạt', 'Không'):
+                    u['dieukien_totnghiep'] = s['dieukien_totnghiep']
+                if s.get('lythuyet_status') in ('Đạt', 'Không') and u.get('lythuyet_status') not in ('Đạt', 'Không'):
+                    u['lythuyet_status'] = s['lythuyet_status']
                 unique_students[matched_k] = self.calculate_progress(u)
             else:
                 canonical_k = s.get('mahv') or s.get('cccd') or s.get('hoten')
@@ -551,17 +561,28 @@ class StudentDatabase:
 
             for k, v in student_data.items():
                 if v or (v is not False and v == 0):
-                    if k == 'lich_trinh_ngay' and not v and existing.get('lich_trinh_ngay'):
-                        continue
+                    if k == 'lich_trinh_ngay':
+                        if not v and existing.get('lich_trinh_ngay'):
+                            continue
+                        if len(v or []) < len(existing.get('lich_trinh_ngay') or []) and not student_data.get('_force_overwrite'):
+                            continue
                     if k == 'note' and not v and existing.get('note'):
                         continue
-                    # Không ghi đè quãng đường/thời gian nếu dữ liệu mới là rỗng hoặc 0 từ lệnh lý thuyết
-                    if k in ('quangduong', 'thoigian', 'thoigian_dem', 'thoigian_tudong') and v == 0 and existing.get(k, 0) > 0:
-                        continue
+                    # Không ghi đè làm giảm quãng đường / thời gian (DAT chỉ tích lũy tăng thêm)
+                    if k in ('quangduong', 'thoigian', 'thoigian_dem', 'thoigian_tudong'):
+                        curr_v = float(existing.get(k, 0.0) or 0.0)
+                        new_v = float(v or 0.0)
+                        if new_v < curr_v and not student_data.get('_force_overwrite'):
+                            continue
                     # Không ghi đè số ngày nếu dữ liệu mới rỗng hoặc 0/5 trong khi dữ liệu cũ đã có
                     if k == 'songay_str' and (not v or v in ('', '0/5 ngày')) and existing.get('songay_str') and existing.get('songay_str') not in ('', '0/5 ngày'):
                         continue
                     if k == 'songay_dat' and not v and existing.get('songay_dat') is True:
+                        continue
+                    # Bảo vệ kết quả lý thuyết và xe phân không bị ghi đè bởi lệnh tra DAT đơn thuần
+                    if k in ('lythuyet_status', 'dieukien_totnghiep', 'xe_phan', 'lythuyet_pdf_url', 'lythuyet_pdf_filename') and not v and existing.get(k):
+                        continue
+                    if k in ('dieukien_totnghiep', 'lythuyet_status') and v in ('Chưa tra LT', 'Chưa tra', '') and existing.get(k) in ('Đạt', 'Không'):
                         continue
                     existing[k] = v
 
