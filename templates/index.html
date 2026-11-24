@@ -3251,20 +3251,24 @@
 
 
 
-            <div class="bg-amber-50 border border-amber-200 text-amber-800 p-3 rounded-xl text-[11px] space-y-1">
-
-                <div class="font-bold flex items-center space-x-1.5">
-
-                    <i class="fa-solid fa-circle-info text-amber-600"></i>
-
-                    <span>Cách lấy mã Token Discord:</span>
-
+            <div class="bg-amber-50 border border-amber-200 text-amber-900 p-3.5 rounded-xl text-[11px] space-y-2">
+                <div class="font-bold flex items-center space-x-1.5 text-amber-800">
+                    <i class="fa-solid fa-key text-amber-600"></i>
+                    <span>Hướng dẫn lấy mã Discord Token:</span>
                 </div>
-
-                <p>1. Mở Discord trên trình duyệt web máy tính (discord.com/app).</p>
-
-                <p>2. Bấm phím <b>F12</b> -> chọn tab <b>Network</b> -> lọc chữ <b>api</b> -> copy chuỗi <code>Authorization</code> trong header.</p>
-
+                <div class="space-y-1 text-slate-700">
+                    <p><b>Cách 1 (Nhanh nhất qua Console):</b></p>
+                    <p class="pl-2">1. Mở Discord trên trình duyệt máy tính (<b>discord.com/app</b>) và đăng nhập.</p>
+                    <p class="pl-2">2. Bấm phím <b>F12</b> (hoặc Chuột phải ➔ Kiểm tra) ➔ chọn tab <b>Console</b>.</p>
+                    <p class="pl-2">3. Dán dòng mã sau rồi nhấn <b>Enter</b> để copy token:</p>
+                    <div class="bg-slate-900 text-emerald-400 p-2 rounded-lg font-mono text-[10px] break-all select-all">
+                        copy((webpackChunkdiscord_app.push([[''],{},e=>{m=[];for(let c in e.c)m.push(e.c[c])}]),m).find(m=>m?.exports?.default?.getToken!==void 0).exports.default.getToken())
+                    </div>
+                </div>
+                <div class="space-y-1 text-slate-700 pt-1 border-t border-amber-200/60">
+                    <p><b>Cách 2 (Qua Network):</b></p>
+                    <p class="pl-2">F12 ➔ chọn tab <b>Network</b> ➔ gõ <b>api</b> ➔ click 1 dòng bất kỳ ➔ tìm mục <b>Headers</b> ➔ copy giá trị của dòng <b>authorization</b>.</p>
+                </div>
             </div>
 
 
@@ -3965,6 +3969,12 @@
             let cleanMsg = msg;
             if (cleanMsg && (cleanMsg.includes('10005') || cleanMsg.includes('Tích Hợp Không Xác Định') || cleanMsg.includes('T\\u00edch H\\u1ee3p') || cleanMsg.includes('Unknown Integration'))) {
                 cleanMsg = '⚠️ Hệ thống lệnh Bot Discord trường vừa cập nhật phiên bản mới. Ứng dụng đã tự động nạp lệnh mới nhất, vui lòng thử lại sau giây lát!';
+            }
+            if (cleanMsg && (cleanMsg.includes('401') || cleanMsg.includes('Unauthorized') || cleanMsg.includes('Token Discord đã hết hạn') || cleanMsg.includes('Token Hết Hạn'))) {
+                cleanMsg = '⚠️ Mã Token Discord đã hết hạn! Đang mở cửa sổ cập nhật Token mới...';
+                setTimeout(() => {
+                    openModal('discord-modal');
+                }, 350);
             }
 
             text.innerText = cleanMsg;

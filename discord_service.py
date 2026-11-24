@@ -75,12 +75,29 @@ else:
     def dpapi_decrypt(encrypted_bytes):
         return None
 
+def is_valid_discord_token(tok):
+    """Kiểm tra token Discord có còn hợp lệ hay không bằng cách gọi /users/@me."""
+    if not tok or len(str(tok).strip()) < 20:
+        return False
+    try:
+        req = urllib.request.Request(
+            'https://discord.com/api/v9/users/@me',
+            headers={'Authorization': str(tok).strip(), 'User-Agent': 'Mozilla/5.0'}
+        )
+        with urllib.request.urlopen(req, timeout=3.5) as resp:
+            return resp.status == 200
+    except Exception:
+        return False
+
 def auto_detect_discord_token():
     """Tự động trích xuất token Discord hợp lệ (hỗ trợ ENV, cache JSON và Windows DPAPI)."""
-    # 0. Ưu tiên biến môi trường DISCORD_TOKEN trên máy chủ Cloud
+    # 0. Kiểm tra biến môi trường DISCORD_TOKEN trên máy chủ Cloud
     env_token = os.environ.get('DISCORD_TOKEN', '').strip()
     if env_token:
-        return env_token
+        if is_valid_discord_token(env_token):
+            return env_token
+        else:
+            print("[Discord Token] ⚠️ Biến môi trường DISCORD_TOKEN đã hết hạn (401). Đang chuyển sang tìm nguồn khác...")
 
     base_dir = os.path.dirname(os.path.abspath(__file__))
     config_file = os.path.join(base_dir, 'data', 'config.json')
@@ -91,14 +108,8 @@ def auto_detect_discord_token():
             with open(config_file, 'r', encoding='utf-8') as f:
                 cfg = json.load(f)
             cached_token = cfg.get('discord_token')
-            if cached_token:
-                req = urllib.request.Request(
-                    'https://discord.com/api/v9/users/@me',
-                    headers={'Authorization': cached_token, 'User-Agent': 'Mozilla/5.0'}
-                )
-                with urllib.request.urlopen(req, timeout=3) as resp:
-                    if resp.status == 200:
-                        return cached_token
+            if cached_token and is_valid_discord_token(cached_token):
+                return cached_token
         except Exception:
             pass
 
@@ -346,6 +357,22 @@ class DiscordDATService:
             if self._cached_conn_status is True and (now - self._last_conn_check < 180):
                 return True
             return False
+
+    def verify_token(self, token_to_test):
+        """Kiểm tra token Discord có hợp lệ và lấy thông tin tài khoản."""
+        if not token_to_test or len(str(token_to_test).strip()) < 20:
+            return None
+        try:
+            resp = requests.get(
+                'https://discord.com/api/v9/users/@me',
+                headers={'Authorization': str(token_to_test).strip(), 'User-Agent': 'Mozilla/5.0'},
+                timeout=5
+            )
+            if resp.status_code == 200:
+                return resp.json()
+        except Exception:
+            pass
+        return None
 
     def get_user_info(self):
         if not self.token:
@@ -785,6 +812,8 @@ class DiscordDATService:
                 if '10005' in resp.text:
                     self.refresh_command_index()
                     return {'success': False, 'error': 'Hệ thống lệnh Bot Discord trường vừa cập nhật phiên bản mới. Đang tự động kết nối lại, vui lòng thử lại sau giây lát!'}
+                if resp.status_code == 401 or '401' in resp.text or 'Unauthorized' in resp.text:
+                    return {'success': False, 'is_auth_error': True, 'error': 'Mã Token Discord đã hết hạn! Vui lòng mở cài đặt Bot Discord để dán mã Token mới.'}
                 return {'success': False, 'error': f'Lỗi Discord: {resp.status_code} ({resp.text[:100]})'}
         except Exception as e:
             return {'success': False, 'error': f'Không thể gửi lệnh: {str(e)}'}
@@ -926,6 +955,8 @@ class DiscordDATService:
                     pass
 
             if resp.status_code not in (200, 204):
+                if resp.status_code == 401 or '401' in resp.text or 'Unauthorized' in resp.text:
+                    return {'success': False, 'is_auth_error': True, 'error': 'Mã Token Discord đã hết hạn! Vui lòng cập nhật Token mới.'}
                 return {'success': False, 'error': f'Lỗi Discord: {resp.status_code}'}
         except Exception as e:
             return {'success': False, 'error': f'Không thể gửi lệnh: {str(e)}'}
@@ -1002,6 +1033,8 @@ class DiscordDATService:
                     pass
 
             if resp.status_code not in (200, 204):
+                if resp.status_code == 401 or '401' in resp.text or 'Unauthorized' in resp.text:
+                    return {'success': False, 'is_auth_error': True, 'error': 'Mã Token Discord đã hết hạn! Vui lòng cập nhật Token mới.'}
                 return {'success': False, 'error': f'Lỗi Discord: {resp.status_code} ({resp.text[:120]})'}
         except Exception as e:
             return {'success': False, 'error': f'Không thể gửi lệnh /daykhoa: {str(e)}'}
@@ -1165,6 +1198,8 @@ class DiscordDATService:
         try:
             resp = self.session.post(interaction_url, json=payload_dongbo, timeout=5)
             if resp.status_code not in (200, 204):
+                if resp.status_code == 401 or '401' in resp.text or 'Unauthorized' in resp.text:
+                    return {'success': False, 'is_auth_error': True, 'error': 'Mã Token Discord đã hết hạn! Vui lòng cập nhật Token mới.'}
                 return {'success': False, 'error': f'Lỗi Discord: {resp.status_code}'}
         except Exception as e:
             return {'success': False, 'error': f'Không thể gửi lệnh /dongbo: {e}'}

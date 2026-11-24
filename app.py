@@ -2475,11 +2475,48 @@ def save_discord_token_api():
     token = data.get('token', '').strip()
     if not token:
         return jsonify({'success': False, 'error': 'Token không được để trống!'})
+
+    # 1. Kiểm tra tính hợp lệ của token trực tiếp với Discord API
+    uinfo = ds.verify_token(token)
+    if not uinfo:
+        return jsonify({
+            'success': False,
+            'connected': False,
+            'error': 'Mã Token không hợp lệ hoặc đã hết hạn trên Discord! Vui lòng kiểm tra và dán lại đúng mã Token.'
+        })
+
+    # 2. Cập nhật vào dịch vụ Discord và biến môi trường hiện tại
     ds.set_token(token)
+    os.environ['DISCORD_TOKEN'] = token
+
+    # 3. Đồng bộ cập nhật lên Render Cloud Environment Variable (chạy ngầm)
+    def _sync_render_env(tok):
+        try:
+            render_api_key = 'rnd_msh5d4qIgzC3N74Jdm1BADLAu5DY'
+            service_id = 'srv-dbv862jl550s7390v3e0'
+            url = f"https://api.render.com/v1/services/{service_id}/env-vars"
+            headers = {
+                'Authorization': f'Bearer {render_api_key}',
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+            payload = [
+                {'key': 'DISCORD_TOKEN', 'value': tok},
+                {'key': 'PYTHON_VERSION', 'value': '3.11.9'}
+            ]
+            requests.put(url, headers=headers, json=payload, timeout=10)
+            print(f"☁️ [Render Env] Đã cập nhật biến môi trường DISCORD_TOKEN lên Render Cloud thành công!")
+        except Exception as ex:
+            print("⚠️ [Render Env] Lỗi cập nhật biến môi trường Render:", ex)
+
+    threading.Thread(target=_sync_render_env, args=(token,), daemon=True).start()
+
+    uname = uinfo.get('username') or 'Discord Bot'
     return jsonify({
         'success': True,
-        'connected': ds.is_connected(),
-        'message': 'Đã lưu và cập nhật Discord Token thành công!'
+        'connected': True,
+        'username': uname,
+        'message': f'Đã kết nối thành công với tài khoản Discord: {uname}!'
     })
 
 @app.route('/uploads/cabin/<path:filename>')
