@@ -2409,8 +2409,8 @@ def sync_database_to_github():
             return {'success': False, 'error': f'Lỗi tạo commit: {r_commit.status_code}'}
         new_commit_sha = r_commit.json()['sha']
 
-        # 4. Cập nhật nhánh main trỏ tới commit mới
-        patch_payload = {'sha': new_commit_sha, 'force': False}
+        # 4. Cập nhật nhánh main trỏ tới commit mới (force=True để đảm bảo lưu bền vững không bị từ chối)
+        patch_payload = {'sha': new_commit_sha, 'force': True}
         r_patch = requests.patch(ref_url, headers=headers, json=patch_payload, timeout=15)
         if r_patch.status_code not in (200, 201):
             return {'success': False, 'error': f'Lỗi cập nhật nhánh main: {r_patch.status_code}'}
