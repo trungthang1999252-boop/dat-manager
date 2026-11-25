@@ -56,7 +56,7 @@ def is_my_queried_student(mahv_or_cccd_or_name):
     q_clean = str(mahv_or_cccd_or_name).strip()
     st = db.find_student(q_clean)
     if st:
-        if st.get('is_my_query') or st.get('interaction_username') == 'tranthang252' or str(st.get('interaction_user_id')) in ('1380376964304474173', '1380096710386384937'):
+        if st.get('is_my_query') or st.get('interaction_username') in ('tranthang252', 'tranthang0234') or str(st.get('interaction_user_id')) in ('1380376964304474173', '1380096710386384937', '1574670927948423262'):
             return True
     resolved_st, _ = db.resolve_student_identifier(q_clean)
     if resolved_st:
@@ -553,6 +553,23 @@ def get_students():
     resp.set_etag(etag, weak=True)
     return resp
 
+def mark_as_my_student(st_dict):
+    """Gán đầy đủ nhãn sở hữu cho học viên vừa tra cứu thành công."""
+    if not isinstance(st_dict, dict):
+        return st_dict
+    st_dict['is_my_query'] = True
+    st_dict['_force_unmark_deleted'] = True
+    try:
+        u_info = ds.get_user_info() or {}
+        cur_uname = u_info.get('username') or 'tranthang0234'
+        cur_uid = str(u_info.get('id') or '1574670927948423262')
+    except Exception:
+        cur_uname = 'tranthang0234'
+        cur_uid = '1574670927948423262'
+    st_dict['interaction_username'] = cur_uname
+    st_dict['interaction_user_id'] = cur_uid
+    return st_dict
+
 @app.route('/api/query', methods=['POST'])
 def query_student():
     data = request.get_json() or {}
@@ -616,8 +633,7 @@ def query_student():
         st_dat = raw_dat[0] if isinstance(raw_dat, list) and raw_dat else (raw_dat or {})
         st_dat['is_my_query'] = True
         st_dat['_force_unmark_deleted'] = True
-        st_dat['interaction_username'] = 'tranthang252'
-        st_dat['interaction_user_id'] = '1380376964304474173'
+        mark_as_my_student(st_dat)
         saved_st = db.upsert_student(st_dat, auto_save=True)
 
         mahv = (saved_st or {}).get('mahv') or st_dat.get('mahv')
@@ -654,8 +670,7 @@ def query_student():
         st_dat = raw_dat[0] if isinstance(raw_dat, list) and raw_dat else (raw_dat or {})
         st_dat['is_my_query'] = True
         st_dat['_force_unmark_deleted'] = True
-        st_dat['interaction_username'] = 'tranthang252'
-        st_dat['interaction_user_id'] = '1380376964304474173'
+        mark_as_my_student(st_dat)
         saved_st = db.upsert_student(st_dat, auto_save=True)
 
         mahv = (saved_st or {}).get('mahv') or st_dat.get('mahv')
@@ -671,8 +686,7 @@ def query_student():
                     st_lt = raw_lt[0] if isinstance(raw_lt, list) and raw_lt else (raw_lt or {})
                     st_lt['is_my_query'] = True
                     st_lt['_force_unmark_deleted'] = True
-                    st_lt['interaction_username'] = 'tranthang252'
-                    st_lt['interaction_user_id'] = '1380376964304474173'
+                    mark_as_my_student(st_lt)
                     saved_st = db.upsert_student(st_lt, auto_save=True)
             except Exception as e_lt:
                 print("Lỗi tự động tra cứu lý thuyết sau combo:", e_lt)
@@ -714,8 +728,7 @@ def query_student():
         for it in raw_items:
             it['is_my_query'] = True
             it['_force_unmark_deleted'] = True
-            it['interaction_username'] = 'tranthang252'
-            it['interaction_user_id'] = '1380376964304474173'
+            mark_as_my_student(it)
             saved = db.upsert_student(it, auto_save=True)
             if saved:
                 saved = ensure_lythuyet_evaluated(saved, force_download=True)
@@ -844,8 +857,7 @@ def query_student():
             for st in raw_data:
                 st['is_my_query'] = True
                 st['_force_unmark_deleted'] = True
-                st['interaction_username'] = 'tranthang252'
-                st['interaction_user_id'] = '1380376964304474173'
+                mark_as_my_student(st)
                 saved = db.upsert_student(st)
                 if saved:
                     if cmd_type == 'lythuyet' or saved.get('lythuyet_pdf_url'):
@@ -855,8 +867,7 @@ def query_student():
             if isinstance(raw_data, dict):
                 raw_data['is_my_query'] = True
                 raw_data['_force_unmark_deleted'] = True
-                raw_data['interaction_username'] = 'tranthang252'
-                raw_data['interaction_user_id'] = '1380376964304474173'
+                mark_as_my_student(raw_data)
             saved = db.upsert_student(raw_data)
             if saved:
                 if cmd_type == 'lythuyet' or saved.get('lythuyet_pdf_url'):
@@ -1383,8 +1394,7 @@ def query_batch():
                 raw_dat = res_dat.get('data')
                 st_dat = raw_dat[0] if isinstance(raw_dat, list) and raw_dat else (raw_dat or {})
                 st_dat['is_my_query'] = True
-                st_dat['interaction_username'] = 'tranthang252'
-                st_dat['interaction_user_id'] = '1380376964304474173'
+                mark_as_my_student(st_dat)
                 saved_st = db.upsert_student(st_dat)
                 mahv = (saved_st or {}).get('mahv') or st_dat.get('mahv')
                 lt_target = mahv if mahv else t_id
@@ -1394,8 +1404,7 @@ def query_batch():
                     raw_lt = res_lt.get('data')
                     st_lt = raw_lt[0] if isinstance(raw_lt, list) and raw_lt else (raw_lt or {})
                     st_lt['is_my_query'] = True
-                    st_lt['interaction_username'] = 'tranthang252'
-                    st_lt['interaction_user_id'] = '1380376964304474173'
+                    mark_as_my_student(st_lt)
                     saved_st = db.upsert_student(st_lt)
                 final_st = db.find_student(mahv or t_id) or saved_st or st_dat
                 final_st = ensure_lythuyet_evaluated(final_st, force_download=True)
@@ -1409,8 +1418,7 @@ def query_batch():
                 if isinstance(raw_data, list):
                     for st in raw_data:
                         st['is_my_query'] = True
-                        st['interaction_username'] = 'tranthang252'
-                        st['interaction_user_id'] = '1380376964304474173'
+                        mark_as_my_student(st)
                         saved = db.upsert_student(st)
                         if saved:
                             if cmd_type == 'lythuyet' or saved.get('lythuyet_pdf_url'):
@@ -1419,8 +1427,7 @@ def query_batch():
                 else:
                     if isinstance(raw_data, dict):
                         raw_data['is_my_query'] = True
-                        raw_data['interaction_username'] = 'tranthang252'
-                        raw_data['interaction_user_id'] = '1380376964304474173'
+                        mark_as_my_student(raw_data)
                     saved = db.upsert_student(raw_data)
                     if saved:
                         if cmd_type == 'lythuyet' or saved.get('lythuyet_pdf_url'):
@@ -2102,8 +2109,7 @@ def update_lythuyet_pdf_api():
                 raw_lt = res_lt.get('data')
                 it = raw_lt[0] if isinstance(raw_lt, list) and raw_lt else (raw_lt or {})
                 it['is_my_query'] = True
-                it['interaction_username'] = 'tranthang252'
-                it['interaction_user_id'] = '1380376964304474173'
+                mark_as_my_student(it)
                 saved = db.upsert_student(it, auto_save=False)
                 if saved:
                     saved = ensure_lythuyet_evaluated(saved, force_download=True, auto_save=False)
