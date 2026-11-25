@@ -908,7 +908,7 @@ class DiscordDATService:
                             )
                             my_info = self.get_user_info()
                             my_uid = my_info.get('id') if my_info else None
-                            is_my_interaction = bool(i_uid and (i_uid == my_uid or i_uid in ('1380376964304474173', '1380096710386384937')))
+                            is_my_interaction = bool(i_uid and (i_uid == my_uid or i_uid in ('1380376964304474173', '1380096710386384937', '1574670927948423262')))
 
                             if is_query_match or is_my_interaction:
                                 matched = True
@@ -1392,7 +1392,7 @@ class DiscordDATService:
             # BƯỚC 1: Quét khởi tạo (Initial Catch-up)
             # Quét 15 tin nhắn gần nhất để không bỏ lỡ bất kỳ lệnh nào vừa chạy trước khi app khởi động
             try:
-                r_init = self.session.get(f"https://discord.com/api/v9/channels/{CHANNEL_ID}/messages?limit=15", timeout=6)
+                r_init = self.session.get(f"https://discord.com/api/v9/channels/{CHANNEL_ID}/messages?limit=50", timeout=8)
                 if r_init.status_code == 200:
                     init_msgs = r_init.json()
                     if init_msgs and isinstance(init_msgs, list):

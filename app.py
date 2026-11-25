@@ -1935,7 +1935,7 @@ def sync_from_discord():
             (cccd and any(r.get('cccd') == cccd for r in db.roster.values())) or
             (mahv and any(r.get('mahv') == mahv for r in db.roster.values()))
         )
-        is_queried_by_me = (i_uid in ('1380376964304474173', '1380096710386384937'))
+        is_queried_by_me = (i_uid in ('1380376964304474173', '1380096710386384937', '1574670927948423262'))
 
         is_my_student = is_in_roster or is_queried_by_me
 
