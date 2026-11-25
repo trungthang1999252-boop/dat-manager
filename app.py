@@ -329,6 +329,26 @@ def ensure_lythuyet_evaluated(student_obj, exempt_all_cabin=False, force_downloa
 _sse_subscribers_lock = threading.Lock()
 _sse_subscribers = []
 
+_last_user_activity = time.time()
+
+@app.before_request
+def track_user_activity():
+    global _last_user_activity
+    try:
+        p = request.path
+        if not (p.startswith('/static') or p == '/favicon.ico'):
+            _last_user_activity = time.time()
+    except Exception:
+        pass
+
+def is_app_active():
+    """Kiểm tra xem hệ thống có đang có người dùng truy cập hoặc theo dõi không."""
+    with _sse_subscribers_lock:
+        if len(_sse_subscribers) > 0:
+            return True
+    return (time.time() - _last_user_activity) < 180  # 3 phút
+
+
 def broadcast_live_event(event_type, payload):
     """Phát sóng sự kiện thời gian thực tới tất cả trình duyệt qua Server-Sent Events (SSE)."""
     msg_dict = {
@@ -424,7 +444,11 @@ def handle_live_discord_student(st, cmd):
 def _start_watcher_bg():
     time.sleep(2.0)
     try:
-        ds.start_live_watcher(on_student_parsed_cb=handle_live_discord_student, interval_sec=1.5)
+        ds.start_live_watcher(
+            on_student_parsed_cb=handle_live_discord_student,
+            interval_sec=3.5,
+            is_active_cb=is_app_active
+        )
     except Exception as _e_watcher:
         print("⚠️ Lỗi khởi chạy Discord Live Watcher:", _e_watcher)
 

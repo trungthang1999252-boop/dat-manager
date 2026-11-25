@@ -11,6 +11,7 @@ import urllib.request
 import urllib.parse
 import requests
 import threading
+import random
 
 def strip_vietnamese_accents(s):
     if not s: return ''
@@ -47,6 +48,21 @@ CMD_DONGBOTC_VER = "1573173098612662295"
 
 CMD_CABIN_ID = "1573173094867275819"
 CMD_CABIN_VER = "1573173098302152809"
+
+# Anti-Detection: Discord Desktop Client Headers & Super Properties
+DISCORD_SUPER_PROPERTIES = base64.b64encode(json.dumps({
+    "os": "Windows",
+    "browser": "Discord Client",
+    "release_channel": "stable",
+    "client_version": "1.0.9168",
+    "os_version": "10.0.19045",
+    "os_arch": "x64",
+    "system_locale": "vi-VN",
+    "client_build_number": 344837,
+    "native_build_number": None,
+    "client_event_source": None
+}).encode('utf-8')).decode('utf-8')
+
 
 # Windows DPAPI decrypt (chỉ hỗ trợ trên Windows)
 if sys.platform == 'win32':
@@ -189,7 +205,10 @@ class DiscordDATService:
         self.headers = {
             'Authorization': self.token or '',
             'Content-Type': 'application/json',
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Discord/1.0.9269 Chrome/128.0.6613.186 Electron/32.2.7 Safari/537.36'
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) discord/1.0.9168 Chrome/128.0.6613.186 Electron/32.2.7 Safari/537.36',
+            'X-Super-Properties': DISCORD_SUPER_PROPERTIES,
+            'X-Discord-Locale': 'vi',
+            'X-Discord-Timezone': 'Asia/Ho_Chi_Minh'
         }
         from urllib3.util.retry import Retry
         from requests.adapters import HTTPAdapter
@@ -222,6 +241,9 @@ class DiscordDATService:
         self.token = token
         self.headers['Authorization'] = token
         self.session.headers['Authorization'] = token
+        self.session.headers['X-Super-Properties'] = DISCORD_SUPER_PROPERTIES
+        self.session.headers['X-Discord-Locale'] = 'vi'
+        self.session.headers['X-Discord-Timezone'] = 'Asia/Ho_Chi_Minh'
         self._cached_conn_status = None
         self._cached_user_info = None
         self._last_conn_check = 0
@@ -232,7 +254,7 @@ class DiscordDATService:
         with open(config_file, 'w', encoding='utf-8') as cf:
             json.dump({'discord_token': token}, cf)
 
-    def get_recent_messages_cached(self, limit=10, max_age=1.5):
+    def get_recent_messages_cached(self, limit=10, max_age=3.0):
         """Cache các tin nhắn gần nhất trong 1.5s để nhiều luồng tra cứu cùng lúc không làm ngập Discord."""
         now = time.time()
         with self._channel_cache_lock:
@@ -333,6 +355,34 @@ class DiscordDATService:
             'data': data
         }
         return payload
+
+    def send_interaction(self, payload, timeout=6):
+        """
+        Gửi lệnh interaction tới Discord API kèm cơ chế điều tiết nhịp chống Bot Detection:
+        - Giãn cách ngẫu nhiên mô phỏng thao tác tay người thật: 1.8s - 2.8s giữa các thao tác
+        - Tự động xử lý retry an toàn khi gặp HTTP 429 Rate Limit
+        """
+        interaction_url = 'https://discord.com/api/v9/interactions'
+        with self._interaction_lock:
+            now_ts = time.time()
+            gap = now_ts - self._last_interaction_time
+            min_gap = 1.8 + random.uniform(0.3, 0.9)
+            if gap < min_gap:
+                time.sleep(min_gap - gap)
+            self._last_interaction_time = time.time()
+            resp = self.session.post(interaction_url, json=payload, timeout=timeout)
+
+        if resp.status_code == 429:
+            try:
+                r_429 = resp.json()
+                retry_wait = min(float(r_429.get('retry_after', 2.0)) + 0.5, 5.0)
+                time.sleep(retry_wait)
+                with self._interaction_lock:
+                    self._last_interaction_time = time.time()
+                    resp = self.session.post(interaction_url, json=payload, timeout=timeout)
+            except Exception:
+                pass
+        return resp
 
     def is_connected(self):
         if not self.token:
@@ -781,31 +831,12 @@ class DiscordDATService:
         except Exception:
             pass
 
-        # BƯỚC 2: Gửi Slash Command Interaction tới Discord Bot
-        interaction_url = 'https://discord.com/api/v9/interactions'
+        # BƯỚC 2: Gửi Slash Command Interaction tới Discord Bot (kèm giãn cách mô phỏng người thật)
         payload = self.build_interaction_payload(command, [{'type': 3, 'name': 'mhv', 'value': q_clean}])
 
         t_start = time.time()
         try:
-            # Điều tiết nhịp gửi lệnh Discord (ít nhất 0.5s giữa các lần gọi để chống 429 Rate Limit)
-            with self._interaction_lock:
-                now_ts = time.time()
-                gap = now_ts - self._last_interaction_time
-                if gap < 0.5:
-                    time.sleep(0.5 - gap)
-                self._last_interaction_time = time.time()
-                resp = self.session.post(interaction_url, json=payload, timeout=5)
-
-            # Tự động đợi và thử lại nếu Discord phản hồi 429 Too Many Requests
-            if resp.status_code == 429:
-                try:
-                    r_429 = resp.json()
-                    retry_wait = min(float(r_429.get('retry_after', 1.5)) + 0.2, 4.0)
-                    time.sleep(retry_wait)
-                    with self._interaction_lock:
-                        resp = self.session.post(interaction_url, json=payload, timeout=5)
-                except Exception:
-                    pass
+            resp = self.send_interaction(payload, timeout=6)
 
             if resp.status_code not in (200, 204):
                 print(f"[Discord Error {resp.status_code}] {resp.text}")
@@ -932,27 +963,11 @@ class DiscordDATService:
         except Exception:
             pass
 
-        interaction_url = 'https://discord.com/api/v9/interactions'
         payload = self.build_interaction_payload('capnhatkhoa', [{'type': 3, 'name': 'khoa', 'value': c_name}])
 
         t_start = time.time()
         try:
-            with self._interaction_lock:
-                now_ts = time.time()
-                gap = now_ts - self._last_interaction_time
-                if gap < 0.5:
-                    time.sleep(0.5 - gap)
-                self._last_interaction_time = time.time()
-                resp = self.session.post(interaction_url, json=payload, timeout=5)
-
-            if resp.status_code == 429:
-                try:
-                    r_429 = resp.json()
-                    time.sleep(min(float(r_429.get('retry_after', 1.5)) + 0.2, 4.0))
-                    with self._interaction_lock:
-                        resp = self.session.post(interaction_url, json=payload, timeout=5)
-                except Exception:
-                    pass
+            resp = self.send_interaction(payload, timeout=6)
 
             if resp.status_code not in (200, 204):
                 if resp.status_code == 401 or '401' in resp.text or 'Unauthorized' in resp.text:
@@ -1007,7 +1022,6 @@ class DiscordDATService:
         except Exception:
             pass
 
-        interaction_url = 'https://discord.com/api/v9/interactions'
         payload = self.build_interaction_payload('daykhoa', [
             {'type': 3, 'name': 'khoa', 'value': c_name},
             {'type': 3, 'name': 'biensoxe', 'value': c_plate}
@@ -1015,22 +1029,7 @@ class DiscordDATService:
 
         t_start = time.time()
         try:
-            with self._interaction_lock:
-                now_ts = time.time()
-                gap = now_ts - self._last_interaction_time
-                if gap < 0.5:
-                    time.sleep(0.5 - gap)
-                self._last_interaction_time = time.time()
-                resp = self.session.post(interaction_url, json=payload, timeout=5)
-
-            if resp.status_code == 429:
-                try:
-                    r_429 = resp.json()
-                    time.sleep(min(float(r_429.get('retry_after', 1.5)) + 0.2, 4.0))
-                    with self._interaction_lock:
-                        resp = self.session.post(interaction_url, json=payload, timeout=5)
-                except Exception:
-                    pass
+            resp = self.send_interaction(payload, timeout=6)
 
             if resp.status_code not in (200, 204):
                 if resp.status_code == 401 or '401' in resp.text or 'Unauthorized' in resp.text:
@@ -1121,12 +1120,11 @@ class DiscordDATService:
         except Exception:
             pass
 
-        interaction_url = 'https://discord.com/api/v9/interactions'
         payload = self.build_interaction_payload('xeonline', [{'type': 3, 'name': 'biensoxe', 'value': c_plate}])
 
         t_start = time.time()
         try:
-            resp = self.session.post(interaction_url, json=payload, timeout=5)
+            resp = self.send_interaction(payload, timeout=6)
             if resp.status_code not in (200, 204):
                 return {'online': False, 'details': f'Lỗi Discord: {resp.status_code}'}
         except Exception as e:
@@ -1186,8 +1184,6 @@ class DiscordDATService:
         except Exception:
             pass
 
-        interaction_url = 'https://discord.com/api/v9/interactions'
-
         # Bước 1: Gửi /dongbo
         payload_dongbo = self.build_interaction_payload('dongbo', [
             {'type': 3, 'name': 'mhv', 'value': c_mhv},
@@ -1196,7 +1192,7 @@ class DiscordDATService:
 
         t_start = time.time()
         try:
-            resp = self.session.post(interaction_url, json=payload_dongbo, timeout=5)
+            resp = self.send_interaction(payload_dongbo, timeout=6)
             if resp.status_code not in (200, 204):
                 if resp.status_code == 401 or '401' in resp.text or 'Unauthorized' in resp.text:
                     return {'success': False, 'is_auth_error': True, 'error': 'Mã Token Discord đã hết hạn! Vui lòng cập nhật Token mới.'}
@@ -1259,7 +1255,7 @@ class DiscordDATService:
                 }
             }
             try:
-                self.session.post(interaction_url, json=payload_fallback, timeout=5)
+                self.send_interaction(payload_fallback, timeout=6)
                 time.sleep(1.8)
                 r_poll2 = self.session.get(poll_url, timeout=3.5)
                 if r_poll2.status_code == 200:
@@ -1333,7 +1329,10 @@ class DiscordDATService:
         post_data = body.getvalue()
         headers = {
             'Authorization': self.token,
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Discord/1.0.9269 Chrome/128.0.6613.186 Electron/32.2.7 Safari/537.36',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) discord/1.0.9168 Chrome/128.0.6613.186 Electron/32.2.7 Safari/537.36',
+            'X-Super-Properties': DISCORD_SUPER_PROPERTIES,
+            'X-Discord-Locale': 'vi',
+            'X-Discord-Timezone': 'Asia/Ho_Chi_Minh',
             'Content-Type': f'multipart/form-data; boundary={boundary}'
         }
 
