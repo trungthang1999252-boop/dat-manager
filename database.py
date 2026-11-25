@@ -110,8 +110,8 @@ class StudentDatabase:
                        s_st.get('quangduong', 0) > 0 or
                        s_st.get('thoigian', 0) > 0 or
                        s_st.get('has_lythuyet') or
-                       s_st.get('interaction_username') == 'tranthang252' or
-                       s_st.get('interaction_user_id') in ('1380376964304474173', '1380096710386384937'))
+                       s_st.get('interaction_username') in ('tranthang252', 'tranthang0234') or
+                       s_st.get('interaction_user_id') in ('1380376964304474173', '1380096710386384937', '1574670927948423262'))
             if is_mine:
                 key = s_mahv or s_cccd or s_st.get('hoten')
                 cleaned_students[key] = s_st
@@ -279,8 +279,8 @@ class StudentDatabase:
                 (s_mahv and s_mahv in roster_keys)
             )
             is_queried_by_me = (
-                s.get('interaction_username') == 'tranthang252' or
-                str(s.get('interaction_user_id')) in ('1380376964304474173', '1380096710386384937') or
+                s.get('interaction_username') in ('tranthang252', 'tranthang0234') or
+                str(s.get('interaction_user_id')) in ('1380376964304474173', '1380096710386384937', '1574670927948423262') or
                 ('thắng' in str(s.get('note', '')).lower())
             )
 

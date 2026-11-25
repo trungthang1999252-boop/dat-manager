@@ -366,10 +366,10 @@ def handle_live_discord_student(st, cmd):
     # 2. KIỂM TRA HỌC VIÊN CÓ THUỘC QUẢN LÝ CỦA TÔI KHÔNG:
     # - Đang có trong danh sách CSDL hiển thị (db.students)
     # - HOẶC có trong danh sách gốc được đẩy vào (db.roster)
-    # - HOẶC lệnh tra cứu được phát đi từ chính tài khoản Discord của tôi (tranthang252)
+    # - HOẶC lệnh tra cứu được phát đi từ chính tài khoản Discord của tôi (tranthang252 hoặc tranthang0234)
     i_uid = str(st.get('interaction_user_id') or '')
     i_uname = str(st.get('interaction_username') or '').lower()
-    is_my_discord = (i_uid in ('1380376964304474173', '1380096710386384937') or i_uname == 'tranthang252')
+    is_my_discord = (i_uid in ('1380376964304474173', '1380096710386384937', '1574670927948423262') or i_uname in ('tranthang252', 'tranthang0234'))
     
     is_in_students = bool(db.find_student(mahv) or db.find_student(cccd) or db.find_student(hoten))
     is_in_roster = bool(
