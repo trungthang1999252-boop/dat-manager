@@ -63,6 +63,22 @@ DISCORD_SUPER_PROPERTIES = base64.b64encode(json.dumps({
     "client_event_source": None
 }).encode('utf-8')).decode('utf-8')
 
+DISCORD_DESKTOP_UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) discord/1.0.9168 Chrome/128.0.6613.186 Electron/32.2.7 Safari/537.36'
+
+def get_discord_desktop_headers(token='', content_type='application/json'):
+    """Tạo bộ headers chuẩn Discord Desktop Client đồng nhất cho mọi request."""
+    h = {
+        'Authorization': str(token or '').strip(),
+        'User-Agent': DISCORD_DESKTOP_UA,
+        'X-Super-Properties': DISCORD_SUPER_PROPERTIES,
+        'X-Discord-Locale': 'vi',
+        'X-Discord-Timezone': 'Asia/Ho_Chi_Minh'
+    }
+    if content_type:
+        h['Content-Type'] = content_type
+    return h
+
+
 
 # Windows DPAPI decrypt (chỉ hỗ trợ trên Windows)
 if sys.platform == 'win32':
@@ -98,7 +114,7 @@ def is_valid_discord_token(tok):
     try:
         req = urllib.request.Request(
             'https://discord.com/api/v9/users/@me',
-            headers={'Authorization': str(tok).strip(), 'User-Agent': 'Mozilla/5.0'}
+            headers=get_discord_desktop_headers(tok, content_type=None)
         )
         with urllib.request.urlopen(req, timeout=3.5) as resp:
             return resp.status == 200
@@ -300,11 +316,13 @@ class DiscordDATService:
         return False
 
     def get_command_info(self, cmd_name):
-        """Lấy ID và Version của lệnh (ưu tiên bộ đệm động, fallback về constants)."""
-        with self._registry_lock:
-            if not self._command_registry or (time.time() - self._last_cmd_refresh > 1800):
-                threading.Thread(target=self.refresh_command_index, daemon=True).start()
+        """Lấy ID và Version của lệnh (ưu tiên bộ đệm động, tự động nạp đồng bộ lần đầu nếu rỗng)."""
+        if not self._command_registry:
+            self.refresh_command_index()
+        elif time.time() - self._last_cmd_refresh > 1800:
+            threading.Thread(target=self.refresh_command_index, daemon=True).start()
 
+        with self._registry_lock:
             info = self._command_registry.get(cmd_name)
             if info:
                 return info['id'], info['version']
@@ -415,7 +433,7 @@ class DiscordDATService:
         try:
             resp = requests.get(
                 'https://discord.com/api/v9/users/@me',
-                headers={'Authorization': str(token_to_test).strip(), 'User-Agent': 'Mozilla/5.0'},
+                headers=get_discord_desktop_headers(token_to_test, content_type=None),
                 timeout=5
             )
             if resp.status_code == 200:
@@ -864,7 +882,7 @@ class DiscordDATService:
             for m in raw_msgs:
                 mid = m.get('id')
                 # Chấp nhận tin nhắn mới hơn latest_id hoặc mới được tạo sau thời điểm gửi lệnh
-                if latest_id is None or int(mid) >= int(latest_id):
+                if latest_id is None or int(mid) > int(latest_id):
                     author_id = m.get('author', {}).get('id')
                     author_name = m.get('author', {}).get('username', '')
                     if author_id == APP_ID or author_name == 'NLTB_Bot':
@@ -999,7 +1017,7 @@ class DiscordDATService:
                             self.latest_msg_id = mid
                             return {'success': False, 'error': full_text}
 
-            time.sleep(0.4)
+            time.sleep(0.65)
 
         return {'success': True, 'message': f'Đã gửi yêu cầu cập nhật khóa {c_name} tới Bot.'}
 
@@ -1038,7 +1056,7 @@ class DiscordDATService:
         except Exception as e:
             return {'success': False, 'error': f'Không thể gửi lệnh /daykhoa: {str(e)}'}
 
-        time.sleep(0.4)
+        time.sleep(0.65)
         poll_url = f"https://discord.com/api/v9/channels/{CHANNEL_ID}/messages?limit=5"
         while time.time() - t_start < timeout_sec:
             try:
@@ -1049,7 +1067,7 @@ class DiscordDATService:
 
             for m in raw_msgs:
                 mid = m.get('id')
-                if latest_id is None or int(mid) >= int(latest_id):
+                if latest_id is None or int(mid) > int(latest_id):
                     author_id = m.get('author', {}).get('id')
                     author_name = m.get('author', {}).get('username', '')
                     if author_id == APP_ID or author_name == 'NLTB_Bot':
@@ -1141,7 +1159,7 @@ class DiscordDATService:
 
             for m in raw_msgs:
                 mid = m.get('id')
-                if latest_id is None or int(mid) >= int(latest_id):
+                if latest_id is None or int(mid) > int(latest_id):
                     if m.get('author', {}).get('id') == APP_ID:
                         content = m.get('content', '')
                         embeds = m.get('embeds', [])
@@ -1159,7 +1177,7 @@ class DiscordDATService:
                             self.latest_msg_id = mid
                             return {'online': True, 'details': f'Xe {c_plate} đang online máy chủ'}
 
-            time.sleep(0.4)
+            time.sleep(0.65)
 
         return {'online': False, 'details': f'Chưa xác nhận kết nối xe {c_plate}'}
 
@@ -1214,7 +1232,7 @@ class DiscordDATService:
 
             for m in raw_msgs:
                 mid = m.get('id')
-                if latest_id is None or int(mid) >= int(latest_id):
+                if latest_id is None or int(mid) > int(latest_id):
                     if m.get('author', {}).get('id') == APP_ID:
                         content = m.get('content', '')
                         embeds = m.get('embeds', [])
@@ -1233,7 +1251,7 @@ class DiscordDATService:
 
             if admin_blocked or bot_message:
                 break
-            time.sleep(0.4)
+            time.sleep(0.65)
 
         # Bước 2: Fallback sang /dongbotc nếu bị chặn Admin
         if admin_blocked:
@@ -1355,7 +1373,7 @@ class DiscordDATService:
 
             for m in raw_msgs:
                 mid = m.get('id')
-                if latest_id is None or int(mid) >= int(latest_id):
+                if latest_id is None or int(mid) > int(latest_id):
                     if m.get('author', {}).get('id') == APP_ID:
                         content = m.get('content', '')
                         embeds = m.get('embeds', [])
@@ -1372,6 +1390,92 @@ class DiscordDATService:
             time.sleep(0.5)
 
         return {'success': True, 'message': f'Đã gửi ảnh cabin cho học viên {c_mhv} tới máy chủ thành công'}
+
+    def execute_bot_command(self, cmd_name, options_list, timeout_sec=16):
+        """
+        Thực thi một lệnh Slash Command an toàn dành cho giáo viên trên Discord Bot
+        (ví dụ: /kiemtraxe, /dinhvixe, /xeonline, /dongbocabin, /daygiaovien, /timkhoa)
+        và trả về phản hồi có cấu trúc từ Bot NLTB_Bot.
+        """
+        if not self.token:
+            return {'success': False, 'is_auth_error': True, 'error': 'Chưa cấu hình Token Discord.'}
+
+        latest_id = self.latest_msg_id
+        try:
+            r_l = self.session.get(f"https://discord.com/api/v9/channels/{CHANNEL_ID}/messages?limit=1", timeout=3.5)
+            if r_l.status_code == 200 and r_l.json():
+                latest_id = r_l.json()[0]['id']
+                self.latest_msg_id = latest_id
+        except Exception:
+            pass
+
+        payload = self.build_interaction_payload(cmd_name, options_list or [])
+        t_start = time.time()
+        try:
+            resp = self.send_interaction(payload, timeout=6)
+            if resp.status_code not in (200, 204):
+                if resp.status_code == 401 or '401' in resp.text or 'Unauthorized' in resp.text:
+                    return {'success': False, 'is_auth_error': True, 'error': 'Mã Token Discord đã hết hạn!'}
+                return {'success': False, 'error': f'Lỗi Discord: {resp.status_code} ({resp.text[:120]})'}
+        except Exception as e:
+            return {'success': False, 'error': f'Không thể gửi lệnh /{cmd_name}: {str(e)}'}
+
+        my_uid = str((self.get_user_info() or {}).get('id') or '')
+        time.sleep(0.8)
+        poll_url = f"https://discord.com/api/v9/channels/{CHANNEL_ID}/messages?limit=6"
+
+        while time.time() - t_start < timeout_sec:
+            try:
+                r_poll = self.session.get(poll_url, timeout=4.0)
+                raw_msgs = r_poll.json() if r_poll.status_code == 200 else []
+            except Exception:
+                raw_msgs = []
+
+            for m in raw_msgs:
+                mid = m.get('id')
+                if latest_id is None or int(mid) > int(latest_id):
+                    author_id = str(m.get('author', {}).get('id') or '')
+                    author_name = m.get('author', {}).get('username', '')
+                    if author_id == APP_ID or author_name == 'NLTB_Bot':
+                        inter = m.get('interaction') or {}
+                        iname = inter.get('name') or ''
+                        i_uid = str(inter.get('user', {}).get('id') or '')
+                        # Nếu tin nhắn gắn rõ interaction của lệnh khác hoặc người khác thì bỏ qua
+                        if iname and iname != cmd_name:
+                            continue
+                        if i_uid and my_uid and i_uid != my_uid:
+                            continue
+
+                        content = m.get('content', '') or ''
+                        embeds = m.get('embeds', []) or []
+                        e0 = embeds[0] if embeds else {}
+                        title = e0.get('title', '') or ''
+                        desc = e0.get('description', '') or ''
+                        fields = [{'name': f.get('name', ''), 'value': f.get('value', '')} for f in e0.get('fields', [])]
+                        img_url = (e0.get('image') or {}).get('url') or ''
+                        att_urls = [a.get('url') for a in (m.get('attachments') or []) if a.get('url')]
+
+                        combined = f"{content} {title} {desc}".strip()
+                        if not combined and not fields and not img_url and not att_urls:
+                            continue
+
+                        self.latest_msg_id = mid
+                        is_err = ('❌' in combined or 'chỉ dành cho admin' in combined.lower() or 'không tìm thấy' in combined.lower())
+                        return {
+                            'success': not is_err,
+                            'command': cmd_name,
+                            'title': title,
+                            'message': content or desc or title,
+                            'description': desc,
+                            'fields': fields,
+                            'image_url': img_url,
+                            'attachments': att_urls,
+                            'error': combined if is_err else None
+                        }
+
+            time.sleep(0.75)
+
+        return {'success': False, 'error': f'Bot chưa phản hồi lệnh /{cmd_name} trong {timeout_sec}s (hoặc phản hồi riêng tư trên Discord).'}
 
     def start_live_watcher(self, on_student_parsed_cb=None, interval_sec=1.5):
         """

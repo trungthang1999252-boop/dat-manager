@@ -331,12 +331,14 @@ _sse_subscribers = []
 
 _last_user_activity = time.time()
 
+_IDLE_EXEMPT_PATHS = {'/api/ping', '/api/status', '/api/live_updates', '/favicon.ico', '/manifest.json', '/service-worker.js'}
+
 @app.before_request
 def track_user_activity():
     global _last_user_activity
     try:
         p = request.path
-        if not (p.startswith('/static') or p == '/favicon.ico'):
+        if not (p.startswith('/static') or p in _IDLE_EXEMPT_PATHS):
             _last_user_activity = time.time()
     except Exception:
         pass
@@ -2669,6 +2671,49 @@ def check_car_online_api(biensoxe):
     """Kiểm tra xe có online hay không."""
     res = ds.check_car_online(biensoxe)
     return jsonify(res)
+
+ALLOWED_TEACHER_DISCORD_TOOLS = {
+    'kiemtraxe': {'opt_name': 'biensoxe', 'opt_type': 3, 'required': True, 'clean_plate': True},
+    'dinhvixe': {'opt_name': 'biensoxe', 'opt_type': 3, 'required': False, 'clean_plate': True},
+    'xeonline': {'opt_name': 'biensoxe', 'opt_type': 3, 'required': False, 'clean_plate': True},
+    'dongbocabin': {'opt_name': 'mhv', 'opt_type': 3, 'required': True, 'clean_plate': False},
+    'daygiaovien': {'opt_name': 'biensoxe', 'opt_type': 3, 'required': True, 'clean_plate': True},
+    'timkhoa': {'opt_name': 'khoa', 'opt_type': 3, 'required': True, 'clean_plate': False},
+}
+
+@app.route('/api/discord_tool', methods=['POST'])
+def discord_teacher_tool_api():
+    """Chạy các lệnh tiện ích an toàn cho giáo viên trên Discord Bot."""
+    data = request.get_json(silent=True) or {}
+    cmd = str(data.get('command') or '').strip().lower()
+    value = str(data.get('value') or '').strip()
+
+    if cmd not in ALLOWED_TEACHER_DISCORD_TOOLS:
+        return jsonify({'success': False, 'error': f'Lệnh /{cmd} không nằm trong danh sách tiện ích được phép.'}), 400
+
+    spec = ALLOWED_TEACHER_DISCORD_TOOLS[cmd]
+    if spec['required'] and not value:
+        return jsonify({'success': False, 'error': f'Vui lòng nhập tham số ({spec["opt_name"]}) cho lệnh /{cmd}.'}), 400
+
+    if not ds.is_connected():
+        token = discord_service.auto_detect_discord_token()
+        if token:
+            ds.set_token(token)
+        else:
+            return jsonify({'success': False, 'error': 'Chưa kết nối được với Discord.'})
+
+    opts = []
+    if value:
+        final_val = ds.clean_plate(value) if spec['clean_plate'] else value
+        if cmd == 'dongbocabin' and not final_val.startswith('52001-'):
+            resolved_st, _ = db.resolve_student_identifier(final_val)
+            if resolved_st and resolved_st.get('mahv'):
+                final_val = resolved_st['mahv']
+        opts.append({'type': spec['opt_type'], 'name': spec['opt_name'], 'value': final_val})
+
+    res = ds.execute_bot_command(cmd, opts, timeout_sec=16)
+    return jsonify(res)
+
 
 def start_keep_warm_worker():
     """

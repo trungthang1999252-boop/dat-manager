@@ -440,6 +440,14 @@
 
                         </button>
 
+                        <button onclick="openDiscordToolsModal()" id="btn-discord-tools" class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-xl font-semibold text-xs transition flex items-center space-x-2 shadow-sm" title="Kiểm tra xe (/kiemtraxe), Định vị xe (/dinhvixe), Xe online, Đồng bộ cabin (/dongbocabin), Đẩy giáo viên (/daygiaovien), Tìm khóa (/timkhoa)">
+
+                            <i class="fa-solid fa-toolbox"></i>
+
+                            <span>Tiện Ích Xe & Cabin</span>
+
+                        </button>
+
                     </div>
 
                 </div>
@@ -2575,7 +2583,67 @@
     </div>
 
     <!-- Modal: Đẩy Khóa Xuống Xe Tập Lái (/daykhoa) - Tích Hợp Nhập Tay Biển Số Xe & Nhiều Lựa Chọn Khóa -->
-    <div id="daykhoa-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3 sm:p-4">
+    <div id="discord-tools-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-xl max-h-[90vh] flex flex-col overflow-hidden border border-slate-200">
+        <div class="px-6 py-4 bg-gradient-to-r from-teal-600 to-emerald-600 text-white flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <i class="fa-solid fa-toolbox text-xl"></i>
+                <div>
+                    <h3 class="font-bold text-base">Tiện Ích Xe & Cabin (Discord Bot)</h3>
+                    <p class="text-[11px] text-teal-100">Các lệnh tra cứu & đồng bộ an toàn dành cho giáo viên</p>
+                </div>
+            </div>
+            <button onclick="closeModal('discord-tools-modal')" class="text-white/80 hover:text-white p-1.5 rounded-lg hover:bg-white/10 transition">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+        </div>
+
+        <div class="p-5 overflow-y-auto space-y-4">
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-2" id="discord-tool-tabs">
+                <button type="button" onclick="selectDiscordTool('kiemtraxe')" data-tool="kiemtraxe" class="discord-tool-tab px-3 py-2 rounded-xl border text-xs font-bold text-left transition bg-teal-50 border-teal-500 text-teal-800">
+                    <i class="fa-solid fa-shield-halved mr-1"></i> /kiemtraxe
+                    <div class="text-[10px] font-normal text-slate-500 mt-0.5">Khóa xe, hạn GPXTL</div>
+                </button>
+                <button type="button" onclick="selectDiscordTool('dinhvixe')" data-tool="dinhvixe" class="discord-tool-tab px-3 py-2 rounded-xl border border-slate-200 text-xs font-bold text-left transition hover:bg-slate-50 text-slate-700">
+                    <i class="fa-solid fa-location-dot mr-1"></i> /dinhvixe
+                    <div class="text-[10px] font-normal text-slate-500 mt-0.5">Định vị xe hoạt động</div>
+                </button>
+                <button type="button" onclick="selectDiscordTool('xeonline')" data-tool="xeonline" class="discord-tool-tab px-3 py-2 rounded-xl border border-slate-200 text-xs font-bold text-left transition hover:bg-slate-50 text-slate-700">
+                    <i class="fa-solid fa-wifi mr-1"></i> /xeonline
+                    <div class="text-[10px] font-normal text-slate-500 mt-0.5">Xe kết nối & HV đang học</div>
+                </button>
+                <button type="button" onclick="selectDiscordTool('dongbocabin')" data-tool="dongbocabin" class="discord-tool-tab px-3 py-2 rounded-xl border border-slate-200 text-xs font-bold text-left transition hover:bg-slate-50 text-slate-700">
+                    <i class="fa-solid fa-rotate mr-1"></i> /dongbocabin
+                    <div class="text-[10px] font-normal text-slate-500 mt-0.5">Kéo dữ liệu cabin kẹt</div>
+                </button>
+                <button type="button" onclick="selectDiscordTool('daygiaovien')" data-tool="daygiaovien" class="discord-tool-tab px-3 py-2 rounded-xl border border-slate-200 text-xs font-bold text-left transition hover:bg-slate-50 text-slate-700">
+                    <i class="fa-solid fa-chalkboard-user mr-1"></i> /daygiaovien
+                    <div class="text-[10px] font-normal text-slate-500 mt-0.5">Đẩy DS GV xuống xe</div>
+                </button>
+                <button type="button" onclick="selectDiscordTool('timkhoa')" data-tool="timkhoa" class="discord-tool-tab px-3 py-2 rounded-xl border border-slate-200 text-xs font-bold text-left transition hover:bg-slate-50 text-slate-700">
+                    <i class="fa-solid fa-magnifying-glass mr-1"></i> /timkhoa
+                    <div class="text-[10px] font-normal text-slate-500 mt-0.5">Tìm thông tin khóa</div>
+                </button>
+            </div>
+
+            <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-2.5">
+                <label id="discord-tool-label" class="block text-xs font-bold text-slate-700">Biển số xe (VD: 77A12345):</label>
+                <div class="flex space-x-2">
+                    <input type="text" id="discord-tool-input" placeholder="Nhập biển số xe..." class="flex-1 px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none bg-white" onkeydown="if(event.key==='Enter') runDiscordTool()">
+                    <button type="button" id="btn-run-discord-tool" onclick="runDiscordTool()" class="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-bold shadow-sm transition flex items-center space-x-1.5">
+                        <i class="fa-solid fa-paper-plane"></i>
+                        <span>Chạy Lệnh</span>
+                    </button>
+                </div>
+                <p id="discord-tool-hint" class="text-[11px] text-slate-500">Kiểm tra tình trạng khóa xe, hạn GPXTL và GPLX trên hệ thống.</p>
+            </div>
+
+            <div id="discord-tool-result" class="hidden rounded-xl border p-4 text-xs space-y-2 max-h-72 overflow-y-auto"></div>
+        </div>
+    </div>
+</div>
+
+<div id="daykhoa-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3 sm:p-4">
         <div class="bg-white rounded-3xl max-w-2xl w-full p-5 sm:p-6 space-y-4 shadow-2xl border border-slate-100 max-h-[92vh] flex flex-col">
             <!-- Header -->
             <div class="flex items-center justify-between border-b border-slate-100 pb-3 shrink-0">
@@ -5755,7 +5823,86 @@ let _loadStudentsAbortCtrl = null;
         let currentDayKhoaPreview = null;
         let dayKhoaCoursesData = [];
 
-        async function openDayKhoaModal(targetCourse = null) {
+                let _activeDiscordTool = 'kiemtraxe';
+        const _DISCORD_TOOL_META = {
+            kiemtraxe: { label: 'Biển số xe (VD: 77A12345,77A67890):', placeholder: 'Nhập 1 hoặc nhiều biển số cách nhau dấu phẩy...', hint: 'Kiểm tra tình trạng khóa xe, hạn GPXTL và GPLX theo biển số.' },
+            dinhvixe: { label: 'Biển số xe (có thể để trống để xem tất cả xe online):', placeholder: 'VD: 77A12345 (hoặc để trống)', hint: 'Xem định vị xe đang hoạt động kèm thông tin phiên.' },
+            xeonline: { label: 'Biển số xe (có thể để trống để xem tất cả):', placeholder: 'VD: 77A12345 (hoặc để trống)', hint: 'Xem xe nào đang kết nối máy chủ và học viên nào đang đăng nhập.' },
+            dongbocabin: { label: 'Mã học viên hoặc Họ tên / CCCD:', placeholder: 'VD: 52001-20260908-000044 hoặc tên học viên...', hint: 'Kéo dữ liệu cabin bị kẹt ở máy con về máy chủ và cập nhật Sheet khóa.' },
+            daygiaovien: { label: 'Biển số xe (VD: 77A12345):', placeholder: 'Nhập biển số xe cần đẩy danh sách giáo viên...', hint: 'Cập nhật danh sách giáo viên xuống thiết bị DAT trên xe.' },
+            timkhoa: { label: 'Mã khóa học (VD: CD_111B.01 hoặc 111):', placeholder: 'Nhập mã khóa học cần tìm...', hint: 'Tìm thông tin chi tiết khóa học trên hệ thống trường.' }
+        };
+
+        function openDiscordToolsModal() {
+            const modal = document.getElementById('discord-tools-modal');
+            if (!modal) return;
+            modal.classList.remove('hidden');
+            selectDiscordTool(_activeDiscordTool || 'kiemtraxe');
+        }
+
+        function selectDiscordTool(cmd) {
+            _activeDiscordTool = cmd;
+            const meta = _DISCORD_TOOL_META[cmd] || _DISCORD_TOOL_META.kiemtraxe;
+            document.getElementById('discord-tool-label').innerText = meta.label;
+            const inp = document.getElementById('discord-tool-input');
+            inp.placeholder = meta.placeholder;
+            document.getElementById('discord-tool-hint').innerText = meta.hint;
+            document.querySelectorAll('.discord-tool-tab').forEach(btn => {
+                const isActive = btn.getAttribute('data-tool') === cmd;
+                btn.className = isActive
+                    ? 'discord-tool-tab px-3 py-2 rounded-xl border text-xs font-bold text-left transition bg-teal-50 border-teal-500 text-teal-800'
+                    : 'discord-tool-tab px-3 py-2 rounded-xl border border-slate-200 text-xs font-bold text-left transition hover:bg-slate-50 text-slate-700';
+            });
+            inp.focus();
+        }
+
+        async function runDiscordTool() {
+            const inp = document.getElementById('discord-tool-input');
+            const btn = document.getElementById('btn-run-discord-tool');
+            const resBox = document.getElementById('discord-tool-result');
+            const val = (inp.value || '').trim();
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i><span>Đang chạy...</span>';
+            resBox.className = 'rounded-xl border border-slate-200 bg-slate-50 p-4 text-xs text-slate-600';
+            resBox.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin mr-1.5 text-teal-600"></i> Đang gửi lệnh <b>/' + _activeDiscordTool + '</b> tới Bot Discord và chờ phản hồi...';
+            resBox.classList.remove('hidden');
+
+            try {
+                const res = await fetch('/api/discord_tool', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ command: _activeDiscordTool, value: val })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    resBox.className = 'rounded-xl border border-emerald-200 bg-emerald-50/70 p-4 text-xs space-y-2 max-h-72 overflow-y-auto';
+                    let htmlOut = '';
+                    if (data.title) htmlOut += '<div class="font-bold text-emerald-900 text-sm">' + data.title + '</div>';
+                    if (data.message) htmlOut += '<div class="text-slate-800 whitespace-pre-line">' + data.message + '</div>';
+                    if (Array.isArray(data.fields) && data.fields.length) {
+                        htmlOut += '<div class="grid grid-cols-1 gap-1.5 pt-1 border-t border-emerald-200/70">';
+                        data.fields.forEach(f => {
+                            htmlOut += '<div><span class="font-bold text-slate-700">' + (f.name || '') + ':</span> <span class="text-slate-800 whitespace-pre-line">' + (f.value || '') + '</span></div>';
+                        });
+                        htmlOut += '</div>';
+                    }
+                    if (data.image_url) htmlOut += '<img src="' + data.image_url + '" class="rounded-lg max-h-48 border border-slate-200 mt-2" alt="Bot image">';
+                    resBox.innerHTML = htmlOut || '✅ Bot đã xử lý thành công.';
+                } else {
+                    resBox.className = 'rounded-xl border border-rose-200 bg-rose-50 p-4 text-xs text-rose-800';
+                    resBox.innerText = '❌ ' + (data.error || 'Không thể thực hiện lệnh.');
+                }
+            } catch (e) {
+                resBox.className = 'rounded-xl border border-rose-200 bg-rose-50 p-4 text-xs text-rose-800';
+                resBox.innerText = '❌ Lỗi kết nối máy chủ: ' + e.message;
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i><span>Chạy Lệnh</span>';
+            }
+        }
+
+async function openDayKhoaModal(targetCourse = null) {
             const modal = document.getElementById('daykhoa-modal');
             if (!modal) return;
 
