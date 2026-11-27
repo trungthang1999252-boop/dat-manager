@@ -810,12 +810,11 @@ class DiscordDATService:
         q_clean = str(query_text).strip()
         q_lower = q_clean.lower()
 
-        # BƯỚC 1: FAST SCAN (Kiểm tra tin nhắn có sẵn trong kênh)
-        # Nếu bot đã trả lời học viên này trên Discord (trong 40 tin gần nhất), lấy ngay trong 0.1s!
+        # BƯỚC 1: FAST SCAN (Chỉ dùng khi force=False VÀ tin nhắn bot vừa mới trả lời trong 60 giây gần nhất)
         latest_id = self.latest_msg_id
         q_no_acc = strip_vietnamese_accents(q_lower)
         try:
-            scan_limit = 40 if not force else 6
+            scan_limit = 15 if not force else 1
             r_l = self.session.get(f"https://discord.com/api/v9/channels/{CHANNEL_ID}/messages?limit={scan_limit}", timeout=3.5)
             if r_l.status_code == 200:
                 raw_recent = r_l.json()
@@ -823,29 +822,41 @@ class DiscordDATService:
                     latest_id = raw_recent[0].get('id')
                     self.latest_msg_id = latest_id
 
-                    for m in raw_recent:
-                        for st in self.parse_discord_message(m):
-                            st_mahv = st.get('mahv', '').lower()
-                            st_cccd = st.get('cccd', '').lower()
-                            st_hoten = st.get('hoten', '').lower()
-                            st_no_acc = strip_vietnamese_accents(st_hoten)
+                    if not force:
+                        from datetime import datetime, timezone
+                        now_utc = datetime.now(timezone.utc)
+                        for m in raw_recent:
+                            # Chỉ chấp nhận cache nếu tin nhắn được tạo trong vòng 60 giây trở lại đây
+                            ts_str = m.get('timestamp', '')
+                            if ts_str:
+                                try:
+                                    msg_dt = datetime.fromisoformat(ts_str.replace('Z', '+00:00'))
+                                    if (now_utc - msg_dt).total_seconds() > 60:
+                                        continue
+                                except Exception:
+                                    continue
 
-                            matched = False
-                            if q_lower and (q_lower == st_mahv or q_lower == st_cccd or q_lower == st_hoten):
-                                matched = True
-                            elif q_no_acc and (q_no_acc == st_no_acc or (len(q_no_acc) >= 4 and (q_no_acc in st_no_acc or st_no_acc in q_no_acc))):
-                                matched = True
-                            elif q_lower and (q_lower in st_mahv or (len(q_lower) >= 6 and q_lower in st_cccd)):
-                                matched = True
+                            for st in self.parse_discord_message(m):
+                                st_mahv = st.get('mahv', '').lower()
+                                st_cccd = st.get('cccd', '').lower()
+                                st_hoten = st.get('hoten', '').lower()
+                                st_no_acc = strip_vietnamese_accents(st_hoten)
 
-                            if matched:
-                                # CHỈ chấp nhận cache DAT nếu đúng là embed DAT
-                                if command == 'dat' and not st.get('is_phien_embed') and (st.get('songay_str') or st.get('lich_trinh_ngay') or st.get('is_dat_embed') or st.get('quangduong', 0) > 0):
-                                    return {'success': True, 'data': [st], 'source': 'recent_channel_cache'}
-                                elif command == 'phien' and (st.get('is_phien_embed') or st.get('pdf_url')):
-                                    return {'success': True, 'data': [st], 'source': 'recent_channel_cache'}
-                                elif command == 'lythuyet' and (st.get('has_lythuyet') or st.get('lythuyet_pdf_url')):
-                                    return {'success': True, 'data': [st], 'source': 'recent_channel_cache'}
+                                matched = False
+                                if q_lower and (q_lower == st_mahv or q_lower == st_cccd or q_lower == st_hoten):
+                                    matched = True
+                                elif q_no_acc and (q_no_acc == st_no_acc or (len(q_no_acc) >= 4 and (q_no_acc in st_no_acc or st_no_acc in q_no_acc))):
+                                    matched = True
+                                elif q_lower and (q_lower in st_mahv or (len(q_lower) >= 6 and q_lower in st_cccd)):
+                                    matched = True
+
+                                if matched:
+                                    if command == 'dat' and not st.get('is_phien_embed') and (st.get('songay_str') or st.get('lich_trinh_ngay') or st.get('is_dat_embed') or st.get('quangduong', 0) > 0):
+                                        return {'success': True, 'data': [st], 'source': 'recent_channel_cache'}
+                                    elif command == 'phien' and (st.get('is_phien_embed') or st.get('pdf_url')):
+                                        return {'success': True, 'data': [st], 'source': 'recent_channel_cache'}
+                                    elif command == 'lythuyet' and (st.get('has_lythuyet') or st.get('lythuyet_pdf_url')):
+                                        return {'success': True, 'data': [st], 'source': 'recent_channel_cache'}
         except Exception:
             pass
 
@@ -1477,11 +1488,11 @@ class DiscordDATService:
 
         return {'success': False, 'error': f'Bot chưa phản hồi lệnh /{cmd_name} trong {timeout_sec}s (hoặc phản hồi riêng tư trên Discord).'}
 
-    def start_live_watcher(self, on_student_parsed_cb=None, interval_sec=1.5):
+    def start_live_watcher(self, on_student_parsed_cb=None, interval_sec=3.5, is_active_cb=None):
         """
         Khởi chạy tiến trình ngầm (Daemon Thread) liên tục lắng nghe kênh Discord:
         Tự động bắt tức thì mọi phản hồi /dat, /lythuyet, /phien của Bot NLTB_Bot
-        để cập nhật ngay vào hệ thống theo thời gian thực mà người dùng không cần đợi F5!
+        để cập nhật ngay vào hệ thống theo thời gian thực, kèm Smart Idle Sleep bảo vệ tài khoản.
         """
         if getattr(self, '_watcher_running', False):
             return
@@ -1594,7 +1605,11 @@ class DiscordDATService:
                     consecutive_errors += 1
                     time.sleep(min(1.5 * consecutive_errors, 5.0))
 
-                time.sleep(interval_sec)
+                # Smart Idle Sleep: giãn nhịp khi không có người dùng truy cập để bảo vệ tài khoản Discord
+                if is_active_cb is not None and not is_active_cb():
+                    time.sleep(random.uniform(45.0, 60.0))
+                else:
+                    time.sleep(interval_sec + random.uniform(0.3, 0.9))
 
         t = threading.Thread(target=_watcher_loop, daemon=True, name="DiscordLiveWatcher")
         self._watcher_thread = t

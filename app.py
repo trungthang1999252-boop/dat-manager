@@ -2458,22 +2458,92 @@ def sync_database_to_github():
     except Exception as e:
         return {'success': False, 'error': f'Lỗi đồng bộ GitHub: {str(e)}'}
 
+def restore_database_from_github():
+    """
+    Khôi phục và hợp nhất dữ liệu mới nhất từ GitHub Cloud khi khởi động máy chủ
+    để đảm bảo các commit [skip render] không bao giờ bị mất khi Render khởi động lại.
+    """
+    global _cloud_dirty, _last_synced_data_hash
+    token = GITHUB_TOKEN
+    if not token:
+        return
+    headers = {
+        'Authorization': f'token {token}',
+        'Accept': 'application/vnd.github.v3+json'
+    }
+    import base64
+
+    def _fetch_json(repo_path):
+        url = f'https://api.github.com/repos/{GITHUB_REPO}/contents/{repo_path}?ref=main'
+        r = requests.get(url, headers=headers, timeout=12)
+        if r.status_code != 200:
+            return None
+        content_b64 = r.json().get('content', '')
+        if not content_b64:
+            return None
+        raw = base64.b64decode(content_b64).decode('utf-8')
+        return json.loads(raw)
+
+    try:
+        cloud_deleted = _fetch_json('data/deleted_students.json')
+        cloud_roster = _fetch_json('data/roster.json')
+        cloud_students = _fetch_json('data/students.json')
+
+        changed = False
+        if isinstance(cloud_deleted, list):
+            for dk in cloud_deleted:
+                if dk and dk not in db.deleted_keys:
+                    db.deleted_keys.add(dk)
+                    changed = True
+            if changed:
+                db._save_deleted_keys()
+
+        if isinstance(cloud_roster, dict) and cloud_roster:
+            roster_changed = False
+            for rk, rv in cloud_roster.items():
+                if not isinstance(rv, dict):
+                    continue
+                if db.is_student_deleted(rv.get('mahv', ''), rv.get('cccd', ''), rv.get('hoten', '')):
+                    continue
+                if rk not in db.roster:
+                    db.roster[rk] = rv
+                    roster_changed = True
+            if roster_changed:
+                db._save_roster()
+
+        if isinstance(cloud_students, dict) and cloud_students:
+            merged_count = 0
+            for sk, sv in cloud_students.items():
+                if not isinstance(sv, dict):
+                    continue
+                if db.is_student_deleted(sv.get('mahv', ''), sv.get('cccd', ''), sv.get('hoten', '')):
+                    continue
+                if db.upsert_student(sv, auto_save=False):
+                    merged_count += 1
+            if merged_count > 0:
+                db._save()
+                print(f"☁️ [CloudRestore] Đã khôi phục & hợp nhất {merged_count} học viên từ GitHub Cloud.")
+
+        _cloud_dirty = False
+        _last_synced_data_hash = compute_data_hashes()
+    except Exception as e:
+        print(f"⚠️ [CloudRestore] Cảnh báo khôi phục dữ liệu từ GitHub: {e}")
+
 def start_auto_cloud_sync_worker():
     """
     Luồng tự động lưu dữ liệu lên GitHub Cloud trong nền (Auto Background Cloud Sync):
-    - Tự động phát hiện khi có thay đổi (tra cứu xong, xóa học viên, cập nhật điểm, v.v.).
-    - Đợi 15 giây nhàn rỗi (Debounce 15s) sau thao tác cuối cùng để gom các thao tác liên tiếp lại thành 1 lần lưu.
-    - Đẩy trực tiếp students.json và roster.json lên GitHub Cloud mà không làm phiền người dùng.
+    - Khôi phục dữ liệu mới nhất từ GitHub Cloud khi khởi động.
+    - Tự động phát hiện khi có thay đổi và đẩy ngay sau 3 giây nhàn rỗi (Debounce 3s).
     """
     def _worker():
         global _cloud_dirty, _last_dirty_time
-        time.sleep(15)
+        restore_database_from_github()
         while True:
             try:
-                time.sleep(5)
-                if _cloud_dirty and (time.time() - _last_dirty_time >= 15):
+                time.sleep(2)
+                if _cloud_dirty and (time.time() - _last_dirty_time >= 3):
                     with _cloud_sync_lock:
-                        if _cloud_dirty and (time.time() - _last_dirty_time >= 15):
+                        if _cloud_dirty and (time.time() - _last_dirty_time >= 3):
                             print("☁️ [AutoCloudSync] Tự động lưu dữ liệu lên GitHub Cloud...")
                             res = sync_database_to_github()
                             if res.get('success'):
@@ -2481,10 +2551,10 @@ def start_auto_cloud_sync_worker():
                                 print("✅ [AutoCloudSync] Đã tự động lưu dữ liệu lên GitHub Cloud thành công!")
                             else:
                                 print(f"⚠️ [AutoCloudSync] Lưu đám mây chưa hoàn tất: {res.get('error')}")
-                                _last_dirty_time = time.time() - 5
+                                _last_dirty_time = time.time() - 1
             except Exception as e:
                 print(f"⚠️ [AutoCloudSync] Lỗi worker tự động lưu đám mây: {e}")
-                time.sleep(10)
+                time.sleep(5)
 
     t = threading.Thread(target=_worker, daemon=True)
     t.start()
