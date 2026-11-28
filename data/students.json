@@ -1,6 +1,6 @@
 {
   "52001-20261016-000040": {
-    "avatar_url": "https://cdn.discordapp.com/attachments/1100763300180017185/1576036437399183381/avatar.jpg?ex=6b0b75d0&is=6b0a2450&hm=903b450841e0378b95d9fa1b7bbaa76e6ca751532cda60fcf3d671d0ad8c3ba1&",
+    "avatar_url": "https://cdn.discordapp.com/attachments/1100763300180017185/1576085350592290846/avatar.jpg?ex=6b0ba35d&is=6b0a51dd&hm=d17b50f3d5dad295b11d76f362854022c3d3eed1d2bc5ccfd6850b759ca62451&",
     "cccd": "066300006778",
     "created_at": "16/11/2026 20:14:03",
     "dieukien_totnghiep": "Không",
@@ -51,8 +51,8 @@
     "lythuyet_reason": "Tất cả các môn lý thuyết đều tích xanh (đã miễn trừ cabin)",
     "lythuyet_status": "Đạt",
     "mahv": "52001-20261016-000040",
-    "msg_id": "1576036418231341060",
-    "msg_time": "2026-11-28T00:46:03.447000+00:00",
+    "msg_id": "1576085331646873743",
+    "msg_time": "2026-11-28T04:00:25.314000+00:00",
     "ngaysinh": "08/11/2000",
     "note": "",
     "overall_pct": 87.0,
@@ -208,7 +208,7 @@
     ],
     "totnghiep_has_pdf": true,
     "totnghiep_reason": "Chưa đạt: Số Km DAT (719.5/825 km), Thời gian DAT (thiếu 3.2h)",
-    "updated_at": "28/11/2026 00:46:17",
+    "updated_at": "28/11/2026 04:01:12",
     "xe_phan": "81A78293",
     "is_dat_embed": true,
     "_force_unmark_deleted": true
