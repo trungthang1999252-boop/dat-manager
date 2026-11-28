@@ -1054,7 +1054,7 @@
     ],
     "totnghiep_has_pdf": false,
     "totnghiep_reason": "Chưa đạt: Số Km DAT (528.1/810 km), Thời gian DAT (thiếu 6.0h, thiếu đêm (2.3/3.0h)), Số ngày đường (4/5 ngày), Chưa tra cứu lý thuyết (/lythuyet)",
-    "updated_at": "28/11/2026 11:15:49",
+    "updated_at": "28/11/2026 13:59:36",
     "suckhoe": "Chưa có dữ liệu",
     "lich_trinh_ngay": [
       {
@@ -1082,10 +1082,10 @@
         "phien": 1
       }
     ],
-    "avatar_url": "https://cdn.discordapp.com/attachments/1100763300180017185/1576194885306818662/avatar.jpg?ex=6b0c0960&is=6b0ab7e0&hm=fb8e0e7b6b14b363af33a5eddc7dac56e9e7a5e7400a12b6eff7b2d9e162aeca&",
+    "avatar_url": "https://cdn.discordapp.com/attachments/1100763300180017185/1576236105223901385/avatar.jpg?ex=6b0c2fc4&is=6b0ade44&hm=ff5332ed37e36f358cdcfebf7a5c7aa8db69deb390b455e99402c68f2bf59e80&",
     "is_dat_embed": true,
-    "msg_id": "1576194862930202726",
-    "msg_time": "2026-11-28T11:15:39.607000+00:00",
+    "msg_id": "1576236085229654141",
+    "msg_time": "2026-11-28T13:59:27.769000+00:00",
     "interaction_user_id": "1574670927948423262",
     "interaction_username": "tranthang0234",
     "pdf_filename": "PHAM_THI_HY_CD_238B_phienhoc.pdf",
