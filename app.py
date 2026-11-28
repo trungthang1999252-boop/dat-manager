@@ -421,10 +421,11 @@ def handle_live_discord_student(st, cmd):
                 merged[k] = v
         st = merged
 
-    # 4. Nếu là báo cáo lý thuyết hoặc có file PDF lý thuyết: Tải ngay lập tức (force_download=True)
+    # 4. Nếu là báo cáo lý thuyết hoặc có file PDF lý thuyết: Tải nếu chưa có hoặc URL mới thay đổi
     if cmd == 'lythuyet' or st.get('lythuyet_pdf_url'):
         try:
-            st = ensure_lythuyet_evaluated(st, force_download=True, auto_save=False)
+            need_dl = (not existing) or (existing.get('lythuyet_pdf_url') != st.get('lythuyet_pdf_url')) or (not existing.get('totnghiep_has_pdf'))
+            st = ensure_lythuyet_evaluated(st, force_download=need_dl, auto_save=False)
         except Exception as e_lt:
             print("[Discord Live Sync] Cảnh báo chấm điểm lý thuyết:", e_lt)
 

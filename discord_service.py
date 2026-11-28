@@ -757,7 +757,7 @@ class DiscordDATService:
         remaining = [item for item in query_items if item not in found]
         return found, remaining
 
-    def query_student(self, query_text, command='dat', timeout_sec=16, force=False):
+    def query_student(self, query_text, command='dat', timeout_sec=22, force=False):
         """Tra cứu học viên với tính năng chống trùng lặp luồng (In-Flight Concurrency Deduplication)."""
         q_clean = str(query_text).strip()
         q_lower = q_clean.lower()
@@ -796,7 +796,7 @@ class DiscordDATService:
                 self._in_flight_queries.pop(cache_key, None)
             return err_res
 
-    def _do_query_student(self, query_text, command='dat', timeout_sec=16, force=False):
+    def _do_query_student(self, query_text, command='dat', timeout_sec=22, force=False):
         """
         Gửi lệnh tra cứu (/dat, /phien, /lythuyet) với tốc độ tối ưu cao:
         1. Quét nhanh kênh Discord (Fast Cache): Nếu bot vừa mới trả lời học viên này gần đây và không yêu cầu force,
@@ -863,9 +863,8 @@ class DiscordDATService:
         # BƯỚC 2: Gửi Slash Command Interaction tới Discord Bot (kèm giãn cách mô phỏng người thật)
         payload = self.build_interaction_payload(command, [{'type': 3, 'name': 'mhv', 'value': q_clean}])
 
-        t_start = time.time()
         try:
-            resp = self.send_interaction(payload, timeout=6)
+            resp = self.send_interaction(payload, timeout=8)
 
             if resp.status_code not in (200, 204):
                 print(f"[Discord Error {resp.status_code}] {resp.text}")
@@ -878,14 +877,19 @@ class DiscordDATService:
         except Exception as e:
             return {'success': False, 'error': f'Không thể gửi lệnh: {str(e)}'}
 
-        # BƯỚC 3: Chờ và bóc tách phản hồi Bot siêu tốc
-        time.sleep(0.18)
+        # BƯỚC 3: Chờ và bóc tách phản hồi Bot (tính thời gian chờ sau khi đã gửi lệnh thành công)
+        t_start = time.time()
+        time.sleep(0.6)
         poll_url = f"https://discord.com/api/v9/channels/{CHANNEL_ID}/messages?limit=6"
         multi_courses_detected = None
 
         while time.time() - t_start < timeout_sec:
             try:
-                r_poll = self.session.get(poll_url, timeout=3.0)
+                r_poll = self.session.get(poll_url, timeout=4.0)
+                if r_poll.status_code == 429:
+                    retry_after = float(r_poll.json().get('retry_after', 1.5))
+                    time.sleep(min(retry_after + 0.2, 4.0))
+                    continue
                 raw_msgs = r_poll.json() if r_poll.status_code == 200 else []
             except Exception:
                 raw_msgs = []
@@ -965,7 +969,7 @@ class DiscordDATService:
                                 self.latest_msg_id = mid
                                 return {'success': True, 'data': matches}
 
-            time.sleep(0.20)
+            time.sleep(0.75)
 
         if multi_courses_detected:
             c_str = ", ".join(multi_courses_detected)
