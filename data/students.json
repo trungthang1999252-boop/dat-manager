@@ -1775,7 +1775,7 @@
     "dieukien_totnghiep": "Không",
     "hang": "B",
     "has_lythuyet": false,
-    "has_phien_pdf": false,
+    "has_phien_pdf": true,
     "hoten": "PHẠM VĂN THANH",
     "is_my_query": true,
     "ketqua": "Chưa Đạt",
@@ -1790,16 +1790,16 @@
     "overall_pct": 88.6,
     "pct_gio": 88.6,
     "pct_km": 88.6,
-    "pdf_url": null,
+    "pdf_url": "https://cdn.discordapp.com/attachments/1100763300180017185/1576128022560514158/PHAM_VAN_THANH_CD_238B_phienhoc.pdf?ex=6b0bcb1b&is=6b0a799b&hm=010d023a8bdcb53bbe2b333a930c0f271a1a3dc992ffa9a366b0e09058e0b529&",
     "phien_loi_detail": [],
     "phien_permanent_reasons": [],
     "phien_recoverable_cars": [],
-    "phien_status": "Chưa tra phiên",
+    "phien_status": "Hợp lệ",
     "quangduong": 717.98,
     "quangduong_dat": false,
     "quangduong_thieu": 92.0,
     "sdt": "",
-    "so_phien_hople": 0,
+    "so_phien_hople": 8,
     "so_phien_loi": 0,
     "songay_dat": false,
     "songay_str": "3/5 ngày",
@@ -1957,7 +1957,7 @@
     ],
     "totnghiep_has_pdf": false,
     "totnghiep_reason": "Chưa đạt: Số Km DAT (718.0/810 km), Thời gian DAT (thiếu 2.3h, thiếu đêm (0.3/3.0h), thiếu TĐ (1.2/2.0h)), Số ngày đường (3/5 ngày), Chưa tra cứu lý thuyết (/lythuyet)",
-    "updated_at": "28/11/2026 06:42:04",
+    "updated_at": "28/11/2026 06:50:52",
     "suckhoe": "Chưa có dữ liệu",
     "lich_trinh_ngay": [
       {
@@ -1979,12 +1979,14 @@
         "phien": 4
       }
     ],
-    "avatar_url": "https://cdn.discordapp.com/attachments/1100763300180017185/1576125891455492276/avatar.jpg?ex=6b0bc91f&is=6b0a779f&hm=a4b10db70d80ad26c6a34124cd9aa4d690259857310808d36784a5b907f15d94&",
+    "avatar_url": "https://cdn.discordapp.com/attachments/1100763300180017185/1576128022321299547/avatar.jpg?ex=6b0bcb1b&is=6b0a799b&hm=b4491e5c307d8332fd613382a6a4984735a8648c03b2d4b7ca9b6004b594226b&",
     "is_dat_embed": true,
-    "msg_id": "1576125873600335995",
-    "msg_time": "2026-11-28T06:41:31.269000+00:00",
+    "msg_id": "1576127967707275439",
+    "msg_time": "2026-11-28T06:49:50.543000+00:00",
     "interaction_user_id": "1574670927948423262",
-    "interaction_username": "tranthang0234"
+    "interaction_username": "tranthang0234",
+    "pdf_filename": "PHAM_VAN_THANH_CD_238B_phienhoc.pdf",
+    "is_phien_embed": true
   },
   "52001-20260920-000049": {
     "cabin_image_url": "",
